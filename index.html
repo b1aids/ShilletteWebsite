@@ -28,11 +28,29 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
+            /* Apply transparent animated gradient over the pseudo-element background */
+            @apply bg-gradient-to-br from-[rgba(194,65,12,0.8)] via-[rgba(0,0,0,0.85)] to-[rgba(0,0,0,0.9)] text-gray-300; /* orange-700 ~ #c2410c */
             background-size: 200% 200%;
             animation: animateGradient 15s ease infinite;
             overflow-x: hidden;
+            position: relative; /* Needed for pseudo-element z-index */
+            z-index: 0;
         }
+
+        /* Add background image using pseudo-element */
+        body::before {
+            content: '';
+            position: fixed; /* Fixed position */
+            inset: 0; /* Cover entire viewport */
+            background-image: url('images/background.png');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Keep it fixed */
+            opacity: 0.15; /* Adjust transparency */
+            z-index: -1; /* Place behind body content */
+        }
+
 
         .hero-bg-element { }
 
@@ -85,12 +103,12 @@
         }
 
         .product-card {
-            @apply relative bg-slate-800 rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
+            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0; /* Added backdrop blur */
              overflow: hidden;
         }
 
         #dashboard-content h2, #products-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
-        #dashboard-content .dashboard-card { @apply bg-slate-800 p-6 rounded-lg shadow-lg; }
+        #dashboard-content .dashboard-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; } /* Added backdrop blur */
 
         .stripe-button { @apply bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
         .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
@@ -116,7 +134,8 @@
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                {/* Replaced SVG with img tag for icon.png */}
+                <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'">
                 <span class="text-2xl font-bold text-white">Shillette</span>
             </div>
             <div class="flex items-center space-x-6">
