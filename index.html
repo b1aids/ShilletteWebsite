@@ -171,18 +171,17 @@
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
 
-        /* Chat UI Styles */
         #chat-messages {
              @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2;
         }
         .chat-message {
-             @apply text-sm;
+             @apply text-sm break-words; /* Allow long words to wrap */
         }
         .chat-message .username {
              @apply font-semibold text-orange-400 mr-2;
         }
          .chat-message .timestamp {
-             @apply text-xs text-gray-500 ml-2;
+             @apply text-xs text-gray-500 ml-2 whitespace-nowrap; /* Prevent timestamp wrap */
          }
          #chat-input-form {
              @apply flex space-x-2;
@@ -432,7 +431,7 @@
         const dashboardContent = document.getElementById('dashboard-content');
         const productsPageContent = document.getElementById('products-page-content');
         const ticketsPageContent = document.getElementById('tickets-page-content');
-        const ticketDetailContent = document.getElementById('ticket-detail-content'); // New detail view
+        const ticketDetailContent = document.getElementById('ticket-detail-content');
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
@@ -444,7 +443,7 @@
         const ticketsLink = document.getElementById('tickets-link');
         const backToHomeButtonProducts = document.getElementById('back-to-home-button-products');
         const backToHomeButtonTickets = document.getElementById('back-to-home-button-tickets');
-        const backToTicketsButton = document.getElementById('back-to-tickets-button'); // Back from detail
+        const backToTicketsButton = document.getElementById('back-to-tickets-button');
         const paymentMessage = document.getElementById('payment-message');
         const ticketMessage = document.getElementById('ticket-message');
         const errorMessage = document.getElementById('error-message');
@@ -455,20 +454,19 @@
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message');
         const ticketListDiv = document.getElementById('ticket-list');
-        const ticketListStatus = document.getElementById('ticket-list-status'); // Assign ID to the p tag
+        const ticketListStatus = document.getElementById('ticket-list-status');
         const ticketDetailSubject = document.getElementById('ticket-detail-subject');
         const chatMessagesDiv = document.getElementById('chat-messages');
         const chatInputForm = document.getElementById('chat-input-form');
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
 
-
         const API_BASE_URL = 'https://api.shillette.com';
-        const SOCKET_URL = 'https://api.shillette.com'; // Assuming SocketIO runs on same server/port
+        const SOCKET_URL = 'https://api.shillette.com';
 
         let currentUser = null;
-        let socket = null; // WebSocket instance
-        let currentTicketId = null; // Track viewed ticket
+        let socket = null;
+        let currentTicketId = null;
 
         function showMessage(element, message, isError = false) {
              if (!element) return;
@@ -491,8 +489,8 @@
              dashboardContent.classList.add('hidden');
              productsPageContent.classList.add('hidden');
              ticketsPageContent.classList.add('hidden');
-             ticketDetailContent.classList.add('hidden'); // Hide detail view
-             disconnectSocket(); // Disconnect socket when hiding sections
+             ticketDetailContent.classList.add('hidden');
+             disconnectSocket();
         }
 
         function showSectionWithLoading(showFunction) {
@@ -570,11 +568,11 @@
         function showTicketDetailInternal(ticketId, ticketSubject) {
              ticketDetailContent.classList.remove('hidden');
              localStorage.setItem('currentPage', 'ticketDetail');
-             currentTicketId = ticketId; // Store current ticket ID
+             currentTicketId = ticketId;
              ticketDetailSubject.textContent = ticketSubject || `Ticket #${ticketId.slice(-6)}`;
-             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Clear old messages
+             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
              updateHeaderUI(currentUser);
-             connectSocket(ticketId); // Connect WebSocket for this ticket
+             connectSocket(ticketId);
         }
 
 
@@ -603,7 +601,6 @@
                  showMessage(errorMessage, "Please log in to view ticket details.", true);
                  return;
              }
-             // Use loading transition when showing detail view
              showSectionWithLoading(() => showTicketDetailInternal(ticketId, ticketSubject));
          }
 
@@ -659,8 +656,6 @@
                  } else if (currentUser.logged_in && currentPage === 'tickets') {
                      showTicketsPageInternal();
                  } else if (currentUser.logged_in && currentPage === 'ticketDetail') {
-                      // Need to re-load the specific ticket detail if page was refreshed
-                      // For now, just go back to tickets list on refresh if detail was open
                       showTicketsPageInternal();
                  }
                   else {
@@ -700,7 +695,7 @@
                         item.classList.add('ticket-list-item');
                         const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
                         const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
-                        const ticketId = ticket._id || 'N/A'; // Ensure ID exists
+                        const ticketId = ticket._id || 'N/A';
                         const subject = ticket.subject || 'No Subject';
 
                         item.innerHTML = `
@@ -710,7 +705,6 @@
                             </div>
                             <span class="${statusClass}">${ticket.status || 'N/A'}</span>
                         `;
-                        // Add click listener to view ticket details
                         item.addEventListener('click', () => showTicketDetail(ticketId, subject));
                         ticketListDiv.appendChild(item);
                     });
@@ -723,25 +717,41 @@
 
         function appendChatMessage(data) {
              if (!chatMessagesDiv) return;
+             // Clear loading message if present
+             const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
+             if (loadingMsg) loadingMsg.remove();
+
              const messageElement = document.createElement('div');
              messageElement.classList.add('chat-message');
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '';
-             messageElement.innerHTML = `<span class="username">${data.username || 'System'}:</span> ${data.text || ''} <span class="timestamp">${timestamp}</span>`;
+             // Basic sanitation (replace potential HTML tags)
+             const safeUsername = (data.username || 'System').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+             messageElement.innerHTML = `<span class="username">${safeUsername}:</span> ${safeText} <span class="timestamp">${timestamp}</span>`;
              chatMessagesDiv.appendChild(messageElement);
-             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
         function connectSocket(ticketId) {
             if (socket && socket.connected) {
-                // If already connected, just ensure we are in the right room
                 socket.emit('join_ticket_room', { ticket_id: ticketId });
                 return;
             }
-            // Assuming io is globally available from the script tag
+            if (socket) { // Clean up old listeners if socket exists but isn't connected
+                 socket.off('connect');
+                 socket.off('disconnect');
+                 socket.off('connect_error');
+                 socket.off('new_message');
+                 socket.off('room_joined');
+                 socket.off('past_messages'); // Add listener removal for past messages if used
+                 socket.off('error_message'); // Add listener removal for errors
+            }
+
             socket = io(SOCKET_URL, {
-                reconnectionAttempts: 3, // Example: Limit reconnection attempts
-                // Add authentication if your backend expects it
-                // auth: { token: 'user-session-token' }
+                reconnectionAttempts: 3,
+                // Add withCredentials: true if using cookies for session auth across domains
+                // withCredentials: true,
             });
 
             socket.on('connect', () => {
@@ -752,8 +762,8 @@
 
             socket.on('disconnect', (reason) => {
                 console.log('WebSocket disconnected:', reason);
-                appendChatMessage({text: 'Disconnected from chat.'});
-                // Handle disconnection, maybe attempt reconnect or notify user
+                appendChatMessage({text: `Disconnected: ${reason}`});
+                currentTicketId = null; // Clear ticket ID on disconnect
             });
 
             socket.on('connect_error', (error) => {
@@ -763,17 +773,21 @@
 
             socket.on('new_message', (data) => {
                 console.log('New message received:', data);
-                if (data.ticket_id === currentTicketId) { // Ensure message is for the current ticket
+                if (data.ticket_id === currentTicketId) {
                      appendChatMessage(data);
                 }
             });
 
              socket.on('room_joined', (data) => {
                  console.log('Joined room:', data.room);
-                 // Fetch past messages or indicate success
                  appendChatMessage({text: `Joined ticket room.`});
-                 // Placeholder: Fetch past messages for this ticket via API or socket event
+                 // TODO: Fetch past messages for this ticket via API or socket event
                  // fetchPastMessages(ticketId);
+             });
+
+             socket.on('error_message', (data) => {
+                 console.error('Server error message:', data.message);
+                 showMessage(errorMessage, data.message || 'An error occurred.', true);
              });
         }
 
@@ -783,7 +797,7 @@
                 socket.disconnect();
                 socket = null;
             }
-             currentTicketId = null; // Clear current ticket ID
+             currentTicketId = null;
         }
 
 
@@ -848,13 +862,13 @@
          if(backToHomeButtonTickets) {
             backToHomeButtonTickets.addEventListener('click', (event) => {
                 event.preventDefault();
-                showTicketsPage(); // Go back to tickets list, not home
+                showTicketsPage();
             });
         }
          if(backToTicketsButton) {
              backToTicketsButton.addEventListener('click', (event) => {
                  event.preventDefault();
-                 showTicketsPage(); // Go back to tickets list view
+                 showTicketsPage();
              });
          }
 
@@ -874,7 +888,6 @@
             });
         }
 
-        // Delegated listener for payment buttons
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button');
             if (!target) return;
@@ -887,7 +900,6 @@
             }
         });
 
-        // Listener for create ticket form
         if(createTicketForm) {
             createTicketForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -916,7 +928,7 @@
                     console.log('Ticket created:', result);
                     showMessage(ticketMessage, 'Ticket submitted successfully!');
                     createTicketForm.reset();
-                    fetchTickets(); // Refresh ticket list
+                    fetchTickets();
 
                 } catch (error) {
                     console.error('Error creating ticket:', error);
@@ -925,7 +937,6 @@
             });
         }
 
-        // Listener for chat message form
         if(chatInputForm) {
              chatInputForm.addEventListener('submit', (event) => {
                  event.preventDefault();
@@ -935,11 +946,11 @@
                          ticket_id: currentTicketId,
                          text: messageText
                      });
-                     // Optionally display sent message immediately (optimistic update)
-                     // appendChatMessage({ username: currentUser?.username || 'You', text: messageText, timestamp: new Date().toISOString() });
-                     chatInput.value = ''; // Clear input
+                     chatInput.value = '';
                  } else if (!socket || !socket.connected) {
                      showMessage(errorMessage, 'Not connected to chat server.', true);
+                 } else if (!messageText) {
+                      showMessage(errorMessage, 'Cannot send empty message.', true);
                  }
              });
         }
