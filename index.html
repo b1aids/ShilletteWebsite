@@ -35,7 +35,6 @@
         .card-gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: 0.5rem; padding: 2px; background-size: 300% 300%; animation: spinBorder 5s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1; }
         .card-gradient-border.orange-border::before { background-image: linear-gradient(145deg, #f97316, #9a3412, #000000); }
         .card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; }
-        /* Added more colors for product tags */
         .card-gradient-border.blue-border::before { background-image: linear-gradient(145deg, #3b82f6, #1e40af, #000000); animation-duration: 5.5s; }
         .card-gradient-border.green-border::before { background-image: linear-gradient(145deg, #22c55e, #15803d, #000000); animation-duration: 6.5s; }
         .card-gradient-border.red-border::before { background-image: linear-gradient(145deg, #ef4444, #991b1b, #000000); animation-duration: 4.5s; }
@@ -46,7 +45,6 @@
         .product-card:hover { transform: scale(1.03); }
         .product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); }
         .product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175, 0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); }
-        /* Added hover glows for new colors */
         .product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); }
         .product-card.card-gradient-border.green-border:hover { box-shadow: 0 0 8px 1px rgba(34, 197, 94, 0.6), 0 0 16px 4px rgba(34, 197, 94, 0.4), 0 0 32px 8px rgba(34, 197, 94, 0.2); }
         .product-card.card-gradient-border.red-border:hover { box-shadow: 0 0 8px 1px rgba(239, 68, 68, 0.6), 0 0 16px 4px rgba(239, 68, 68, 0.4), 0 0 32px 8px rgba(239, 68, 68, 0.2); }
@@ -55,20 +53,20 @@
 
         /* --- Page Section & General Content Styles --- */
         #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
-        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; } /* Added admin-section */
+        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
 
-        .paypal-button, .purchase-button { /* Combined styles */
+        .paypal-button, .purchase-button {
             @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
         }
 
         /* --- Message Popups --- */
-        #payment-message, #ticket-message, #error-message, #config-message, #product-message { /* Added config/product messages */
+        #payment-message, #ticket-message, #error-message, #config-message, #product-message {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
         }
         #payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show { opacity: 1; }
-        #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; } /* General success */
-        #error-message { @apply bg-red-600; } /* General error */
+        #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; }
+        #error-message { @apply bg-red-600; }
 
         /* --- Loading Overlay --- */
         #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; }
@@ -78,14 +76,14 @@
         .loader-bar:nth-child(2) { animation-delay: 0.2s; } .loader-bar:nth-child(3) { animation-delay: 0.4s; }
 
         /* --- Page Section Visibility --- */
-        .page-section { display: none; /* Hide by default */ }
-        .page-section.active { display: block; /* Show active section */ }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
 
         /* --- Ticket Specific Styles --- */
         .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors; }
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
-        #create-ticket-status { @apply text-sm mt-4 mb-4 text-center h-6; } /* Added height */
+        #create-ticket-status { @apply text-sm mt-4 mb-4 text-center h-6; }
         #create-ticket-status.success { @apply text-green-400; } #create-ticket-status.error { @apply text-red-400; }
         #moderator-management-view h3 { @apply text-xl font-semibold text-white mb-4; }
         #moderator-management-view details summary { @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors; }
@@ -104,7 +102,7 @@
         /* --- Modals (User Info, Product Edit) --- */
         .modal { @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
-        .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; } /* Added relative */
+        .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; }
         .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors; }
         #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; }
 
@@ -115,19 +113,27 @@
         .context-menu-item.delete { @apply hover:bg-red-600 text-red-400 hover:text-white; }
 
         /* --- Mobile Menu --- */
-        #mobile-menu { @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; } /* Start hidden */
+        #mobile-menu { @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; }
         .mobile-menu-link { @apply block text-gray-300 hover:text-white transition duration-200 py-1; }
 
         /* --- Admin Dashboard Styles --- */
         .admin-section h3 { @apply text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2; }
         .admin-form label { @apply block text-sm font-medium text-gray-300 mb-1; }
-        .admin-form input[type="text"], .admin-form input[type="number"], .admin-form textarea, .admin-form select {
+        /* General input style for admin form, EXCLUDING inputs inside .link-group */
+        .admin-form > div > input[type="text"],
+        .admin-form > div > input[type="number"],
+        .admin-form > div > textarea,
+        .admin-form > div > select {
              @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500 mb-4;
         }
-        .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; }
+        /* Specific style for inputs inside .link-group (handled by JS now) */
         .admin-form .link-group { @apply flex items-center space-x-2 mb-2; }
-        .admin-form .link-group input { @apply mb-0; } /* Remove bottom margin for inputs in group */
-        .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded; }
+        /* Remove margin override as it's handled by direct classes now */
+        /* .admin-form .link-group input { @apply mb-0; } */
+        .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0; } /* Added flex-shrink-0 */
+
+        .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; }
+
 
         #product-list-table { @apply w-full text-sm text-left text-gray-400 mt-4; }
         #product-list-table thead { @apply text-xs text-gray-300 uppercase bg-slate-700/50; }
@@ -1372,12 +1378,13 @@
         /** Adds a row of inputs for a header link to the config form. */
         function addHeaderLinkInput(name = '', href = '', target = '') {
              const linkGroup = document.createElement('div');
-             linkGroup.className = 'link-group';
+             linkGroup.className = 'link-group'; // Style with: @apply flex items-center space-x-2 mb-2;
+             // **FIX**: Apply input styles directly and use flex classes for sizing
              linkGroup.innerHTML = `
-                 <input type="text" placeholder="Link Name" value="${name}" class="link-name flex-1" required>
-                 <input type="text" placeholder="Link Href" value="${href}" class="link-href flex-1" required>
-                 <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target flex-auto w-24">
-                 <button type="button" class="remove-link-button" title="Remove Link">X</button>
+                 <input type="text" placeholder="Link Name" value="${name}" class="link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500" required>
+                 <input type="text" placeholder="Link Href" value="${href}" class="link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500" required>
+                 <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
+                 <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
              `;
              linkGroup.querySelector('.remove-link-button').addEventListener('click', () => linkGroup.remove());
              configHeaderLinksContainer.appendChild(linkGroup);
@@ -1556,7 +1563,37 @@
         // --- Event Listeners Setup ---
 
         loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
-        async function handleLogout() { /* ... (keep existing refined logout code) ... */ } // Keep refined version
+        async function handleLogout() {
+            console.log('Logging out...');
+            try {
+                const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+                if (!response.ok) {
+                    let errorMsg = 'Logout request failed';
+                    try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
+                    console.warn(`Backend logout failed: ${errorMsg}. Proceeding with client-side cleanup.`);
+                }
+                currentUser = { logged_in: false };
+                isInitialLoginCheckComplete = false;
+                isInitialConfigLoadComplete = false;
+                localStorage.removeItem('currentPage');
+                disconnectSocket();
+                updateHeaderUI(currentUser);
+                adminDashboardSections?.classList.add('hidden');
+                console.log("Redirecting to /#home after logout cleanup.");
+                window.location.hash = '/#home';
+            } catch(error) {
+                console.error("Network error during logout fetch:", error);
+                showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
+                currentUser = { logged_in: false };
+                isInitialLoginCheckComplete = false;
+                isInitialConfigLoadComplete = false;
+                localStorage.removeItem('currentPage');
+                disconnectSocket();
+                updateHeaderUI(currentUser);
+                adminDashboardSections?.classList.add('hidden');
+                window.location.hash = '/#home';
+            }
+        }
         logoutButton.addEventListener('click', handleLogout);
         dashboardLogoutButton.addEventListener('click', handleLogout);
         window.addEventListener('hashchange', runNavigation);
