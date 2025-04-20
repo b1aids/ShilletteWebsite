@@ -26,29 +26,32 @@
             100% { transform: translateY(110vh) translateX(5vw); opacity: 0; }
         }
 
+        @keyframes scaleUpDown {
+            0%, 100% { transform: scaleY(0.4); }
+            20% { transform: scaleY(1.0); }
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            /* Apply transparent animated gradient over the pseudo-element background */
-            @apply bg-gradient-to-br from-[rgba(194,65,12,0.8)] via-[rgba(0,0,0,0.85)] to-[rgba(0,0,0,0.9)] text-gray-300; /* orange-700 ~ #c2410c */
+            @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
             background-size: 200% 200%;
-            animation: animateGradient 15s ease infinite;
+            animation: animateGradient 25s ease infinite;
             overflow-x: hidden;
-            position: relative; /* Needed for pseudo-element z-index */
+            position: relative;
             z-index: 0;
         }
 
-        /* Add background image using pseudo-element */
         body::before {
             content: '';
-            position: fixed; /* Fixed position */
-            inset: 0; /* Cover entire viewport */
+            position: fixed;
+            inset: 0;
             background-image: url('images/background.png');
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
-            background-attachment: fixed; /* Keep it fixed */
-            opacity: 0.15; /* Adjust transparency */
-            z-index: -1; /* Place behind body content */
+            background-attachment: fixed;
+            opacity: 0.2;
+            z-index: -1;
         }
 
 
@@ -103,14 +106,13 @@
         }
 
         .product-card {
-            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0; /* Added backdrop blur */
+            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
              overflow: hidden;
         }
 
         #dashboard-content h2, #products-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
-        #dashboard-content .dashboard-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; } /* Added backdrop blur */
+        #dashboard-content .dashboard-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; }
 
-        .stripe-button { @apply bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
         .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
 
         #payment-message {
@@ -124,6 +126,37 @@
              opacity: 1;
          }
 
+        #loading-overlay {
+            position: fixed;
+            inset: 0;
+            @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out;
+        }
+        .loader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 50px;
+            height: 25px;
+        }
+        .loader-bar {
+            display: block;
+            width: 8px;
+            height: 100%;
+            background-color: #f97316;
+            border-radius: 4px;
+            animation: scaleUpDown 1.2s infinite ease-in-out;
+        }
+        .loader-bar:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .loader-bar:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .content-blur {
+            @apply filter blur-sm transition-all duration-300 ease-in-out;
+        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -131,10 +164,17 @@
     <div id="snow-container"></div>
     <div id="payment-message">Payment initiated...</div>
 
+    <div id="loading-overlay" class="hidden opacity-0">
+        <div class="loader">
+            <span class="loader-bar"></span>
+            <span class="loader-bar"></span>
+            <span class="loader-bar"></span>
+        </div>
+    </div>
+
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                {/* Replaced SVG with img tag for icon.png */}
                 <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'">
                 <span class="text-2xl font-bold text-white">Shillette</span>
             </div>
@@ -164,7 +204,7 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow">
+    <main id="main-content" class="flex-grow page-container">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="hero-bg-element"></div>
             <div class="container mx-auto px-6 relative z-10">
@@ -204,7 +244,7 @@
         </section>
     </main>
 
-    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
+    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-container">
         <div class="flex justify-start mb-8">
              <button id="back-to-home-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -230,7 +270,6 @@
                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Lifetime Updates</li>
                 </ul>
                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     <button class="stripe-button" data-product-id="firmware-100">Pay with Stripe</button>
                      <button class="paypal-button" data-product-id="firmware-100">Pay with PayPal</button>
                 </div>
             </div>
@@ -250,14 +289,13 @@
                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
                 </ul>
                  <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     <button class="stripe-button" data-product-id="software-3">Pay with Stripe</button>
                      <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10">
+    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10 page-container">
         <h2>Dashboard</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="dashboard-card md:col-span-1">
@@ -310,6 +348,8 @@
         const backToHomeButton = document.getElementById('back-to-home-button');
         const paymentMessage = document.getElementById('payment-message');
         const purchaseButton = document.getElementById('purchase-button');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const pageContainers = document.querySelectorAll('.page-container');
 
         const simulatedUserData = {
             username: 'TestUser#0001',
@@ -324,24 +364,39 @@
              productsPageContent.classList.add('hidden');
         }
 
-        function showDashboard() {
-            hideAllSections();
+        function showSectionWithLoading(showFunction) {
+            if (!loadingOverlay) return;
+
+            pageContainers.forEach(container => container.classList.add('content-blur'));
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.remove('opacity-0');
+
+            setTimeout(() => {
+                hideAllSections();
+                showFunction();
+                pageContainers.forEach(container => container.classList.remove('content-blur'));
+                loadingOverlay.classList.add('opacity-0');
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                }, 300);
+            }, 500);
+        }
+
+
+        function showDashboardInternal() {
             dashboardContent.classList.remove('hidden');
             loginButton.classList.add('hidden');
             userInfo.classList.remove('hidden');
             userInfo.classList.add('flex');
-
             userNameDisplay.textContent = simulatedUserData.username;
             userAvatarDisplay.src = simulatedUserData.avatarUrl.replace('64x64', '32x32');
             dashboardUserNameDisplay.textContent = simulatedUserData.username;
             dashboardUserAvatarDisplay.src = simulatedUserData.avatarUrl;
-
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('currentPage', 'dashboard');
         }
 
-        function showMainContent() {
-            hideAllSections();
+        function showMainContentInternal() {
             mainContent.classList.remove('hidden');
             if (localStorage.getItem('isLoggedIn') === 'true') {
                  loginButton.classList.add('hidden');
@@ -355,8 +410,7 @@
             localStorage.setItem('currentPage', 'home');
         }
 
-        function showProductsPage() {
-            hideAllSections();
+        function showProductsPageInternal() {
             productsPageContent.classList.remove('hidden');
              if (localStorage.getItem('isLoggedIn') === 'true') {
                  loginButton.classList.add('hidden');
@@ -368,6 +422,16 @@
                  userInfo.classList.remove('flex');
             }
             localStorage.setItem('currentPage', 'products');
+        }
+
+        function showDashboard() {
+            showSectionWithLoading(showDashboardInternal);
+        }
+        function showMainContent() {
+            showSectionWithLoading(showMainContentInternal);
+        }
+        function showProductsPage() {
+             showSectionWithLoading(showProductsPageInternal);
         }
 
 
@@ -471,11 +535,7 @@
             const productId = target.dataset.productId;
             if (!productId) return;
 
-            if (target.classList.contains('stripe-button')) {
-                event.preventDefault();
-                console.log(`Simulating Stripe payment for product: ${productId}`);
-                showPaymentMessage(`Initiating Stripe payment for ${productId}...`);
-            } else if (target.classList.contains('paypal-button')) {
+            if (target.classList.contains('paypal-button')) {
                 event.preventDefault();
                 console.log(`Simulating PayPal payment for product: ${productId}`);
                 showPaymentMessage(`Redirecting to PayPal for ${productId}...`);
@@ -489,13 +549,15 @@
             const currentPage = localStorage.getItem('currentPage');
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
+            hideAllSections();
             if (isLoggedIn && currentPage === 'dashboard') {
-                 showDashboard();
+                 showDashboardInternal();
             } else if (currentPage === 'products') {
-                 showProductsPage();
+                 showProductsPageInternal();
             } else {
-                 showMainContent();
+                 showMainContentInternal();
             }
+
              if (isLoggedIn) {
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
