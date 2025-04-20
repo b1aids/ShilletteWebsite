@@ -72,7 +72,7 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
-            z-index: -1; /* Ensure border is behind content */
+            z-index: -1;
         }
 
         .card-gradient-border.orange-border::before {
@@ -84,20 +84,17 @@
              animation-duration: 6s;
         }
 
-        /* Interactive card style */
         .product-card {
             @apply relative bg-slate-800 rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
-             overflow: hidden; /* Contain the pseudo-element */
+             overflow: hidden;
         }
 
         #dashboard-content h2, #products-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
         #dashboard-content .dashboard-card { @apply bg-slate-800 p-6 rounded-lg shadow-lg; }
 
-        /* Payment button styles */
         .stripe-button { @apply bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
         .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
 
-        /* Simple message overlay */
         #payment-message {
             position: fixed;
             bottom: 20px;
@@ -125,7 +122,6 @@
             <div class="flex items-center space-x-6">
                 <nav class="hidden md:flex space-x-6">
                     <a href="#" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
-                    {/* Added id="products-link" */}
                     <a href="#" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-200">Pricing</a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
@@ -135,7 +131,7 @@
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </button>
-                    <div id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-default">
+                    <div id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
                         <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600">
                         <span id="user-name" class="text-white text-sm font-medium">Username</span>
                         <button id="logout-button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
@@ -150,7 +146,6 @@
         </div>
     </header>
 
-    {/* Main Landing Page Content (Initially Visible) */}
     <main id="main-content" class="flex-grow">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="hero-bg-element"></div>
@@ -189,10 +184,8 @@
                 </div>
             </div>
         </section>
-        {/* Products section removed from main content */}
     </main>
 
-    {/* New Products Page Content (Initially Hidden) */}
     <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
         <div class="flex justify-start mb-8">
              <button id="back-to-home-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
@@ -202,7 +195,6 @@
         </div>
         <h2>Our Products</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Product Card 1 */}
             <div class="product-card card-gradient-border orange-border">
                 <div class="flex justify-between items-center mb-4">
                     <span class="bg-orange-500/20 text-orange-300 text-xs font-semibold px-2.5 py-0.5 rounded">ALL IN ONE</span>
@@ -225,7 +217,6 @@
                 </div>
             </div>
 
-            {/* Product Card 2 */}
             <div class="product-card card-gradient-border gray-border">
                 <div class="flex justify-between items-center mb-4">
                     <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
@@ -248,7 +239,6 @@
         </div>
     </div>
 
-    {/* Dashboard Content (Initially Hidden) */}
     <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10">
         <h2>Dashboard</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -290,7 +280,7 @@
         const dashboardLogoutButton = document.getElementById('dashboard-logout-button');
         const mainContent = document.getElementById('main-content');
         const dashboardContent = document.getElementById('dashboard-content');
-        const productsPageContent = document.getElementById('products-page-content'); // New products page
+        const productsPageContent = document.getElementById('products-page-content');
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
@@ -298,9 +288,9 @@
         const dashboardUserAvatarDisplay = document.getElementById('dashboard-user-avatar');
         const snowContainer = document.getElementById('snow-container');
         const homeLink = document.getElementById('home-link');
-        const productsLink = document.getElementById('products-link'); // Products nav link
-        const backToHomeButton = document.getElementById('back-to-home-button'); // Back button on products page
-        const paymentMessage = document.getElementById('payment-message'); // Message div
+        const productsLink = document.getElementById('products-link');
+        const backToHomeButton = document.getElementById('back-to-home-button');
+        const paymentMessage = document.getElementById('payment-message');
 
         const simulatedUserData = {
             username: 'TestUser#0001',
@@ -328,13 +318,12 @@
             dashboardUserAvatarDisplay.src = simulatedUserData.avatarUrl;
 
             localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('currentPage', 'dashboard'); // Track current page
+            localStorage.setItem('currentPage', 'dashboard');
         }
 
         function showMainContent() {
             hideAllSections();
             mainContent.classList.remove('hidden');
-            // Show login or user info based on login state
             if (localStorage.getItem('isLoggedIn') === 'true') {
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
@@ -344,13 +333,12 @@
                  userInfo.classList.add('hidden');
                  userInfo.classList.remove('flex');
             }
-            localStorage.setItem('currentPage', 'home'); // Track current page
+            localStorage.setItem('currentPage', 'home');
         }
 
         function showProductsPage() {
             hideAllSections();
             productsPageContent.classList.remove('hidden');
-             // Keep header consistent with login state
              if (localStorage.getItem('isLoggedIn') === 'true') {
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
@@ -360,7 +348,7 @@
                  userInfo.classList.add('hidden');
                  userInfo.classList.remove('flex');
             }
-            localStorage.setItem('currentPage', 'products'); // Track current page
+            localStorage.setItem('currentPage', 'products');
         }
 
 
@@ -395,10 +383,9 @@
              paymentMessage.classList.add('show');
              setTimeout(() => {
                  paymentMessage.classList.remove('show');
-             }, 3000); // Hide after 3 seconds
+             }, 3000);
          }
 
-        // --- Event Listeners ---
 
         loginButton.addEventListener('click', () => {
             console.log('Simulating Login...');
@@ -407,7 +394,7 @@
 
         logoutButton.addEventListener('click', () => {
             console.log('Simulating Logout...');
-            localStorage.removeItem('isLoggedIn'); // Clear login state *before* showing main content
+            localStorage.removeItem('isLoggedIn');
             showMainContent();
         });
 
@@ -441,9 +428,18 @@
             });
         }
 
-        // Add listeners for payment buttons (delegated for simplicity)
+        if(userInfo) {
+             userInfo.addEventListener('click', (event) => {
+                 // Prevent logout button click from triggering dashboard navigation
+                 if (!event.target.closest('#logout-button')) {
+                     console.log('User info panel clicked, showing dashboard...');
+                     showDashboard();
+                 }
+             });
+        }
+
         document.addEventListener('click', (event) => {
-            const target = event.target.closest('button'); // Find closest button clicked
+            const target = event.target.closest('button');
             if (!target) return;
 
             const productId = target.dataset.productId;
@@ -453,12 +449,10 @@
                 event.preventDefault();
                 console.log(`Simulating Stripe payment for product: ${productId}`);
                 showPaymentMessage(`Initiating Stripe payment for ${productId}...`);
-                // In real app: Initiate Stripe Checkout session via backend call
             } else if (target.classList.contains('paypal-button')) {
                 event.preventDefault();
                 console.log(`Simulating PayPal payment for product: ${productId}`);
                 showPaymentMessage(`Redirecting to PayPal for ${productId}...`);
-                 // In real app: Initiate PayPal payment flow via backend call or PayPal JS SDK
             }
         });
 
@@ -466,23 +460,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
 
-            // Determine initial page based on stored state or default to home
             const currentPage = localStorage.getItem('currentPage');
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
 
             if (isLoggedIn && currentPage === 'dashboard') {
                  showDashboard();
             } else if (currentPage === 'products') {
-                 showProductsPage(); // Show products page if that was the last view
+                 showProductsPage();
             } else {
-                 showMainContent(); // Default to home
+                 showMainContent();
             }
-             // Ensure header state matches login state regardless of page
              if (isLoggedIn) {
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
                  userInfo.classList.add('flex');
-                 // Update user info in header if logged in
                  userNameDisplay.textContent = simulatedUserData.username;
                  userAvatarDisplay.src = simulatedUserData.avatarUrl.replace('64x64', '32x32');
             } else {
