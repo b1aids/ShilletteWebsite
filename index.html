@@ -201,7 +201,7 @@
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
-                    <a id="login-button" href="/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
+                    <a id="login-button" href="https://api.shillette.com/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </a>
@@ -426,9 +426,8 @@
         const ticketListDiv = document.getElementById('ticket-list');
         const ticketListStatus = ticketListDiv ? ticketListDiv.nextElementSibling : null;
 
-        const discordRedirectUrl = '/login';
-
-        const API_BASE_URL = '';
+        const discordLoginUrl = 'https://api.shillette.com/login'; // Updated backend login route
+        const API_BASE_URL = 'https://api.shillette.com'; // Updated API base URL
 
         let currentUser = null;
 
@@ -579,10 +578,15 @@
              try {
                  const response = await fetch(`${API_BASE_URL}/api/user`);
                  if (!response.ok) {
-                     throw new Error(`HTTP error! status: ${response.status}`);
+                     // If API returns 401 or similar, treat as not logged in
+                     if (response.status === 401 || response.status === 403) {
+                         currentUser = { logged_in: false };
+                     } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                     }
+                 } else {
+                    currentUser = await response.json();
                  }
-                 const userData = await response.json();
-                 currentUser = userData;
                  console.log("User status:", currentUser);
              } catch (error) {
                  console.error("Error checking login status:", error);
@@ -616,7 +620,11 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/tickets`);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                     if (response.status === 401 || response.status === 403) {
+                         throw new Error("Not authorized to view tickets.");
+                     } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                     }
                 }
                 const tickets = await response.json();
 
@@ -642,28 +650,31 @@
                 }
             } catch (error) {
                 console.error("Error fetching tickets:", error);
-                ticketListStatus.textContent = "Failed to load tickets.";
+                ticketListStatus.textContent = `Failed to load tickets: ${error.message}`;
             }
         }
 
 
         loginButton.addEventListener('click', (e) => {
-             e.preventDefault(); // Prevent default link behavior
-             window.location.href = discordRedirectUrl; // Redirect to backend login route
+             e.preventDefault();
+             window.location.href = loginButton.href; // Use the href set on the button
         });
 
         logoutButton.addEventListener('click', async () => {
             console.log('Logging out...');
             try {
-                 await fetch(`${API_BASE_URL}/logout`);
+                 const response = await fetch(`${API_BASE_URL}/logout`);
+                 if (!response.ok) { throw new Error('Logout request failed'); }
                  currentUser = { logged_in: false };
                  localStorage.removeItem('isLoggedIn');
+                 localStorage.removeItem('currentPage'); // Clear current page on logout
                  showMainContent();
             } catch(error) {
                  console.error("Logout error:", error);
                  showMessage(errorMessage, "Logout failed. Please try again.", true);
                  currentUser = { logged_in: false };
                  localStorage.removeItem('isLoggedIn');
+                 localStorage.removeItem('currentPage');
                  showMainContentInternal();
                  updateHeaderUI(currentUser);
             }
