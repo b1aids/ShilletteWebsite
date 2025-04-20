@@ -676,10 +676,13 @@
                 }
             }
 
-             // Disconnect socket if navigating away from ticket detail
+             // Disconnect socket ONLY if navigating away from ticket detail AND tickets list
+             if (sectionId !== '#ticketDetail' && sectionId !== '#tickets') {
+                 disconnectSocket(); // Disconnect if not on tickets or detail page
+             }
+             // Clear currentTicketId if not on detail page
              if (sectionId !== '#ticketDetail') {
-                 disconnectSocket();
-                 currentTicketId = null; // Clear ticket ID when leaving detail page
+                 currentTicketId = null;
              }
         }
 
@@ -703,6 +706,11 @@
                  return;
             }
 
+            // Ensure socket is connected if navigating to a protected/socket-requiring page
+            if (isProtected && currentUser && currentUser.logged_in) {
+                 ensureSocketConnected();
+            }
+
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
                 let subject = null;
@@ -719,17 +727,15 @@
                     ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
                     // Fetch full ticket details including messages
-                    fetchTicketDetails(id); // Fetch details before connecting socket
+                    fetchTicketDetails(id); // Fetch details AND connect socket + join room
                 } else {
                     console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
                     window.location.hash = '/#tickets'; // Navigate to /#tickets
                     return;
                 }
-            } else {
-                 disconnectSocket();
-                 // currentTicketId is cleared in showSection or disconnectSocket
             }
+            // No 'else' needed here for disconnect, handled by showSection
 
             showSection(targetSectionId); // Call the updated showSection
             localStorage.setItem('currentPage', targetSectionId); // Store the base hash
@@ -787,6 +793,12 @@
                      currentUser = await response.json();
                  }
                  console.log("User status checked:", currentUser);
+
+                 // Connect socket if user is logged in (needed for ticket list actions)
+                 if (currentUser && currentUser.logged_in) {
+                    ensureSocketConnected();
+                 }
+
              } catch (error) {
                  console.error("Error checking login status:", error);
                  currentUser = { logged_in: false };
@@ -920,6 +932,8 @@
         // Fetch full ticket details including messages
         async function fetchTicketDetails(ticketId) {
              if (!currentUser || !currentUser.logged_in) return;
+             // Ensure socket is connected before fetching details that might need it soon
+             ensureSocketConnected();
              chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
              try {
                  const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
@@ -940,8 +954,13 @@
                      chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet.</p>';
                  }
 
-                 // Now connect to socket for real-time updates
-                 connectSocket(ticketId);
+                 // Join the specific ticket room now that we're viewing details
+                 if (socket && socket.connected) {
+                     socket.emit('join_ticket_room', { ticket_id: ticketId });
+                 } else {
+                     console.warn("Socket not connected when trying to join room for ticket details.");
+                     // Optionally try to connect again here, or rely on ensureSocketConnected
+                 }
 
              } catch (error) {
                  console.error("Error fetching ticket details:", error);
@@ -985,13 +1004,18 @@
              chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
+        // Connects socket if not already connected, optionally joins room
+        function connectSocket(ticketIdToJoin = null) {
+            if (socket && socket.connected) {
+                // If already connected and a ticketId is provided, join that room
+                if (ticketIdToJoin) {
+                    console.log(`Socket already connected, joining room: ${ticketIdToJoin}`);
+                    socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
+                }
+                return; // Already connected
+            }
 
-        function connectSocket(ticketId) {
-            if (!ticketId) return;
-            if (socket && socket.connected && currentTicketId === ticketId) return; // Already connected to this ticket
-            if (socket) disconnectSocket(); // Disconnect previous if joining new
-
-            console.log(`Attempting to connect WebSocket for ticket: ${ticketId}`);
+            console.log(`Attempting to connect WebSocket... (Joining room ${ticketIdToJoin || 'none'})`);
             socket = io(SOCKET_URL, {
                 reconnectionAttempts: 3,
                 withCredentials: true
@@ -999,69 +1023,92 @@
 
             socket.on('connect', () => {
                 console.log('WebSocket connected:', socket.id);
-                // No need for system message here, handled by fetchTicketDetails
-                socket.emit('join_ticket_room', { ticket_id: ticketId });
+                // If a ticketId was specified during connection attempt, join its room now
+                if (ticketIdToJoin) {
+                     console.log(`Joining room post-connect: ${ticketIdToJoin}`);
+                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
+                }
+                // Add other event listeners only once after connection
+                setupSocketListeners();
             });
+
             socket.on('disconnect', (reason) => {
                 console.log('WebSocket disconnected:', reason);
-                // Optionally show a disconnected message
-                // appendChatMessage({ username: 'System', text: `Disconnected: ${reason}` });
-                socket = null;
+                socket = null; // Clear socket object on disconnect
             });
+
             socket.on('connect_error', (error) => {
                 console.error('WebSocket connection error:', error);
                 showPopupMessage(errorMessagePopup, "Chat connection failed.", true);
-                socket = null;
+                socket = null; // Clear socket object on error
             });
-            socket.on('new_message', (data) => {
-                // Ensure sender_id is present for consistency
-                if (!data.sender_id && data.username === currentUser?.username) {
-                    data.sender_id = currentUser.user_id;
-                }
-                if (data.ticket_id === currentTicketId) {
-                    appendChatMessage(data);
-                }
-            });
-            socket.on('room_joined', (data) => {
-                console.log('Joined room:', data.room);
-                // No need for system message here
-            });
-            socket.on('error_message', (data) => {
-                console.error('WebSocket server error:', data.message);
-                showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
-            });
-            // Listener for message deletion confirmation
-            socket.on('message_deleted', (data) => {
-                if (data.ticket_id === currentTicketId) {
-                    const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
-                    if (messageToRemove) {
-                        messageToRemove.remove();
-                        console.log(`Removed message with timestamp: ${data.timestamp}`);
-                    }
-                }
-            });
-            // Listener for ticket status updates (from context menu actions)
-            socket.on('ticket_status_updated', (data) => {
-                 // If currently viewing the tickets list, refresh it
-                 if (activeSectionId === '#tickets') {
-                     console.log(`Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
-                     fetchTickets();
-                 }
-                 // Optionally, update status if viewing the specific ticket detail? (Less common)
-            });
-             // Listener for generic list updates (e.g., after status change or delete)
-             socket.on('ticket_list_updated', () => {
-                 if (activeSectionId === '#tickets') {
-                     console.log("Ticket list updated event received. Refreshing list.");
-                     fetchTickets();
-                 }
-             });
-
-            // Listener for general action success
-             socket.on('action_success', (data) => {
-                 showPopupMessage(paymentMessage, data.message || 'Action successful.');
-             });
         }
+
+        // Helper to ensure socket is connected (call when needed)
+        function ensureSocketConnected() {
+             if (!socket || !socket.connected) {
+                 console.log("Socket not connected, attempting connection...");
+                 connectSocket(); // Connect without joining a specific room initially
+             } else {
+                 console.log("Socket already connected.");
+             }
+        }
+
+
+        // Centralized place to set up listeners to avoid duplicates
+        function setupSocketListeners() {
+             if (!socket) return;
+             // Remove potential old listeners before adding new ones
+             socket.off('new_message');
+             socket.off('room_joined');
+             socket.off('error_message');
+             socket.off('message_deleted');
+             socket.off('ticket_status_updated');
+             socket.off('ticket_list_updated');
+             socket.off('action_success');
+
+             // Add listeners
+             socket.on('new_message', (data) => {
+                 if (!data.sender_id && data.username === currentUser?.username) {
+                     data.sender_id = currentUser.user_id;
+                 }
+                 if (data.ticket_id === currentTicketId) {
+                     appendChatMessage(data);
+                 }
+             });
+             socket.on('room_joined', (data) => {
+                 console.log('Joined room:', data.room);
+             });
+             socket.on('error_message', (data) => {
+                 console.error('WebSocket server error:', data.message);
+                 showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
+             });
+             socket.on('message_deleted', (data) => {
+                 if (data.ticket_id === currentTicketId) {
+                     const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
+                     if (messageToRemove) {
+                         messageToRemove.remove();
+                         console.log(`Removed message with timestamp: ${data.timestamp}`);
+                     }
+                 }
+             });
+             socket.on('ticket_status_updated', (data) => {
+                  if (activeSectionId === '#tickets') {
+                      console.log(`Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
+                      fetchTickets();
+                  }
+             });
+              socket.on('ticket_list_updated', () => {
+                  if (activeSectionId === '#tickets') {
+                      console.log("Ticket list updated event received. Refreshing list.");
+                      fetchTickets();
+                  }
+              });
+             socket.on('action_success', (data) => {
+                  showPopupMessage(paymentMessage, data.message || 'Action successful.');
+              });
+        }
+
 
         function disconnectSocket() {
             if (socket) {
@@ -1295,7 +1342,7 @@
                  }
                  currentUser = { logged_in: false };
                  localStorage.removeItem('currentPage');
-                 disconnectSocket();
+                 disconnectSocket(); // Disconnect socket on logout
                  window.location.hash = '/#home'; // Use updated hash format
                  updateHeaderUI(currentUser);
                  showPopupMessage(paymentMessage, "Logged out successfully.");
@@ -1304,7 +1351,7 @@
                  showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
                  currentUser = { logged_in: false };
                  localStorage.removeItem('currentPage');
-                 disconnectSocket();
+                 disconnectSocket(); // Still try to disconnect on error
                  window.location.hash = '/#home'; // Use updated hash format
                  updateHeaderUI(currentUser);
             }
@@ -1418,7 +1465,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
             createSnowflakes();
-            checkLoginStatusAndNavigate();
+            checkLoginStatusAndNavigate(); // This now also handles initial socket connection if logged in
         });
 
     </script>
