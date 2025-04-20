@@ -39,7 +39,7 @@
         .card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; }
         .card-gradient-border.custom-border { border-width: 2px; border-style: solid; }
 
-        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; cursor: pointer; }
         .product-card:not(.custom-border) { @apply p-0; }
         .product-card.custom-border { @apply p-0; }
         .product-card-inner { @apply p-6 flex flex-col flex-grow; }
@@ -59,12 +59,14 @@
         .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg; }
         .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; }
 
-        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
-        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
+        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2, #product-detail-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
+        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section, .product-detail-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
 
         .paypal-button, .purchase-button {
             @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
         }
+        .buy-now-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
+        .add-basket-button { @apply bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
 
         #payment-message, #ticket-message, #error-message, #config-message, #product-message {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -144,6 +146,14 @@
         #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; }
 
         .role-span { @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block; }
+
+        /* Product Detail Page Specific Styles */
+        #product-detail-page-content .detail-card { @apply bg-slate-800/70 backdrop-blur-sm p-5 rounded-lg shadow-lg; }
+        #product-detail-image { @apply w-full aspect-video object-cover rounded-lg mb-6 shadow-lg; }
+        .star-rating span { @apply text-yellow-400 text-lg; }
+        .quantity-selector button { @apply bg-slate-600 hover:bg-slate-500 text-white font-bold w-8 h-8 rounded-md transition duration-200; }
+        .quantity-selector input { @apply w-12 text-center bg-slate-700 border border-slate-600 rounded-md py-1 mx-2 text-white; }
+        .review-card { @apply bg-slate-700/50 p-4 rounded-md; }
 
     </style>
 </head>
@@ -396,9 +406,9 @@
             </div>
             </div> </div> <div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <a href="/#home" id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/#products" id="back-to-products-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                 <span>Back to Home</span>
+                 <span>Back to Products</span>
              </a>
          </div>
          <h2>Support Tickets</h2>
@@ -455,6 +465,94 @@
          </div>
      </div>
 
+     <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+         <div class="flex justify-start mb-8">
+             <a href="/#products" id="back-to-products-button-detail" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Products</span>
+             </a>
+         </div>
+
+         <div id="product-detail-loading" class="text-center text-gray-400">Loading product details...</div>
+
+         <div id="product-detail-container" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+             <div class="lg:col-span-2 space-y-6">
+                 <img id="product-detail-image" src="https://placehold.co/600x400/374151/9ca3af?text=Loading..." alt="Product Image" class="w-full aspect-video object-cover rounded-lg shadow-lg bg-slate-700">
+                 <h1 id="product-detail-name" class="text-3xl md:text-4xl font-bold text-white">Product Name</h1>
+                 <p id="product-detail-price" class="text-4xl font-extrabold text-white">$0.00</p>
+                 <div class="flex items-center space-x-4 text-sm text-gray-400">
+                     <span id="product-detail-rating" class="star-rating">
+                         </span>
+                     <span id="product-detail-stock">X in stock</span>
+                 </div>
+                 <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
+                     <button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto">Buy Now</button>
+                     <button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>
+                     <div class="flex items-center quantity-selector ml-auto">
+                         <button id="quantity-decrease">-</button>
+                         <input type="text" id="quantity-input" value="1" readonly>
+                         <button id="quantity-increase">+</button>
+                     </div>
+                 </div>
+                 <div id="product-detail-description-container" class="pt-4 border-t border-slate-700/50">
+                    <h3 class="text-lg font-semibold text-white mb-2">Description</h3>
+                    <p id="product-detail-description" class="text-gray-400 text-sm">Loading description...</p>
+                 </div>
+             </div>
+
+             <div class="lg:col-span-1 space-y-6">
+                 <div class="product-detail-card">
+                     <h3 class="text-lg font-semibold text-white mb-4">Seller Information</h3>
+                     <div class="flex items-center space-x-3 mb-3">
+                         <img id="seller-avatar" src="https://placehold.co/40x40/7f8c8d/ecf0f1?text=S" alt="Seller Avatar" class="w-10 h-10 rounded-full bg-slate-600">
+                         <div>
+                             <p id="seller-name" class="font-medium text-white">Seller Name</p>
+                             <p id="seller-established" class="text-xs text-gray-400">Established X months ago</p>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="product-detail-card">
+                    <h3 class="text-lg font-semibold text-white mb-3">Need help?</h3>
+                    <a href="/#tickets" id="product-detail-open-ticket" class="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1.5">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                        <span>Open a ticket</span>
+                    </a>
+                 </div>
+                 <div class="product-detail-card space-y-4">
+                    <h3 class="text-lg font-semibold text-white mb-3">Not quite sure?</h3>
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"></path></svg>
+                        <div>
+                            <p class="text-sm font-medium text-white">Instant delivery</p>
+                            <p class="text-xs text-gray-400">Your product will be delivered within minutes</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
+                        <div>
+                            <p class="text-sm font-medium text-white">Integrated tickets with sellers</p>
+                            <p class="text-xs text-gray-400">You can contact the seller directly if you have any issues</p>
+                        </div>
+                    </div>
+                     <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                        <div>
+                            <p class="text-sm font-medium text-white">Good average review score</p>
+                            <p id="seller-review-score" class="text-xs text-gray-400">The seller has an average review score of X stars out of 5</p>
+                        </div>
+                    </div>
+                 </div>
+             </div>
+
+             <div class="lg:col-span-3 mt-8">
+                 <h2 class="text-2xl font-bold text-white mb-6 text-left">Reviews</h2>
+                 <div id="product-reviews-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                     <p class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
+                     </div>
+             </div>
+         </div>
+     </div>
+
 
     <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
@@ -468,7 +566,8 @@
             '#products': 'products-page-content',
             '#tickets': 'tickets-page-content',
             '#dashboard': 'dashboard-content',
-            '#ticketDetail': 'ticket-detail-content'
+            '#ticketDetail': 'ticket-detail-content',
+            '#productDetail': 'product-detail-page-content'
         };
         const siteTitleDisplay = document.getElementById('site-title-display');
         const mainNavigation = document.getElementById('main-navigation');
@@ -553,6 +652,26 @@
         const productSaveButton = document.getElementById('product-save-button');
         const productEditStatus = document.getElementById('product-edit-status');
         const footerYear = document.getElementById('footer-year');
+        const productDetailPage = document.getElementById('product-detail-page-content');
+        const productDetailLoading = document.getElementById('product-detail-loading');
+        const productDetailContainer = document.getElementById('product-detail-container');
+        const productDetailImage = document.getElementById('product-detail-image');
+        const productDetailName = document.getElementById('product-detail-name');
+        const productDetailPrice = document.getElementById('product-detail-price');
+        const productDetailRating = document.getElementById('product-detail-rating');
+        const productDetailStock = document.getElementById('product-detail-stock');
+        const productDetailBuyNow = document.getElementById('product-detail-buy-now');
+        const productDetailAddBasket = document.getElementById('product-detail-add-basket');
+        const quantityDecrease = document.getElementById('quantity-decrease');
+        const quantityIncrease = document.getElementById('quantity-increase');
+        const quantityInput = document.getElementById('quantity-input');
+        const productDetailDescriptionContainer = document.getElementById('product-detail-description-container');
+        const productDetailDescription = document.getElementById('product-detail-description');
+        const sellerAvatar = document.getElementById('seller-avatar');
+        const sellerName = document.getElementById('seller-name');
+        const sellerEstablished = document.getElementById('seller-established');
+        const sellerReviewScore = document.getElementById('seller-review-score');
+        const productReviewsList = document.getElementById('product-reviews-list');
 
         const API_BASE_URL = 'https://api.shillette.com';
         const SOCKET_URL = 'https://api.shillette.com';
@@ -621,6 +740,7 @@
                 activeSectionId = sectionElementId;
                 foundSection = true;
                 console.log(`[showSection] Successfully shown: ${sectionElementId}`);
+                window.scrollTo(0, 0);
             }
 
             if (!foundSection) {
@@ -631,6 +751,7 @@
                     homeElement.classList.add('active');
                     activeSectionId = pageSections['#home'];
                     console.log(`[showSection] Defaulted to ${activeSectionId}.`);
+                    window.scrollTo(0, 0);
                 } else {
                      activeSectionId = null;
                      console.error("[showSection] Could not find home element either!");
@@ -649,20 +770,20 @@
 
         function navigateTo(hash) {
             console.log(`[navigateTo] Received hash: ${hash}`);
-            const baseHash = hash.split('?')[0] || '#home';
+            const hashParts = hash.split('?');
+            const baseHash = hashParts[0] || '#home';
             const targetElementId = pageSections[baseHash] || pageSections['#home'];
 
             console.log(`[navigateTo] Base hash: ${baseHash}, Target element ID: ${targetElementId}`);
 
-            const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(baseHash);
+            const isProtected = ['#dashboard', '#tickets', '#ticketDetail', '#productDetail'].includes(baseHash);
 
             if (isProtected && (!isInitialLoginCheckComplete || !isInitialConfigLoadComplete)) {
                 console.log(`[navigateTo] Initial checks not complete for protected route ${baseHash}. Deferring action.`);
                 return;
             }
 
-            console.log(`[navigateTo] Checking protection. Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`);
-            if (isProtected && (!currentUser || !currentUser.logged_in)) {
+            if (['#dashboard', '#tickets', '#ticketDetail'].includes(baseHash) && (!currentUser || !currentUser.logged_in)) {
                 console.log(`[navigateTo] Access denied to protected route: ${baseHash}`);
                 showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
                 if (window.location.hash !== '#home' && window.location.hash !== '/#home') {
@@ -680,19 +801,22 @@
                 ensureSocketConnected();
             }
 
+            let idParam = null;
+            if (baseHash === '#ticketDetail' || baseHash === '#productDetail') {
+                 const params = new URLSearchParams(hashParts[1] || '');
+                 idParam = params.get('id');
+                 console.log(`[navigateTo] ID from URL: ${idParam}`);
+            }
+
             if (baseHash === '#ticketDetail') {
-                let id = null;
-                const params = new URLSearchParams(hash.split('?')[1] || '');
-                id = params.get('id');
-                console.log(`[navigateTo] Ticket Detail - ID from URL: ${id}`);
-                if (id) {
-                    if (currentTicketId !== id) {
-                        currentTicketId = id;
-                        ticketDetailSubject.textContent = `Ticket #${id.slice(-6)}`;
+                if (idParam) {
+                    if (currentTicketId !== idParam) {
+                        currentTicketId = idParam;
+                        ticketDetailSubject.textContent = `Ticket #${idParam.slice(-6)}`;
                         chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                        fetchTicketDetails(id);
+                        fetchTicketDetails(idParam);
                     } else {
-                         console.log(`[navigateTo] Already viewing ticket ${id}, not re-fetching details.`);
+                         console.log(`[navigateTo] Already viewing ticket ${idParam}, not re-fetching details.`);
                          if (socket && socket.connected) socket.emit('join_ticket_room', { ticket_id: currentTicketId });
                     }
                 } else {
@@ -701,6 +825,16 @@
                     window.location.hash = '/#tickets';
                     return;
                 }
+            } else if (baseHash === '#productDetail') {
+                 if (idParam) {
+                      console.log(`[navigateTo] Fetching product details for ID: ${idParam}`);
+                      fetchProductDetails(idParam);
+                 } else {
+                      console.warn("[navigateTo] Product ID missing for detail view. Redirecting to products list.");
+                      showPopupMessage(errorMessagePopup, "Invalid product link.", true);
+                      window.location.hash = '/#products';
+                      return;
+                 }
             }
 
             showSection(targetElementId);
@@ -729,17 +863,24 @@
             console.log(`[runNavigation] Processing raw hash: ${window.location.hash}`);
             const rawHash = window.location.hash;
             let pathPart = '';
+            let queryPart = '';
+            const queryIndex = rawHash.indexOf('?');
             const firstHashIndex = rawHash.indexOf('#');
+
             if (firstHashIndex !== -1) {
-                pathPart = rawHash.substring(firstHashIndex + 1);
+                const hashContent = queryIndex !== -1 ? rawHash.substring(firstHashIndex + 1, queryIndex) : rawHash.substring(firstHashIndex + 1);
+                pathPart = hashContent;
                 while (pathPart.startsWith('/') || pathPart.startsWith('#')) {
                     pathPart = pathPart.substring(1);
                 }
+                if(queryIndex !== -1) {
+                    queryPart = rawHash.substring(queryIndex);
+                }
             }
-            const hashToNavigate = `#${pathPart || 'home'}`;
+            const hashToNavigate = `#${pathPart || 'home'}${queryPart}`;
             console.log(`[runNavigation] Cleaned hash to navigate: ${hashToNavigate}`);
 
-            if ((isInitialLoginCheckComplete && isInitialConfigLoadComplete) || hashToNavigate === '#home') {
+            if ((isInitialLoginCheckComplete && isInitialConfigLoadComplete) || pathPart === '' || pathPart === 'home') {
                 navigateTo(hashToNavigate);
             } else {
                 console.log(`[runNavigation] Initial checks not complete for target ${hashToNavigate}. Deferring.`);
@@ -876,10 +1017,11 @@
         }
 
         function renderProductCard(product) {
-             if (!productGrid) return;
+             if (!productGrid || !product) return;
 
              const card = document.createElement('div');
              card.className = `product-card flex flex-col`;
+             card.dataset.productId = product._id;
 
              const tagColor = product.tagColor || 'gray';
              const customHex = product.customBorderHex;
@@ -948,17 +1090,25 @@
              card.appendChild(placeholderDiv);
              card.appendChild(innerDiv);
 
-             const purchaseBtn = card.querySelector('.purchase-button');
-             if (purchaseBtn && !purchaseBtn.disabled) {
-                 purchaseBtn.addEventListener('click', handlePurchaseClick);
-             }
+             card.addEventListener('click', (event) => {
+                 if (event.target.closest('.purchase-button')) {
+                     handlePurchaseClick(event);
+                     return;
+                 }
+                 const productId = card.dataset.productId;
+                 if (productId) {
+                     window.location.hash = `/#productDetail?id=${productId}`;
+                 }
+             });
 
              productGrid.appendChild(card);
         }
 
 
         function handlePurchaseClick(event) {
-            const button = event.target;
+            event.stopPropagation();
+            const button = event.target.closest('.purchase-button');
+            if (!button) return;
             const productId = button.dataset.productId;
             const paymentLink = button.dataset.paymentLink;
             console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
@@ -966,6 +1116,94 @@
                  showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration needed)`);
             } else {
                  showPopupMessage(errorMessagePopup, 'Payment link is missing for this product.', true);
+            }
+        }
+
+        async function fetchProductDetails(productId) {
+            if (!productDetailPage || !productDetailLoading || !productDetailContainer) return;
+
+            productDetailLoading.classList.remove('hidden');
+            productDetailContainer.classList.add('hidden');
+            productDetailPage.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error("Product not found.");
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const productData = await response.json();
+                renderProductDetails(productData);
+                productDetailLoading.classList.add('hidden');
+                productDetailContainer.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error fetching product details:", error);
+                productDetailLoading.textContent = `Error loading product: ${error.message}`;
+                showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
+            }
+        }
+
+        function renderProductDetails(product) {
+            if (!product) return;
+
+            productDetailImage.src = product.thumbnailUrl || 'https://placehold.co/600x400/374151/9ca3af?text=No+Image';
+            productDetailImage.alt = product.name || 'Product Image';
+            productDetailName.textContent = product.name || 'Product Name';
+            productDetailPrice.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Price unavailable';
+
+            const rating = product.averageRating || 5;
+            const stock = product.stock !== undefined ? product.stock : 6;
+            productDetailRating.innerHTML = `${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`;
+            productDetailStock.textContent = `${stock} in stock`;
+
+             if (product.description) {
+                productDetailDescription.textContent = product.description;
+                productDetailDescriptionContainer.classList.remove('hidden');
+             } else {
+                productDetailDescriptionContainer.classList.add('hidden');
+             }
+
+            sellerName.textContent = product.sellerName || 'ShilletteFN';
+            sellerEstablished.textContent = product.sellerEstablishedDate ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}` : 'Established 7 months ago';
+            sellerReviewScore.textContent = `The seller has an average review score of ${rating} stars out of 5`;
+
+            productReviewsList.innerHTML = '';
+            const reviews = product.reviews || [];
+
+            if (reviews.length > 0) {
+                reviews.forEach(review => {
+                    const reviewCard = document.createElement('div');
+                    reviewCard.className = 'review-card';
+                    const reviewRating = review.rating || 5;
+                    const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'recently';
+                    const reviewerName = review.reviewerName || 'Verified customer';
+
+                    reviewCard.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs text-green-400 font-medium">Verified purchase</span>
+                            <span class="star-rating text-sm">${'★'.repeat(reviewRating)}${'☆'.repeat(5 - reviewRating)}</span>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-1">${review.text || 'Automatically left after 3 days of purchase'}</p>
+                        <p class="text-xs text-gray-500">Reviewed by ${reviewerName} on ${reviewDate}</p>
+                    `;
+                    productReviewsList.appendChild(reviewCard);
+                });
+            } else {
+                productReviewsList.innerHTML = '<p class="text-gray-400 md:col-span-2 lg:col-span-3">No reviews yet.</p>';
+            }
+        }
+
+        function formatTimeAgo(dateString) {
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
+                if (diffMonths < 1) return 'less than a month ago';
+                if (diffMonths === 1) return '1 month ago';
+                return `${diffMonths} months ago`;
+            } catch (e) {
+                return 'a while ago';
             }
         }
 
@@ -1530,7 +1768,7 @@
              productEditForm.reset();
              productEditStatus.textContent = '';
              productEditStatus.className = 'text-sm text-center h-5 mt-2';
-             productEditThumbnailFilename.textContent = 'No file selected'; // Reset filename display
+             productEditThumbnailFilename.textContent = 'No file selected';
 
              if (product) {
                  productModalTitle.textContent = 'Edit Product';
@@ -1594,7 +1832,7 @@
 
              const productData = {
                  name: productEditNameInput.value.trim(),
-                 thumbnailUrl: productEditThumbnailInput.value.trim() || null, // Still saving the URL field
+                 thumbnailUrl: productEditThumbnailInput.value.trim() || null,
                  price: parseFloat(productEditPriceInput.value),
                  tag: productEditTagInput.value.trim() || null,
                  tagColor: finalTagColor,
@@ -1656,8 +1894,6 @@
             }
         }
 
-
-        // --- Event Listeners Setup ---
 
         loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
         async function handleLogout() {
@@ -1759,10 +1995,9 @@
         if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
         if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
 
-        // --- Thumbnail File Selection ---
         if(productEditThumbnailButton && productEditThumbnailFileInput) {
             productEditThumbnailButton.addEventListener('click', () => {
-                productEditThumbnailFileInput.click(); // Trigger hidden file input
+                productEditThumbnailFileInput.click();
             });
         }
         if(productEditThumbnailFileInput && productEditThumbnailFilename) {
@@ -1770,17 +2005,15 @@
                 const file = event.target.files[0];
                 if (file) {
                     productEditThumbnailFilename.textContent = file.name;
-                    // Optional: Clear the URL input if a file is selected?
-                    // if(productEditThumbnailInput) productEditThumbnailInput.value = '';
-                    // Optional: Implement FileReader preview here if needed
                 } else {
                     productEditThumbnailFilename.textContent = 'No file selected';
                 }
+                 // Reset file input value so the same file can be selected again if needed
+                event.target.value = null;
             });
         }
 
 
-        // --- Initial Page Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
             createSnowflakes();
