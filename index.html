@@ -131,6 +131,11 @@
             inset: 0;
             @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out;
         }
+        /* Ensure overlay allows clicks when hidden/transparent */
+        #loading-overlay.opacity-0 {
+             @apply pointer-events-none;
+        }
+
         .loader {
             display: flex;
             align-items: center;
@@ -164,7 +169,8 @@
     <div id="snow-container"></div>
     <div id="payment-message">Payment initiated...</div>
 
-    <div id="loading-overlay" class="hidden opacity-0">
+    {/* Added pointer-events-none initially */}
+    <div id="loading-overlay" class="hidden opacity-0 pointer-events-none">
         <div class="loader">
             <span class="loader-bar"></span>
             <span class="loader-bar"></span>
@@ -204,7 +210,8 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow page-container">
+    {/* Removed page-container class */}
+    <main id="main-content" class="flex-grow">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="hero-bg-element"></div>
             <div class="container mx-auto px-6 relative z-10">
@@ -244,7 +251,7 @@
         </section>
     </main>
 
-    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-container">
+    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
         <div class="flex justify-start mb-8">
              <button id="back-to-home-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -295,7 +302,7 @@
         </div>
     </div>
 
-    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10 page-container">
+    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10">
         <h2>Dashboard</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="dashboard-card md:col-span-1">
@@ -349,7 +356,7 @@
         const paymentMessage = document.getElementById('payment-message');
         const purchaseButton = document.getElementById('purchase-button');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const pageContainers = document.querySelectorAll('.page-container');
+        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content'); // Target specific containers
 
         const simulatedUserData = {
             username: 'TestUser#0001',
@@ -368,14 +375,17 @@
             if (!loadingOverlay) return;
 
             pageContainers.forEach(container => container.classList.add('content-blur'));
-            loadingOverlay.classList.remove('hidden');
-            loadingOverlay.classList.remove('opacity-0');
+            loadingOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            loadingOverlay.classList.add('pointer-events-auto');
+
 
             setTimeout(() => {
                 hideAllSections();
                 showFunction();
                 pageContainers.forEach(container => container.classList.remove('content-blur'));
                 loadingOverlay.classList.add('opacity-0');
+                loadingOverlay.classList.remove('pointer-events-auto');
+                loadingOverlay.classList.add('pointer-events-none');
                 setTimeout(() => {
                     loadingOverlay.classList.add('hidden');
                 }, 300);
