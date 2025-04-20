@@ -393,9 +393,9 @@
                          <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
                          <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
                      </div>
-                     <div class="mb-6"> {# Increased margin bottom #}
+                     <div class="mb-6">
                          <label for="ticket-message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
-                         <textarea id="ticket-message" name="ticket-message" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea> {# Increased rows #}
+                         <textarea id="ticket-message" name="ticket-message" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
                      </div>
                      <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
                          Submit Ticket
@@ -526,26 +526,25 @@
         }
 
         function navigateTo(hash, ticketData = null) {
-            const baseHash = hash.split('?')[0] || '#home'; // Get hash without query params
+            const baseHash = hash.split('?')[0] || '#home';
             let targetSection = pageSections[baseHash];
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(baseHash);
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
                  showMessage(errorMessage, "Please log in to view this page.", true);
                  window.location.hash = '#home';
-                 return; // Prevent further processing if not logged in
+                 return;
             }
 
             if (baseHash === '#ticketDetail') {
                 let id = null;
                 let subject = null;
-                if (ticketData) { // Passed directly from click
+                if (ticketData) {
                     id = ticketData.id;
                     subject = ticketData.subject;
-                } else { // Attempt to get from hash query param (e.g., on refresh)
+                } else {
                     const params = new URLSearchParams(hash.split('?')[1] || '');
                     id = params.get('id');
-                    // We don't have subject on refresh, backend would need to provide it
                 }
 
                 if (id) {
@@ -555,8 +554,8 @@
                     connectSocket(id);
                 } else {
                     console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
-                    window.location.hash = '#tickets'; // Go back to list if ID is missing
-                    return; // Prevent showing empty detail section
+                    window.location.hash = '#tickets';
+                    return;
                 }
             } else {
                  disconnectSocket();
@@ -570,7 +569,7 @@
             }
 
             showSection(targetSection);
-            localStorage.setItem('currentPage', baseHash); // Store base hash
+            localStorage.setItem('currentPage', baseHash);
             if (baseHash === '#tickets') {
                 fetchTickets();
             }
@@ -584,7 +583,6 @@
             if (baseHash === '#ticketDetail') {
                  const params = new URLSearchParams(hash.split('?')[1] || '');
                  const id = params.get('id');
-                 // Pass minimal data needed for navigation function
                  navigateTo(baseHash, id ? { id: id } : null);
             } else {
                  navigateTo(hash);
@@ -625,7 +623,7 @@
                  console.error("Error checking login status:", error);
                  currentUser = { logged_in: false };
              } finally {
-                 runNavigation(); // Navigate based on hash AFTER checking status
+                 runNavigation();
              }
         }
 
@@ -679,13 +677,13 @@
         function connectSocket(ticketId) {
             if (!ticketId) return;
             if (socket && socket.connected) { socket.emit('join_ticket_room', { ticket_id: ticketId }); return; }
-            if (socket) { socket.removeAllListeners(); } // Use removeAllListeners for cleaner setup
+            if (socket) { socket.removeAllListeners(); }
             socket = io(SOCKET_URL, { reconnectionAttempts: 3, withCredentials: true });
             socket.on('connect', () => { console.log('WS connected:', socket.id); appendChatMessage({text: 'Connected.'}); socket.emit('join_ticket_room', { ticket_id: ticketId }); });
             socket.on('disconnect', (reason) => { console.log('WS disconnected:', reason); appendChatMessage({text: `Disconnected: ${reason}`}); currentTicketId = null; });
             socket.on('connect_error', (error) => { console.error('WS connection error:', error); appendChatMessage({text: `Connection error.`}); });
             socket.on('new_message', (data) => { if (data.ticket_id === currentTicketId) { appendChatMessage(data); } });
-            socket.on('room_joined', (data) => { console.log('Joined room:', data.room); appendChatMessage({text: `Joined ticket room.`}); /* TODO: Fetch past messages */ });
+            socket.on('room_joined', (data) => { console.log('Joined room:', data.room); appendChatMessage({text: `Joined ticket room.`}); });
             socket.on('error_message', (data) => { console.error('WS error:', data.message); showMessage(errorMessage, data.message || 'Chat error.', true); });
         }
 
@@ -733,7 +731,7 @@
         // Initial Load
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
-            checkLoginStatusAndNavigate(); // Check status then navigate
+            checkLoginStatusAndNavigate();
         });
 
     </script>
