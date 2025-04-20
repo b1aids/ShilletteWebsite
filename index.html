@@ -11,243 +11,88 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style type="text/tailwindcss">
         /* --- Animations --- */
-        @keyframes animateGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes spinBorder {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
-            100% { transform: translateY(110vh) translateX(5vw); opacity: 0; }
-        }
-
-        @keyframes scaleUpDown {
-            0%, 100% { transform: scaleY(0.4); }
-            20% { transform: scaleY(1.0); }
-        }
-
+        @keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
+        @keyframes scaleUpDown { 0%, 100% { transform: scaleY(0.4); } 20% { transform: scaleY(1.0); } }
         /* --- Base Styles --- */
-        body {
-            font-family: 'Inter', sans-serif;
-            @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
-            background-size: 200% 200%;
-            animation: animateGradient 25s ease infinite;
-            overflow-x: hidden;
-            position: relative;
-            z-index: 0;
-        }
-
-        /* Optional: Background image overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url('images/background.png'); /* Ensure this path is correct */
-            background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            opacity: 0.2; /* Adjust opacity as needed */
-            z-index: -1; /* Place behind content */
-        }
-
+        body { font-family: 'Inter', sans-serif; @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300; background-size: 200% 200%; animation: animateGradient 25s ease infinite; overflow-x: hidden; position: relative; z-index: 0; }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url('images/background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; opacity: 0.2; z-index: -1; }
         /* --- Snow Effect --- */
-        #snow-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 40; /* Ensure it's above background but below modals/header */
-            overflow: hidden;
-        }
-
-        .snowflake {
-            position: absolute;
-            background-color: white;
-            border-radius: 50%;
-            pointer-events: none;
-            animation-name: fall;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-
+        #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; overflow: hidden; }
+        .snowflake { position: absolute; background-color: white; border-radius: 50%; pointer-events: none; animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite; }
         /* --- Card Styles --- */
-        .card-gradient-border::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 0.5rem; /* Match card's border-radius */
-            padding: 2px; /* Border thickness */
-            background-size: 300% 300%;
-            animation: spinBorder 5s linear infinite;
-            -webkit-mask:
-                linear-gradient(#fff 0 0) content-box,
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .card-gradient-border.orange-border::before {
-            background-image: linear-gradient(145deg, #f97316, #9a3412, #000000);
-        }
-
-        .card-gradient-border.gray-border::before {
-             background-image: linear-gradient(145deg, #9ca3af, #374151, #000000);
-             animation-duration: 6s; /* Slightly different speed */
-        }
-
-        .product-card {
-            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
-             overflow: hidden; /* Needed for the border mask */
-        }
-
+        .card-gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: 0.5rem; padding: 2px; background-size: 300% 300%; animation: spinBorder 5s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1; }
+        .card-gradient-border.orange-border::before { background-image: linear-gradient(145deg, #f97316, #9a3412, #000000); }
+        .card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; }
+        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0; overflow: hidden; }
         /* --- Page Section & General Content Styles --- */
-        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 {
-            @apply text-3xl md:text-4xl font-bold text-white text-center mb-12;
-        }
-        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card {
-            @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg;
-        }
-
-        .paypal-button {
-            @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full;
-        }
-
+        .page-section h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
+        .dashboard-card, .ticket-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; }
+        .dashboard-card h3 { @apply text-lg font-semibold text-white mb-4 border-b border-slate-700 pb-2; }
+        .ticket-card h3 { @apply text-xl font-semibold text-white mb-4; }
+        .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
         /* --- Message Popups --- */
-        #payment-message, #ticket-message, #error-message {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
-        }
-         #payment-message.show, #ticket-message.show, #error-message.show {
-             opacity: 1;
-         }
-         #payment-message, #ticket-message { @apply bg-green-600; } /* General success */
-         #error-message { @apply bg-red-600; } /* General error */
-
+        #payment-message, #ticket-message, #error-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none; }
+        #payment-message.show, #ticket-message.show, #error-message.show { opacity: 1; }
+        #payment-message, #ticket-message { @apply bg-green-600; }
+        #error-message { @apply bg-red-600; }
         /* --- Loading Overlay --- */
-        #loading-overlay {
-            position: fixed;
-            inset: 0;
-            @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none;
-        }
-        #loading-overlay.active {
-             @apply opacity-100 pointer-events-auto;
-        }
-
-        /* Loader animation */
-        .loader {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 50px;
-            height: 25px;
-        }
-        .loader-bar {
-            display: block;
-            width: 8px;
-            height: 100%;
-            background-color: #f97316; /* Orange color */
-            border-radius: 4px;
-            animation: scaleUpDown 1.2s infinite ease-in-out;
-        }
+        #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; }
+        #loading-overlay.active { @apply opacity-100 pointer-events-auto; }
+        .loader { display: flex; align-items: center; justify-content: space-between; width: 50px; height: 25px; }
+        .loader-bar { display: block; width: 8px; height: 100%; background-color: #f97316; border-radius: 4px; animation: scaleUpDown 1.2s infinite ease-in-out; }
         .loader-bar:nth-child(2) { animation-delay: 0.2s; }
         .loader-bar:nth-child(3) { animation-delay: 0.4s; }
-
-        /* --- Page Section Visibility (FIXED) --- */
-        .page-section {
-            /* Use display none/block for robust hiding/showing */
-            /* transition: opacity 0.3s ease-in-out; Optional: fade effect, but display handles layout */
-        }
-        .page-section.hidden {
-             display: none; /* Completely remove from layout */
-        }
-        .page-section:not(.hidden) {
-             display: block; /* Or flex/grid if the container uses it */
-             /* opacity: 1; */
-             /* pointer-events: auto; */
-             /* position: relative; */ /* Ensure it takes up space */
-        }
-
-
+        /* --- Page Section Visibility --- */
+        .page-section { }
+        .page-section.hidden { display: none; }
+        .page-section:not(.hidden) { display: block; }
         /* --- Ticket Specific Styles --- */
-        .ticket-list-item {
-            @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors;
-        }
+        .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors; }
+        .dashboard-ticket-list { @apply space-y-3 max-h-64 overflow-y-auto pr-2; }
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
-
-        /* Ticket creation form status message */
-        #create-ticket-status {
-            @apply text-sm mt-4 mb-4 text-center;
-        }
+        #create-ticket-status { @apply text-sm mt-4 mb-4 text-center h-6; }
         #create-ticket-status.success { @apply text-green-400; }
         #create-ticket-status.error { @apply text-red-400; }
-
-
+        /* Role styling */
+        .role-item { @apply inline-flex items-center gap-x-1.5 text-xs font-medium mr-2 mb-2 px-2.5 py-1 rounded-full border border-gray-600; }
+        .role-item-icon { @apply w-4 h-4; }
         /* --- Chat Styles --- */
-        #chat-messages {
-             @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2;
-        }
-        .chat-message {
-             @apply text-sm break-words; /* Allow long words to wrap */
-        }
-        .chat-message .username {
-             @apply font-semibold text-orange-400 mr-2;
-        }
-         .chat-message .timestamp {
-             @apply text-xs text-gray-500 ml-2 whitespace-nowrap;
-         }
-         #chat-input-form {
-             @apply flex space-x-2;
-         }
-         #chat-input {
-              @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500;
-         }
-         #send-chat-button {
-             @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
-         }
-
+        #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; }
+        .chat-message { @apply text-sm break-words; }
+        .chat-message .username { @apply font-semibold text-orange-400 mr-2; }
+        .chat-message .timestamp { @apply text-xs text-gray-500 ml-2 whitespace-nowrap; }
+        #chat-input-form { @apply flex space-x-2; }
+        #chat-input { @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; }
+        #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; }
+        /* Helper */
+        .hidden { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <div id="snow-container"></div>
-
-    <div id="payment-message">Placeholder</div>
-    <div id="ticket-message">Placeholder</div> <div id="error-message">Placeholder</div>
-
+    <div id="payment-message"></div>
+    <div id="ticket-message"></div>
+    <div id="error-message"></div>
     <div id="loading-overlay">
-        <div class="loader">
-            <span class="loader-bar"></span>
-            <span class="loader-bar"></span>
-            <span class="loader-bar"></span>
-        </div>
+        <div class="loader"><span class="loader-bar"></span><span class="loader-bar"></span><span class="loader-bar"></span></div>
     </div>
 
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
+            <a href="/" class="flex items-center space-x-2 internal-link">
                 <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                <span class="text-2xl font-bold text-white hidden">Shillette</span> <span class="text-2xl font-bold text-white">Shillette</span> </div>
+                <span class="text-2xl font-bold text-white hidden">Shillette</span>
+                <span class="text-2xl font-bold text-white">Shillette</span>
+            </a>
             <div class="flex items-center space-x-6">
                 <nav class="hidden md:flex space-x-6">
-                    <a href="#home" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
-                    <a href="#products" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
-                    <a href="#tickets" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200">Tickets</a>
+                    <a href="/" id="home-link" class="text-gray-300 hover:text-white transition duration-200 internal-link">Home</a>
+                    <a href="/products" id="products-link" class="text-gray-300 hover:text-white transition duration-200 internal-link">Products</a>
+                    <a href="/tickets" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200 internal-link">Tickets</a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
@@ -255,10 +100,10 @@
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </a>
-                    <a href="#dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
+                    <a href="/dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer internal-link">
                         <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600" onerror="this.src='https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'">
                         <span id="user-name" class="text-white text-sm font-medium">Username</span>
-                        <button id="logout-button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
+                        <button id="logout-button" type="button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
                     </a>
                 </div>
             </div>
@@ -270,39 +115,24 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow page-section"> <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
+    <main id="main-content" class="flex-grow page-section">
+        <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="container mx-auto px-6 relative z-10">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4">Shillette</h1>
                 <p class="text-xl md:text-2xl text-orange-400 mb-6 font-medium">Advanced DMA Firmware</p>
-                <p class="max-w-2xl mx-auto text-gray-400 mb-10">
-                    Fully undetected DMA firmware, battle-tested for reliable performance. Join thousands of satisfied users.
-                </p>
+                <p class="max-w-2xl mx-auto text-gray-400 mb-10">Fully undetected DMA firmware, battle-tested for reliable performance. Join thousands of satisfied users.</p>
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16">
-                    <a href="#products" id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
-                        Purchase Product
-                    </a>
+                    <a href="/products" id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto internal-link">Purchase Product</a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Join Discord</span>
                     </a>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-gray-400">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">1000+</div>
-                        <div>Happy Users</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">1000+</div>
-                        <div>Products Sold</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">5.0</div>
-                        <div>Star Rating</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">3+</div>
-                        <div>Years Experience</div>
-                    </div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">1000+</div><div>Happy Users</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">1000+</div><div>Products Sold</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">5.0</div><div>Star Rating</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">3+</div><div>Years Experience</div></div>
                 </div>
             </div>
         </section>
@@ -310,7 +140,7 @@
 
     <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
         <div class="flex justify-start mb-8">
-             <a href="#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200 internal-link">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
              </a>
@@ -318,78 +148,55 @@
         <h2>Our Products</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <div class="product-card card-gradient-border orange-border">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="bg-orange-500/20 text-orange-300 text-xs font-semibold px-2.5 py-0.5 rounded">ALL IN ONE</span>
-                    <div class="flex space-x-2 text-yellow-400">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                    </div>
-                </div>
-                <h3 class="text-xl font-semibold text-white mb-2">Shillette Firmware</h3>
-                <p class="text-3xl font-bold text-white mb-4">From $100</p>
-                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Fully Undetected</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Easy Installation</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Full Support</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Lifetime Updates</li>
-                </ul>
-                <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     <button class="paypal-button" data-product-id="firmware-100">Pay with PayPal</button>
-                </div>
+                <div class="flex justify-between items-center mb-4"> <span class="bg-orange-500/20 text-orange-300 text-xs font-semibold px-2.5 py-0.5 rounded">ALL IN ONE</span> <div class="flex space-x-2 text-yellow-400"> <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg> <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> </div> </div>
+                <h3 class="text-xl font-semibold text-white mb-2">Shillette Firmware</h3> <p class="text-3xl font-bold text-white mb-4">From $100</p>
+                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow"> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Fully Undetected</li> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Easy Installation</li> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Full Support</li> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Lifetime Updates</li> </ul>
+                <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50"> <button class="paypal-button" data-product-id="firmware-100">Pay with PayPal</button> </div>
             </div>
-
             <div class="product-card card-gradient-border gray-border">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
-                     <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-400">
-                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                     </div>
-                </div>
-                <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3>
-                <p class="text-3xl font-bold text-white mb-4">From $3</p>
-                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
-                </ul>
-                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button>
-                </div>
-            </div>
+                 <div class="flex justify-between items-center mb-4"> <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span> <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-400"> <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> </div> </div>
+                 <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3> <p class="text-3xl font-bold text-white mb-4">From $3</p>
+                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow"> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li> <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li> </ul>
+                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50"> <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button> </div>
+             </div>
         </div>
     </div>
 
     <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
         <h2>Dashboard</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="dashboard-card md:col-span-1">
-                <h3 class="text-lg font-semibold text-white mb-4">Welcome!</h3>
-                <div class="flex items-center space-x-4 mb-4">
-                     <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
-                     <div>
-                         <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
-                         <p class="text-sm text-gray-400">Status: Active</p> </div>
-                </div>
-                <button id="dashboard-logout-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300">
-                    Logout
-                </button>
-            </div>
-
-            <div class="dashboard-card md:col-span-2">
-                <h3 class="text-lg font-semibold text-white mb-4">My Products</h3>
-                <p class="text-gray-400">Product information will appear here...</p>
-                </div>
-
-            <div class="dashboard-card md:col-span-3">
-                 <h3 class="text-lg font-semibold text-white mb-4">Settings</h3>
-                 <p class="text-gray-400">User settings will appear here...</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="dashboard-card md:col-span-1 lg:col-span-1">
+                 <h3>Welcome!</h3>
+                 <div class="flex items-center space-x-4 mb-4">
+                      <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
+                      <div>
+                          <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
+                          <p id="dashboard-user-status" class="text-sm text-gray-400">Status: Active</p>
+                      </div>
                  </div>
+                 <button id="dashboard-logout-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300"> Logout </button>
+            </div>
+            <div class="dashboard-card md:col-span-1 lg:col-span-1">
+                 <h3>My Products</h3>
+                 <p class="text-gray-400">Product information will appear here...</p>
+            </div>
+             <div class="dashboard-card md:col-span-1 lg:col-span-1">
+                  <h3>Settings</h3>
+                  <p class="text-gray-400">User settings will appear here...</p>
+             </div>
+             <div id="dashboard-all-roles-card" class="dashboard-card md:col-span-2 lg:col-span-3"> <h3>My Roles</h3>
+                  <div id="dashboard-all-roles-list" class="flex flex-wrap gap-2"> <p class="w-full text-gray-500">Loading roles...</p> </div>
+             </div>
+             <div id="dashboard-ticket-list-card" class="dashboard-card md:col-span-2 lg:col-span-3 hidden"> <h3>My Support Tickets</h3>
+                  <div id="dashboard-ticket-list" class="dashboard-ticket-list"> </div>
+                  <p id="dashboard-ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
+             </div>
         </div>
     </div>
 
      <div id="tickets-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <a href="#home" id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200 internal-link">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
              </a>
@@ -398,22 +205,16 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
-                 <div id="ticket-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                     </div>
+                 <div id="ticket-list" class="space-y-3 max-h-96 overflow-y-auto pr-2"></div>
                  <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
             </div>
             <div class="lg:col-span-1 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
                  <form id="create-ticket-form" novalidate>
-                     <div class="mb-4">
-                         <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
-                         <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
-                     </div>
-                     <div class="mb-4"> <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label> <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
-                     </div>
-                     <div id="create-ticket-status" class="h-6"></div> <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
-                         Submit Ticket
-                     </button>
+                     <div class="mb-4"> <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label> <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"> </div>
+                     <div class="mb-4"> <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label> <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea> </div>
+                     <div id="create-ticket-status" class="h-6"></div>
+                     <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300"> Submit Ticket </button>
                  </form>
             </div>
         </div>
@@ -421,54 +222,54 @@
 
      <div id="ticket-detail-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <a href="#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200 internal-link">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Tickets</span>
              </a>
         </div>
         <h2 id="ticket-detail-subject">Ticket Subject</h2>
-        <div class="ticket-card">
-            <div id="chat-messages">
-                <p class="text-gray-500 text-center py-4">Loading chat...</p>
-                </div>
+        <div class="ticket-card max-w-4xl mx-auto">
+            <div id="chat-messages"> <p class="text-gray-500 text-center py-4">Loading chat...</p> </div>
             <form id="chat-input-form" class="mt-4" novalidate>
-                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full"> <button type="submit" id="send-chat-button">Send</button>
+                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
+                 <button type="submit" id="send-chat-button">Send</button>
             </form>
         </div>
      </div>
 
-
     <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
-            <p>&copy; 2025 Shillette. All rights reserved.</p> </div>
+            <p>&copy; 2025 Shillette. All rights reserved.</p>
+        </div>
     </footer>
 
     <script>
         // --- DOM Element References ---
         const pageSections = {
-            '#home': document.getElementById('main-content'),
-            '#products': document.getElementById('products-page-content'),
-            '#tickets': document.getElementById('tickets-page-content'),
-            '#dashboard': document.getElementById('dashboard-content'),
-            '#ticketDetail': document.getElementById('ticket-detail-content')
+            '/': document.getElementById('main-content'),
+            '/products': document.getElementById('products-page-content'),
+            '/tickets': document.getElementById('tickets-page-content'),
+            '/dashboard': document.getElementById('dashboard-content'),
+            '/ticket': document.getElementById('ticket-detail-content')
         };
         const loginButton = document.getElementById('login-button');
         const logoutButton = document.getElementById('logout-button');
-        const dashboardLogoutButton = document.getElementById('dashboard-logout-button');
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
         const dashboardUserNameDisplay = document.getElementById('dashboard-user-name');
         const dashboardUserAvatarDisplay = document.getElementById('dashboard-user-avatar');
-        const snowContainer = document.getElementById('snow-container');
-        const paymentMessage = document.getElementById('payment-message');
-        const ticketMessagePopup = document.getElementById('ticket-message'); // Renamed for clarity
-        const errorMessagePopup = document.getElementById('error-message'); // Renamed for clarity
-        const loadingOverlay = document.getElementById('loading-overlay');
+        const dashboardUserStatus = document.getElementById('dashboard-user-status');
+        const dashboardLogoutButton = document.getElementById('dashboard-logout-button');
+        const dashboardTicketListCard = document.getElementById('dashboard-ticket-list-card');
+        const dashboardTicketListDiv = document.getElementById('dashboard-ticket-list');
+        const dashboardTicketListStatus = document.getElementById('dashboard-ticket-list-status');
+        const dashboardAllRolesCard = document.getElementById('dashboard-all-roles-card'); // New card
+        const dashboardAllRolesList = document.getElementById('dashboard-all-roles-list'); // New list
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
-        const ticketMessageInput = document.getElementById('ticket-message-input'); // Corrected ID
-        const createTicketStatus = document.getElementById('create-ticket-status'); // Added for form feedback
+        const ticketMessageInput = document.getElementById('ticket-message-input');
+        const createTicketStatus = document.getElementById('create-ticket-status');
         const ticketListDiv = document.getElementById('ticket-list');
         const ticketListStatus = document.getElementById('ticket-list-status');
         const ticketDetailSubject = document.getElementById('ticket-detail-subject');
@@ -476,588 +277,204 @@
         const chatInputForm = document.getElementById('chat-input-form');
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
+        const snowContainer = document.getElementById('snow-container');
+        const paymentMessage = document.getElementById('payment-message');
+        const ticketMessagePopup = document.getElementById('ticket-message');
+        const errorMessagePopup = document.getElementById('error-message');
+        const loadingOverlay = document.getElementById('loading-overlay');
 
         // --- Configuration ---
-        const API_BASE_URL = 'https://api.shillette.com'; // Ensure this is correct
-        const SOCKET_URL = 'https://api.shillette.com';   // Ensure this is correct
+        const API_BASE_URL = 'https://api.shillette.com';
+        const SOCKET_URL = 'https://api.shillette.com';
+        // Client-side moderator ID for display purposes (ensure matches backend .env)
+        const MODERATOR_ROLE_ID_CLIENT = '1254510581403353171';
 
         // --- State Variables ---
         let currentUser = null;
         let socket = null;
         let currentTicketId = null;
-        let activeSectionId = null; // Store the ID ('#home', '#tickets', etc.)
+        let activeSectionElement = null;
 
         // --- Utility Functions ---
-
-        /**
-         * Shows a temporary popup message at the bottom of the screen.
-         * @param {HTMLElement} element The message container element.
-         * @param {string} message The text to display.
-         * @param {boolean} [isError=false] If true, styles as an error message.
-         */
         function showPopupMessage(element, message, isError = false) {
-             if (!element) return;
+             if (!element) { console.warn("Popup message element not found"); return; }
              element.textContent = message;
-             // Set background color based on error status
-             if (isError) {
-                 element.classList.remove('bg-green-600');
-                 element.classList.add('bg-red-600');
-             } else {
-                 element.classList.remove('bg-red-600');
-                 element.classList.add('bg-green-600');
-             }
-             // Show the message and hide after a delay
-             element.classList.add('show');
-             setTimeout(() => {
-                 element.classList.remove('show');
-             }, 3500); // Slightly longer duration
-         }
+             element.className = `fixed bottom-5 left-1/2 -translate-x-1/2 text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg transition-opacity duration-500 ease-in-out z-50 pointer-events-none ${isError ? 'bg-red-600' : 'bg-green-600'} show`;
+             setTimeout(() => { element.classList.remove('show'); }, 3500);
+        }
 
-        /**
-         * Updates the header UI based on login status.
-         * @param {object|null} user The user object or null if logged out.
-         */
         function updateHeaderUI(user) {
+             if (!loginButton || !userInfo) return;
              if (user && user.logged_in) {
-                 // Logged In View
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex'); // Ensure flex display
-                 userNameDisplay.textContent = user.username || 'User';
-                 // Display Discord avatar with fallback
-                 if (user.user_id && user.avatar) {
-                     userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`;
-                 } else {
-                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Placeholder
-                 }
-                 // Update dashboard elements as well
-                 dashboardUserNameDisplay.textContent = user.username || 'User';
-                 if (user.user_id && user.avatar) {
-                    dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`;
-                 } else {
-                    dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+                 userInfo.classList.add('flex');
+                 if(userNameDisplay) userNameDisplay.textContent = user.username || 'User';
+                 if(userAvatarDisplay) {
+                     if (user.user_id && user.avatar) { userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`; }
+                     else { userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; }
                  }
              } else {
-                 // Logged Out View
                  loginButton.classList.remove('hidden');
                  userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex'); // Remove flex display
+                 userInfo.classList.remove('flex');
              }
         }
 
-        /**
-         * Shows the specified page section and hides others. (FIXED LOGIC)
-         * @param {string} sectionId The ID of the section to show (e.g., '#home').
-         */
-        function showSection(sectionId) {
-            if (activeSectionId === sectionId) return; // Already active
-
-            // Hide the currently active section, if any
-            if (activeSectionId && pageSections[activeSectionId]) {
-                 pageSections[activeSectionId].classList.add('hidden');
-            }
-
-            // Show the new section
-            const sectionElement = pageSections[sectionId];
-            if (sectionElement) {
-                sectionElement.classList.remove('hidden');
-                activeSectionId = sectionId; // Update the active section ID
-                console.log(`Showing section: ${sectionId}`);
-            } else {
-                console.warn(`Section with ID ${sectionId} not found.`);
-                // Optionally default to home if section not found
-                if (pageSections['#home']) {
-                    pageSections['#home'].classList.remove('hidden');
-                    activeSectionId = '#home';
-                } else {
-                     activeSectionId = null;
-                }
-            }
-             // Disconnect socket if navigating away from ticket detail
-             if (sectionId !== '#ticketDetail') {
-                 disconnectSocket();
-             }
+        /** Converts a decimal color number to a hex string */
+        function decimalToHexColor(decimal) {
+            if (decimal === 0) return '#99AAB5'; // Discord's default role color
+            return '#' + (decimal & 0xFFFFFF).toString(16).padStart(6, '0');
         }
 
-        /**
-         * Handles navigation based on URL hash changes.
-         * @param {string} hash The current URL hash (e.g., '#tickets', '#ticketDetail?id=123').
-         * @param {object|null} [ticketData=null] Optional pre-fetched ticket data.
-         */
-        function navigateTo(hash, ticketData = null) {
-            const baseHash = hash.split('?')[0] || '#home'; // Default to home if hash is empty
-            const targetSectionId = pageSections[baseHash] ? baseHash : '#home'; // Fallback to home if hash invalid
-
-            console.log(`Navigating to: ${hash} (Base: ${baseHash}, Target: ${targetSectionId})`);
-
-            // --- Authentication Check for Protected Routes ---
-            const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
-            if (isProtected && (!currentUser || !currentUser.logged_in)) {
-                 showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-                 // Redirect to home if not logged in and trying to access protected route
-                 if (window.location.hash !== '#home') {
-                     window.location.hash = '#home';
-                 } else {
-                     // If already on #home, just show the home section
-                     showSection('#home');
-                 }
-                 return; // Stop further processing
+        /** Updates the dashboard UI elements based on user data */
+        function updateDashboardUI(user) {
+            // Check required elements exist
+            if (!dashboardUserNameDisplay || !dashboardUserAvatarDisplay || !dashboardUserStatus || !dashboardAllRolesCard || !dashboardAllRolesList || !dashboardTicketListCard) {
+                console.log("Required dashboard elements not found, skipping UI update.");
+                return;
             }
-
-            // --- Handle Ticket Detail View ---
-            if (targetSectionId === '#ticketDetail') {
-                let id = null;
-                let subject = null;
-
-                // Extract ID and Subject
-                if (ticketData) { // If passed directly (e.g., from ticket list click)
-                    id = ticketData.id;
-                    subject = ticketData.subject;
-                } else { // If navigating via URL directly
-                    const params = new URLSearchParams(hash.split('?')[1] || '');
-                    id = params.get('id');
-                    // Subject might not be in URL, will be fetched or use placeholder
-                }
-
-                if (id) {
-                    currentTicketId = id;
-                    // Update subject display (use placeholder if not provided)
-                    ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
-                    // Prepare chat area and connect
-                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                    connectSocket(id); // Connect WebSocket for this ticket
-                } else {
-                    // If no ID found for ticket detail, redirect to the tickets list
-                    console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
-                    showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '#tickets'; // This will trigger another navigation cycle
-                    return; // Stop this navigation cycle
-                }
-            } else {
-                 // Disconnect socket if navigating away from ticket detail
-                 disconnectSocket();
-                 currentTicketId = null;
-            }
-
-            // --- Show the Target Section ---
-            showSection(targetSectionId);
-
-            // --- Post-Navigation Actions ---
-            localStorage.setItem('currentPage', targetSectionId); // Remember last page
-
-            // Fetch data if needed for the new section
-            if (targetSectionId === '#tickets') {
-                fetchTickets();
-            }
-
-            // Ensure header UI is up-to-date
-            updateHeaderUI(currentUser);
-        }
-
-
-        /**
-         * Wrapper function to call navigateTo based on the current window hash.
-         */
-        function runNavigation() {
-            const hash = window.location.hash || '#home'; // Default to #home if no hash
-            navigateTo(hash);
-        }
-
-        /**
-         * Creates snowflake elements for the background effect.
-         */
-        function createSnowflakes() {
-            const numberOfSnowflakes = 75; // Adjust density as needed
-            if (!snowContainer) return; // Exit if container not found
-
-            snowContainer.innerHTML = ''; // Clear existing snowflakes
-            for (let i = 0; i < numberOfSnowflakes; i++) {
-                const snowflake = document.createElement('div');
-                snowflake.classList.add('snowflake');
-
-                // Randomize properties
-                const size = Math.random() * 3 + 2; // Size between 2px and 5px
-                const duration = Math.random() * 10 + 5; // Fall duration 5-15 seconds
-                const delay = Math.random() * 10; // Start delay 0-10 seconds
-                const startLeft = Math.random() * 100; // Horizontal start position
-                const opacity = Math.random() * 0.5 + 0.5; // Opacity 0.5-1.0
-
-                // Apply styles
-                snowflake.style.width = `${size}px`;
-                snowflake.style.height = `${size}px`;
-                snowflake.style.left = `${startLeft}vw`;
-                snowflake.style.opacity = opacity;
-                snowflake.style.animationDuration = `${duration}s`;
-                snowflake.style.animationDelay = `-${delay}s`; // Negative delay starts animation partway through
-
-                snowContainer.appendChild(snowflake);
-            }
-        }
-
-        /**
-         * Checks user login status via API and then runs initial navigation.
-         */
-        async function checkLoginStatusAndNavigate() {
-             try {
-                 // Fetch user status from the backend API
-                 const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
-
-                 if (!response.ok) {
-                     // Handle non-OK responses (like 401 Unauthorized)
-                     if (response.status === 401 || response.status === 403) {
-                         currentUser = { logged_in: false }; // Treat as logged out
-                     } else {
-                         // Throw error for other unexpected HTTP issues
-                         throw new Error(`HTTP error! status: ${response.status}`);
-                     }
-                 } else {
-                     // If response is OK, parse the user data
-                     currentUser = await response.json();
-                 }
-                 console.log("User status checked:", currentUser);
-
-             } catch (error) {
-                 console.error("Error checking login status:", error);
-                 currentUser = { logged_in: false }; // Assume logged out on error
-                 showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
-             } finally {
-                 // Always run navigation after checking status
-                 runNavigation();
-             }
-        }
-
-        /**
-         * Fetches the list of user's tickets from the API.
-         */
-        async function fetchTickets() {
-            if (!ticketListDiv || !ticketListStatus) return; // Ensure elements exist
-
-            // Check if user is logged in
-            if (!currentUser || !currentUser.logged_in) {
-                ticketListStatus.textContent = "Please log in to view your tickets.";
-                ticketListDiv.innerHTML = ''; // Clear list
+            if (!user || !user.logged_in) {
+                dashboardTicketListCard.classList.add('hidden');
+                dashboardAllRolesCard.classList.add('hidden'); // Hide roles if not logged in
                 return;
             }
 
-            ticketListStatus.textContent = "Loading tickets..."; // Provide loading feedback
-            ticketListDiv.innerHTML = ''; // Clear previous list
+            // Update Welcome Card
+            dashboardUserNameDisplay.textContent = user.username || 'User';
+            if (user.user_id && user.avatar) { dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`; }
+            else { dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'; }
+            dashboardUserStatus.textContent = "Status: Active";
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/tickets`, { credentials: 'include' });
+            // --- Update Full Roles Card ---
+            dashboardAllRolesList.innerHTML = ''; // Clear previous
+            const roles = user.roles || []; // Expecting array of {id, name, color, icon}
 
-                if (!response.ok) {
-                     if (response.status === 401 || response.status === 403) {
-                         throw new Error("Authentication required.");
-                     } else {
-                         throw new Error(`HTTP error! status: ${response.status}`);
-                     }
-                }
+            if (roles.length > 0) {
+                roles.forEach(role => {
+                    const roleSpan = document.createElement('span');
+                    roleSpan.classList.add('role-item'); // Base styling
 
-                const tickets = await response.json();
-
-                if (tickets.length === 0) {
-                    ticketListStatus.textContent = "You have no support tickets.";
-                } else {
-                    ticketListStatus.textContent = ""; // Clear loading/status message
-                    tickets.forEach(ticket => {
-                        const item = document.createElement('div');
-                        item.classList.add('ticket-list-item');
-
-                        // Determine status class and display text
-                        const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
-                        const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A'; // Capitalize status
-
-                        // Format date nicely
-                        const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
-
-                        // Use fallback for missing ID or subject
-                        const ticketId = ticket._id || 'N/A';
-                        const subject = ticket.subject || 'No Subject';
-                        const shortId = ticketId !== 'N/A' ? ticketId.slice(-6) : 'N/A'; // Show last 6 chars of ID
-
-                        // Populate the list item HTML
-                        item.innerHTML = `
-                            <div>
-                                <p class="font-medium text-white">#${shortId}: ${subject}</p>
-                                <p class="text-xs text-gray-400">Opened: ${dateOpened}</p>
-                            </div>
-                            <span class="${statusClass}">${statusText}</span>`;
-
-                        // Add click listener to navigate to the detail view
-                        item.addEventListener('click', () => {
-                            // Pass ticket data directly to avoid fetching subject again on detail page if possible
-                            navigateTo(`#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
-                        });
-
-                        ticketListDiv.appendChild(item);
-                    });
-                }
-            } catch (error) {
-                console.error("Error fetching tickets:", error);
-                ticketListStatus.textContent = `Failed to load tickets: ${error.message}`;
-                showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
-            }
-        }
-
-        /**
-         * Appends a message to the chat display area.
-         * @param {object} data The message data {username, text, timestamp}.
-         */
-        function appendChatMessage(data) {
-             if (!chatMessagesDiv) return; // Ensure chat area exists
-
-             // Remove the initial "Loading chat..." or "Connecting..." message
-             const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
-             if (loadingMsg) loadingMsg.remove();
-
-             const messageElement = document.createElement('div');
-             messageElement.classList.add('chat-message');
-
-             // Format timestamp (optional: make more user-friendly)
-             const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-             // Sanitize username and text to prevent basic HTML injection
-             const safeUsername = (data.username || 'System').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-             const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-             // Construct the message HTML
-             messageElement.innerHTML = `<span class="username">${safeUsername}:</span> ${safeText} <span class="timestamp">${timestamp}</span>`;
-
-             chatMessagesDiv.appendChild(messageElement);
-
-             // Auto-scroll to the bottom
-             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-        }
-
-        /**
-         * Connects to the Socket.IO server for a specific ticket room.
-         * @param {string} ticketId The ID of the ticket to join.
-         */
-        function connectSocket(ticketId) {
-            if (!ticketId) return; // Don't connect without an ID
-
-            // If already connected and trying to join the same room, do nothing extra
-            if (socket && socket.connected && currentTicketId === ticketId) {
-                console.log(`Already connected to socket and in room for ticket ${ticketId}`);
-                // Optionally re-emit join event if needed, but usually handled by server persistence
-                // socket.emit('join_ticket_room', { ticket_id: ticketId });
-                return;
-            }
-
-            // Disconnect previous socket if exists
-             if (socket) {
-                 disconnectSocket();
-             }
-
-
-            console.log(`Attempting to connect WebSocket for ticket: ${ticketId}`);
-            // Establish new connection
-            socket = io(SOCKET_URL, {
-                reconnectionAttempts: 3, // Limit reconnection attempts
-                withCredentials: true     // Send cookies for authentication
-            });
-
-            // --- Socket Event Handlers ---
-            socket.on('connect', () => {
-                console.log('WebSocket connected:', socket.id);
-                appendChatMessage({ username: 'System', text: 'Connected to chat.' });
-                // Join the specific ticket room after connection
-                socket.emit('join_ticket_room', { ticket_id: ticketId });
-            });
-
-            socket.on('disconnect', (reason) => {
-                console.log('WebSocket disconnected:', reason);
-                appendChatMessage({ username: 'System', text: `Disconnected: ${reason}` });
-                // Clear current ticket ID on disconnect to avoid sending messages to wrong room on reconnect
-                // currentTicketId = null; // Keep currentTicketId to potentially rejoin on reconnect
-                socket = null; // Clear socket object
-            });
-
-            socket.on('connect_error', (error) => {
-                console.error('WebSocket connection error:', error);
-                appendChatMessage({ username: 'System', text: `Connection error: ${error.message}` });
-                showPopupMessage(errorMessagePopup, "Chat connection failed.", true);
-                socket = null; // Clear socket object on error
-            });
-
-            socket.on('new_message', (data) => {
-                // Ensure the message is for the currently viewed ticket
-                if (data.ticket_id === currentTicketId) {
-                    appendChatMessage(data);
-                } else {
-                    console.log(`Received message for different ticket: ${data.ticket_id}`);
-                    // Optionally show a notification for other tickets
-                }
-            });
-
-            socket.on('room_joined', (data) => {
-                console.log('Joined room:', data.room);
-                appendChatMessage({ username: 'System', text: `Joined ticket room.` });
-                // Potentially fetch message history here if not done via HTTP
-            });
-
-            socket.on('error_message', (data) => {
-                // Handle errors sent from the server via socket
-                console.error('WebSocket server error:', data.message);
-                appendChatMessage({ username: 'System', text: `Error: ${data.message || 'Unknown chat error.'}` });
-                showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
-            });
-        }
-
-        /**
-         * Disconnects the current Socket.IO connection.
-         */
-        function disconnectSocket() {
-            if (socket) {
-                console.log('Disconnecting WebSocket...');
-                socket.disconnect();
-                socket = null; // Clear the socket variable
-            }
-            // currentTicketId = null; // Clear ticket ID when explicitly disconnecting
-        }
-
-        // --- Event Listeners Setup ---
-
-        // Login Button
-        loginButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link behavior
-            window.location.href = loginButton.href; // Navigate to Discord login
-        });
-
-        // Logout Buttons (Header and Dashboard)
-        async function handleLogout() {
-            console.log('Logging out...');
-            try {
-                 const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
-                 if (!response.ok) {
-                     // Try to parse error if possible
-                     let errorMsg = 'Logout request failed';
-                     try {
-                         const errorData = await response.json();
-                         errorMsg = errorData.error || errorMsg;
-                     } catch (parseError) { /* Ignore parsing error */ }
-                     throw new Error(errorMsg);
-                 }
-
-                 // Logout successful
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('currentPage'); // Clear saved page
-                 disconnectSocket(); // Disconnect chat if connected
-                 window.location.hash = '#home'; // Go to home page
-                 // runNavigation(); // Let hashchange handle UI update
-                 updateHeaderUI(currentUser); // Update header immediately
-                 showPopupMessage(paymentMessage, "Logged out successfully."); // Use payment message for success
-
-            } catch(error) {
-                 console.error("Logout error:", error);
-                 showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
-                 // Still attempt to clear local state on error
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('currentPage');
-                 disconnectSocket();
-                 window.location.hash = '#home';
-                 updateHeaderUI(currentUser);
-            }
-        }
-        logoutButton.addEventListener('click', handleLogout);
-        dashboardLogoutButton.addEventListener('click', handleLogout);
-
-        // Hash Change Listener (Handles navigation)
-        window.addEventListener('hashchange', runNavigation);
-
-        // Create Ticket Form Submission
-        if(createTicketForm) {
-            createTicketForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
-                const subject = ticketSubjectInput.value.trim();
-                const message = ticketMessageInput.value.trim();
-
-                // Clear previous status messages
-                createTicketStatus.textContent = '';
-                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center'; // Reset classes
-
-                // Basic validation
-                if (!subject || !message) {
-                    createTicketStatus.textContent = 'Please fill out both subject and message.';
-                    createTicketStatus.classList.add('error');
-                    return;
-                }
-
-                // Disable button to prevent multiple submissions
-                const submitButton = document.getElementById('create-ticket-button');
-                submitButton.disabled = true;
-                submitButton.textContent = 'Submitting...';
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ subject, message }),
-                        credentials: 'include'
-                    });
-
-                    if (!response.ok) {
-                        // Try to get error message from response body
-                        let errorData;
-                        try {
-                            errorData = await response.json();
-                        } catch (e) { /* Ignore if body isn't JSON */ }
-                        throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+                    // Apply Role Color using border
+                    const hexColor = decimalToHexColor(role.color);
+                    roleSpan.style.borderColor = hexColor;
+                    // If color is not default grey, make border thicker
+                    if (role.color !== 0) {
+                        roleSpan.style.borderWidth = '2px';
                     }
 
-                    // Success
-                    const result = await response.json(); // Get ticket ID if needed
-                    createTicketStatus.textContent = 'Ticket submitted successfully!';
-                    createTicketStatus.classList.add('success');
-                    createTicketForm.reset(); // Clear the form
-                    fetchTickets(); // Refresh the ticket list
+                    // Add Role Icon
+                    if (role.icon) {
+                        const iconImg = document.createElement('img');
+                        iconImg.classList.add('role-item-icon');
+                        iconImg.src = `https://cdn.discordapp.com/role-icons/${role.id}/${role.icon}.png?size=16`;
+                        iconImg.alt = ''; // Decorative
+                        iconImg.onerror = () => { iconImg.style.display = 'none'; };
+                        roleSpan.appendChild(iconImg);
+                    }
 
-                    // Optional: Redirect to the new ticket detail page
-                    // window.location.hash = `#ticketDetail?id=${result.ticket_id}`;
+                    // Add Role Name
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = role.name === '@everyone' ? 'User' : role.name; // Display 'User' for @everyone
+                    roleSpan.appendChild(nameSpan);
 
-                } catch (error) {
-                    console.error('Error creating ticket:', error);
-                    createTicketStatus.textContent = `Error: ${error.message}`;
-                    createTicketStatus.classList.add('error');
-                } finally {
-                    // Re-enable button
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Submit Ticket';
-                }
-            });
-        } else {
-            console.warn("Create ticket form not found.");
-        }
+                    // Add specific styling for moderator role for emphasis
+                    if (role.id === MODERATOR_ROLE_ID_CLIENT) {
+                         roleSpan.classList.add('moderator', 'bg-orange-600', 'text-white', 'border-orange-400'); // Example moderator highlight
+                         nameSpan.textContent = 'Moderator'; // Ensure text is Moderator
+                    }
 
-        // Chat Input Form Submission
-        if(chatInputForm) {
-             chatInputForm.addEventListener('submit', (event) => {
-                 event.preventDefault(); // Prevent page reload
-                 const messageText = chatInput.value.trim();
 
-                 if (messageText && socket && socket.connected && currentTicketId) {
-                     // Send message via WebSocket
-                     socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                     chatInput.value = ''; // Clear the input field
-                 } else if (!socket || !socket.connected) {
-                     showPopupMessage(errorMessagePopup, 'Not connected to chat.', true);
-                 } else if (!messageText) {
-                     // Optionally show a message or just do nothing for empty input
-                     // showPopupMessage(errorMessagePopup, 'Cannot send empty message.', true);
-                 } else if (!currentTicketId) {
-                      showPopupMessage(errorMessagePopup, 'No active ticket selected.', true);
+                    dashboardAllRolesList.appendChild(roleSpan);
+                });
+            } else {
+                 const noRolesP = document.createElement('p');
+                 noRolesP.textContent = 'User'; // Default if no roles array or empty
+                 noRolesP.classList.add('text-gray-500', 'italic');
+                 dashboardAllRolesList.appendChild(noRolesP);
+            }
+            dashboardAllRolesCard.classList.remove('hidden'); // Show the roles card
+
+            // --- Update Ticket List Card (for moderators) ---
+            if (user.is_moderator) { // Use the boolean flag for logic
+                dashboardTicketListCard.classList.remove('hidden');
+                fetchTickets(dashboardTicketListDiv, dashboardTicketListStatus);
+            } else {
+                dashboardTicketListCard.classList.add('hidden');
+            }
+         }
+
+        /** Shows the correct page section based on the path. */
+        function showSectionForPath(path) {
+            console.log(`Showing section for path: ${path}`);
+            let targetSectionElement = null;
+            let isTicketDetailPage = false;
+
+            if (path.startsWith('/ticket')) {
+                targetSectionElement = pageSections['/ticket'];
+                isTicketDetailPage = true;
+                const urlParams = new URLSearchParams(window.location.search);
+                currentTicketId = urlParams.get('id');
+            } else {
+                targetSectionElement = pageSections[path] || pageSections['/'];
+                currentTicketId = null;
+            }
+
+            if (activeSectionElement && activeSectionElement !== targetSectionElement) {
+                activeSectionElement.classList.add('hidden');
+            }
+
+            if (targetSectionElement) {
+                targetSectionElement.classList.remove('hidden');
+                activeSectionElement = targetSectionElement;
+            } else {
+                 activeSectionElement = pageSections['/']; // Fallback to home
+                 if (activeSectionElement) activeSectionElement.classList.remove('hidden');
+            }
+
+             if (!isTicketDetailPage) { disconnectSocket(); }
+
+             // Update header active state
+             document.querySelectorAll('header nav a.internal-link').forEach(link => {
+                 link.classList.remove('text-white', 'font-semibold'); link.classList.add('text-gray-300');
+                 const linkPath = link.getAttribute('href');
+                 if (linkPath === path || (isTicketDetailPage && linkPath === '/tickets')) {
+                     link.classList.add('text-white', 'font-semibold'); link.classList.remove('text-gray-300');
                  }
              });
-        } else {
-            console.warn("Chat input form not found.");
+
+             // Run page-specific logic AFTER section is shown
+             if (currentUser && currentUser.logged_in) {
+                 if (path === '/tickets' && ticketListDiv) { fetchTickets(ticketListDiv, ticketListStatus); }
+                 else if (path === '/dashboard') { updateDashboardUI(currentUser); }
+                 else if (isTicketDetailPage) {
+                     if (currentTicketId) { fetchTicketDetails(currentTicketId); }
+                     else { /* Handle missing ID */ }
+                 }
+             } else if (isProtectedPath(path)) {
+                  showPopupMessage(errorMessagePopup, "Please log in.", true);
+                  if (window.location.pathname !== '/') { history.pushState({ path: '/' }, '', '/'); showSectionForPath('/'); }
+             }
         }
 
-        // --- Initial Page Load Logic ---
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM fully loaded.");
-            createSnowflakes(); // Start the snow effect
-            checkLoginStatusAndNavigate(); // Check login status and navigate to initial page
-        });
+        /** Checks if a path requires login */
+        function isProtectedPath(path) { return ['/tickets', '/dashboard', '/ticket'].some(p => path.startsWith(p)); }
+        function createSnowflakes() { /* ... (implementation as before) ... */ const n=75;if(!snowContainer)return;snowContainer.innerHTML='';for(let i=0;i<n;i++){const s=document.createElement('div');s.classList.add('snowflake');const z=Math.random()*3+2,d=Math.random()*10+5,l=Math.random()*10,t=Math.random()*100,o=Math.random()*0.5+0.5;s.style.cssText=`width:${z}px;height:${z}px;left:${t}vw;opacity:${o};animation-duration:${d}s;animation-delay:-${l}s;`;snowContainer.appendChild(s);}}
+        async function checkLoginStatusAndInitRouter() { /* ... (implementation as before) ... */ try{const r=await fetch(`${API_BASE_URL}/api/user`,{credentials:'include'});if(!r.ok){if(r.status===401||r.status===403)currentUser={logged_in:false};else throw new Error(`HTTP ${r.status}`);}else{currentUser=await r.json();}}catch(e){console.error("Login check error:",e);currentUser={logged_in:false};}finally{updateHeaderUI(currentUser);showSectionForPath(window.location.pathname);}}
+        async function fetchTickets(targetListElement, targetStatusElement) { /* ... (implementation as before) ... */ if(!targetListElement||!targetStatusElement)return;if(!currentUser?.logged_in){targetStatusElement.textContent="Please log in.";targetListElement.innerHTML='';return;}targetStatusElement.textContent="Loading...";targetListElement.innerHTML='';try{const r=await fetch(`${API_BASE_URL}/api/tickets`,{credentials:'include'});if(!r.ok)throw new Error(`HTTP ${r.status}`);const t=await r.json();if(t.length===0){targetStatusElement.textContent="No tickets found.";}else{targetStatusElement.textContent="";t.forEach(k=>{const i=document.createElement('a');i.classList.add('ticket-list-item','internal-link');const d=k._id||'N/A',s=k.subject||'N/S',h=d!=='N/A'?d.slice(-6):'N/A';i.href=`/ticket?id=${d}`;const c=k.status==='open'?'status-open':'status-closed';const x=k.status?k.status[0].toUpperCase()+k.status.slice(1):'N/A';const o=k.created_at?new Date(k.created_at).toLocaleDateString():'N/A';i.innerHTML=`<div><p class="font-medium text-white">#${h}: ${s}</p><p class="text-xs text-gray-400">Opened: ${o}</p></div><span class="${c}">${x}</span>`;targetListElement.appendChild(i);});}}catch(e){console.error("Fetch tickets error:",e);targetStatusElement.textContent=`Error: ${e.message}`;}}
+        function appendChatMessage(data, isHistory = false) { /* ... (implementation as before) ... */ if(!chatMessagesDiv)return;const l=chatMessagesDiv.querySelector('p.text-gray-500');if(l)l.remove();const m=document.createElement('div');m.classList.add('chat-message');const t=data.timestamp?new Date(data.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';const u=(data.sender_username||data.username||'System').replace(/</g,"&lt;");const x=(data.text||'').replace(/</g,"&lt;");m.innerHTML=`<span class="username">${u}:</span> ${x} <span class="timestamp">${t}</span>`;chatMessagesDiv.appendChild(m);if(!isHistory)chatMessagesDiv.scrollTop=chatMessagesDiv.scrollHeight;}
+        async function fetchTicketDetails(ticketId) { /* ... (implementation as before) ... */ if(!currentUser?.logged_in){showPopupMessage(errorMessagePopup,"Login required.",true);return;}if(!ticketId||!ticketDetailSubject||!chatMessagesDiv)return;currentTicketId=ticketId;ticketDetailSubject.textContent=`Loading Ticket #${ticketId.slice(-6)}...`;chatMessagesDiv.innerHTML='<p class="text-gray-500 text-center py-4">Loading chat...</p>';try{const r=await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`,{credentials:'include'});if(!r.ok){const m=r.status===404?"Not found":r.status===403?"Access denied":`HTTP ${r.status}`;throw new Error(m);}const d=await r.json();const s=d.subject||'No Subject';document.title=`Ticket #${ticketId.slice(-6)} - ${s}`;ticketDetailSubject.textContent=`#${ticketId.slice(-6)}: ${s}`;chatMessagesDiv.innerHTML='';if(d.messages?.length){d.messages.forEach(m=>appendChatMessage(m,true));chatMessagesDiv.scrollTop=chatMessagesDiv.scrollHeight;}else{chatMessagesDiv.innerHTML='<p class="text-gray-500 text-center py-4">No messages.</p>';}connectSocket(ticketId);}catch(e){console.error("Fetch detail error:",e);ticketDetailSubject.textContent="Error";chatMessagesDiv.innerHTML=`<p class="text-red-500 text-center py-4">Error: ${e.message}</p>`;showPopupMessage(errorMessagePopup,`Load failed: ${e.message}`,true);}}
+        function connectSocket(ticketId) { /* ... (implementation as before) ... */ if(!ticketId||typeof io==='undefined')return;if(socket?.connected){socket.emit('join_ticket_room',{ticket_id:ticketId});return;}if(socket)socket.disconnect();console.log(`Connecting WS for ${ticketId}`);socket=io(SOCKET_URL,{reconnectionAttempts:3,withCredentials:true});socket.on('connect',()=>{console.log('WS connected');appendChatMessage({username:'System',text:'Connected'});socket.emit('join_ticket_room',{ticket_id:ticketId});});socket.on('disconnect',(r)=>{console.log('WS disconnected:',r);appendChatMessage({username:'System',text:`Disconnected: ${r}`});socket=null;});socket.on('connect_error',(e)=>{console.error('WS error:',e);appendChatMessage({username:'System',text:'Connection error'});socket=null;});socket.on('new_message',(d)=>{if(d.ticket_id===currentTicketId)appendChatMessage(d);});socket.on('room_joined',(d)=>{console.log('Joined room:',d.room);appendChatMessage({username:'System',text:'Joined room'});});socket.on('error_message',(d)=>{console.error('WS error:',d.message);showPopupMessage(errorMessagePopup,d.message||'Chat error',true);});}
+        function disconnectSocket() { /* ... (implementation as before) ... */ if(socket){console.log('Disconnecting WS');socket.disconnect();socket=null;}}
+        async function handleLogout() { /* ... (implementation as before) ... */ console.log('Logging out...');try{const r=await fetch(`${API_BASE_URL}/logout`,{credentials:'include'});if(!r.ok)throw new Error('Logout failed');currentUser={logged_in:false};updateHeaderUI(currentUser);showPopupMessage(paymentMessage,"Logged out.");history.pushState({path:'/'},'','/');showSectionForPath('/');}catch(e){console.error("Logout error:",e);showPopupMessage(errorMessagePopup,"Logout failed.",true);currentUser={logged_in:false};updateHeaderUI(currentUser);}}
+        async function handleCreateTicket(event) { /* ... (implementation as before) ... */ event.preventDefault();if(!createTicketForm||!createTicketStatus)return;const s=ticketSubjectInput.value.trim(),m=ticketMessageInput.value.trim();createTicketStatus.textContent='';createTicketStatus.className='h-6 text-sm mt-4 mb-4 text-center';if(!s||!m){createTicketStatus.textContent='Subject & message required.';createTicketStatus.classList.add('error');return;}if(!currentUser?.logged_in){createTicketStatus.textContent='Login required.';createTicketStatus.classList.add('error');return;}const b=document.getElementById('create-ticket-button');b.disabled=true;b.textContent='Submitting...';try{const r=await fetch(`${API_BASE_URL}/api/tickets`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:s,message:m}),credentials:'include'});if(!r.ok){let d;try{d=await r.json();}catch(e){}throw new Error(d?.error||`HTTP ${r.status}`);}createTicketStatus.textContent='Ticket submitted!';createTicketStatus.classList.add('success');createTicketForm.reset();fetchTickets(ticketListDiv,ticketListStatus);}catch(e){console.error('Create ticket error:',e);createTicketStatus.textContent=`Error: ${e.message}`;createTicketStatus.classList.add('error');}finally{b.disabled=false;b.textContent='Submit Ticket';}}
+        function handleChatSubmit(event) { /* ... (implementation as before) ... */ event.preventDefault();if(!chatInput)return;const t=chatInput.value.trim();if(t&&socket?.connected&&currentTicketId){socket.emit('send_message',{ticket_id:currentTicketId,text:t});chatInput.value='';}else if(!socket?.connected)showPopupMessage(errorMessagePopup,'Not connected.',true);}
+
+        // --- Router Setup ---
+        function handleNavigation(event) { /* ... (implementation as before) ... */ const l=event.target.closest('a.internal-link');if(!l)return;event.preventDefault();const p=l.getAttribute('href');if(p===window.location.pathname+window.location.search)return;console.log(`Internal link: ${p}`);history.pushState({path:p},'',p);showSectionForPath(p);}
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => { /* ... (implementation as before) ... */ console.log("SPA DOM loaded.");createSnowflakes();checkLoginStatusAndInitRouter();document.body.addEventListener('click',handleNavigation);window.addEventListener('popstate',(e)=>{console.log('popstate:',e.state);const p=e.state?.path||window.location.pathname;showSectionForPath(p);});if(createTicketForm)createTicketForm.addEventListener('submit',handleCreateTicket);if(chatInputForm)chatInputForm.addEventListener('submit',handleChatSubmit);if(logoutButton)logoutButton.addEventListener('click',(e)=>{e.preventDefault();handleLogout();});if(dashboardLogoutButton)dashboardLogoutButton.addEventListener('click',(e)=>{e.preventDefault();handleLogout();});const pC=document.getElementById('products-page-content');if(pC){pC.addEventListener('click',(e)=>{const b=e.target.closest('.paypal-button');if(b){const id=b.dataset.productId;console.log(`PayPal click for: ${id}`);if(!currentUser?.logged_in){showPopupMessage(errorMessagePopup,"Login required.",true);return;}showPopupMessage(paymentMessage,`Processing ${id}...`);}});}});
 
     </script>
 
