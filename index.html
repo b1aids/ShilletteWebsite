@@ -72,6 +72,7 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
+            z-index: -1; /* Ensure border is behind content */
         }
 
         .card-gradient-border.orange-border::before {
@@ -83,14 +84,37 @@
              animation-duration: 6s;
         }
 
-        #dashboard-content h2 { @apply text-2xl font-semibold text-white mb-6; }
+        /* Interactive card style */
+        .product-card {
+            @apply relative bg-slate-800 rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
+             overflow: hidden; /* Contain the pseudo-element */
+        }
+
+        #dashboard-content h2, #products-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
         #dashboard-content .dashboard-card { @apply bg-slate-800 p-6 rounded-lg shadow-lg; }
+
+        /* Payment button styles */
+        .stripe-button { @apply bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
+        .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
+
+        /* Simple message overlay */
+        #payment-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            @apply bg-green-600 text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50;
+        }
+         #payment-message.show {
+             opacity: 1;
+         }
 
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <div id="snow-container"></div>
+    <div id="payment-message">Payment initiated...</div>
 
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
@@ -101,9 +125,9 @@
             <div class="flex items-center space-x-6">
                 <nav class="hidden md:flex space-x-6">
                     <a href="#" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
-                    <a href="#products" class="text-gray-300 hover:text-white transition duration-200">Products</a>
+                    {/* Added id="products-link" */}
+                    <a href="#" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
                     <a href="#" class="text-gray-300 hover:text-white transition duration-200">Pricing</a>
-                    {/* Updated Discord Nav Link */}
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
@@ -126,6 +150,7 @@
         </div>
     </header>
 
+    {/* Main Landing Page Content (Initially Visible) */}
     <main id="main-content" class="flex-grow">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="hero-bg-element"></div>
@@ -139,7 +164,6 @@
                     <button class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
                         Purchase Product
                     </button>
-                    {/* Updated Join Discord Button to be a link */}
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Join Discord</span>
@@ -165,55 +189,66 @@
                 </div>
             </div>
         </section>
-
-        <section id="products" class="py-20">
-            <div class="container mx-auto px-6">
-                <h2 class="text-3xl md:text-4xl font-bold text-white text-center mb-12">Our Products</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                    <div class="relative bg-slate-800 rounded-lg p-6 shadow-xl flex flex-col card-gradient-border orange-border">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="bg-orange-500/20 text-orange-300 text-xs font-semibold px-2.5 py-0.5 rounded">ALL IN ONE</span>
-                            <div class="flex space-x-2 text-yellow-400">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-semibold text-white mb-2">Shillette Firmware</h3>
-                        <p class="text-3xl font-bold text-white mb-4">From $100</p>
-                        <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Fully Undetected</li>
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Easy Installation</li>
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Full Support</li>
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Lifetime Updates</li>
-                        </ul>
-                        <button class="mt-auto w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
-                            View Product
-                        </button>
-                    </div>
-
-                    <div class="relative bg-slate-800 rounded-lg p-6 shadow-xl flex flex-col card-gradient-border gray-border">
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
-                             <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-400">
-                                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                             </div>
-                        </div>
-                        <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3>
-                        <p class="text-3xl font-bold text-white mb-4">From $3</p>
-                        <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li>
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li>
-                            <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
-                        </ul>
-                        <button class="mt-auto w-full bg-gray-600 hover:bg-gray-500 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
-                            Learn More
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
+        {/* Products section removed from main content */}
     </main>
 
+    {/* New Products Page Content (Initially Hidden) */}
+    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
+        <div class="flex justify-start mb-8">
+             <button id="back-to-home-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Home</span>
+             </button>
+        </div>
+        <h2>Our Products</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Product Card 1 */}
+            <div class="product-card card-gradient-border orange-border">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="bg-orange-500/20 text-orange-300 text-xs font-semibold px-2.5 py-0.5 rounded">ALL IN ONE</span>
+                    <div class="flex space-x-2 text-yellow-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+                <h3 class="text-xl font-semibold text-white mb-2">Shillette Firmware</h3>
+                <p class="text-3xl font-bold text-white mb-4">From $100</p>
+                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Fully Undetected</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Easy Installation</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Full Support</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Lifetime Updates</li>
+                </ul>
+                <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
+                     <button class="stripe-button" data-product-id="firmware-100">Pay with Stripe</button>
+                     <button class="paypal-button" data-product-id="firmware-100">Pay with PayPal</button>
+                </div>
+            </div>
+
+            {/* Product Card 2 */}
+            <div class="product-card card-gradient-border gray-border">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
+                     <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-400">
+                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                     </div>
+                </div>
+                <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3>
+                <p class="text-3xl font-bold text-white mb-4">From $3</p>
+                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li>
+                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
+                </ul>
+                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
+                     <button class="stripe-button" data-product-id="software-3">Pay with Stripe</button>
+                     <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {/* Dashboard Content (Initially Hidden) */}
     <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10">
         <h2>Dashboard</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -255,6 +290,7 @@
         const dashboardLogoutButton = document.getElementById('dashboard-logout-button');
         const mainContent = document.getElementById('main-content');
         const dashboardContent = document.getElementById('dashboard-content');
+        const productsPageContent = document.getElementById('products-page-content'); // New products page
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
@@ -262,6 +298,9 @@
         const dashboardUserAvatarDisplay = document.getElementById('dashboard-user-avatar');
         const snowContainer = document.getElementById('snow-container');
         const homeLink = document.getElementById('home-link');
+        const productsLink = document.getElementById('products-link'); // Products nav link
+        const backToHomeButton = document.getElementById('back-to-home-button'); // Back button on products page
+        const paymentMessage = document.getElementById('payment-message'); // Message div
 
         const simulatedUserData = {
             username: 'TestUser#0001',
@@ -270,8 +309,14 @@
 
         const discordAuthUrl = 'https://discord.com/oauth2/authorize?client_id=1363309221659021512&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fdiscord&scope=identify';
 
+        function hideAllSections() {
+             mainContent.classList.add('hidden');
+             dashboardContent.classList.add('hidden');
+             productsPageContent.classList.add('hidden');
+        }
+
         function showDashboard() {
-            mainContent.classList.add('hidden');
+            hideAllSections();
             dashboardContent.classList.remove('hidden');
             loginButton.classList.add('hidden');
             userInfo.classList.remove('hidden');
@@ -283,17 +328,41 @@
             dashboardUserAvatarDisplay.src = simulatedUserData.avatarUrl;
 
             localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('currentPage', 'dashboard'); // Track current page
         }
 
         function showMainContent() {
+            hideAllSections();
             mainContent.classList.remove('hidden');
-            dashboardContent.classList.add('hidden');
-            loginButton.classList.remove('hidden');
-            userInfo.classList.add('hidden');
-            userInfo.classList.remove('flex');
-
-            localStorage.removeItem('isLoggedIn');
+            // Show login or user info based on login state
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                 loginButton.classList.add('hidden');
+                 userInfo.classList.remove('hidden');
+                 userInfo.classList.add('flex');
+            } else {
+                 loginButton.classList.remove('hidden');
+                 userInfo.classList.add('hidden');
+                 userInfo.classList.remove('flex');
+            }
+            localStorage.setItem('currentPage', 'home'); // Track current page
         }
+
+        function showProductsPage() {
+            hideAllSections();
+            productsPageContent.classList.remove('hidden');
+             // Keep header consistent with login state
+             if (localStorage.getItem('isLoggedIn') === 'true') {
+                 loginButton.classList.add('hidden');
+                 userInfo.classList.remove('hidden');
+                 userInfo.classList.add('flex');
+            } else {
+                 loginButton.classList.remove('hidden');
+                 userInfo.classList.add('hidden');
+                 userInfo.classList.remove('flex');
+            }
+            localStorage.setItem('currentPage', 'products'); // Track current page
+        }
+
 
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
@@ -320,6 +389,17 @@
             }
         }
 
+         function showPaymentMessage(message) {
+             if (!paymentMessage) return;
+             paymentMessage.textContent = message;
+             paymentMessage.classList.add('show');
+             setTimeout(() => {
+                 paymentMessage.classList.remove('show');
+             }, 3000); // Hide after 3 seconds
+         }
+
+        // --- Event Listeners ---
+
         loginButton.addEventListener('click', () => {
             console.log('Simulating Login...');
             showDashboard();
@@ -327,11 +407,13 @@
 
         logoutButton.addEventListener('click', () => {
             console.log('Simulating Logout...');
+            localStorage.removeItem('isLoggedIn'); // Clear login state *before* showing main content
             showMainContent();
         });
 
         dashboardLogoutButton.addEventListener('click', () => {
              console.log('Simulating Logout from Dashboard...');
+             localStorage.removeItem('isLoggedIn');
              showMainContent();
         });
 
@@ -343,13 +425,70 @@
             });
         }
 
+        if(productsLink) {
+            productsLink.addEventListener('click', (event) => {
+                event.preventDefault();
+                console.log('Products link clicked, showing products page...');
+                showProductsPage();
+            });
+        }
+
+         if(backToHomeButton) {
+            backToHomeButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                console.log('Back button clicked, showing main content...');
+                showMainContent();
+            });
+        }
+
+        // Add listeners for payment buttons (delegated for simplicity)
+        document.addEventListener('click', (event) => {
+            const target = event.target.closest('button'); // Find closest button clicked
+            if (!target) return;
+
+            const productId = target.dataset.productId;
+            if (!productId) return;
+
+            if (target.classList.contains('stripe-button')) {
+                event.preventDefault();
+                console.log(`Simulating Stripe payment for product: ${productId}`);
+                showPaymentMessage(`Initiating Stripe payment for ${productId}...`);
+                // In real app: Initiate Stripe Checkout session via backend call
+            } else if (target.classList.contains('paypal-button')) {
+                event.preventDefault();
+                console.log(`Simulating PayPal payment for product: ${productId}`);
+                showPaymentMessage(`Redirecting to PayPal for ${productId}...`);
+                 // In real app: Initiate PayPal payment flow via backend call or PayPal JS SDK
+            }
+        });
+
+
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
 
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                showDashboard();
+            // Determine initial page based on stored state or default to home
+            const currentPage = localStorage.getItem('currentPage');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+            if (isLoggedIn && currentPage === 'dashboard') {
+                 showDashboard();
+            } else if (currentPage === 'products') {
+                 showProductsPage(); // Show products page if that was the last view
             } else {
-                showMainContent();
+                 showMainContent(); // Default to home
+            }
+             // Ensure header state matches login state regardless of page
+             if (isLoggedIn) {
+                 loginButton.classList.add('hidden');
+                 userInfo.classList.remove('hidden');
+                 userInfo.classList.add('flex');
+                 // Update user info in header if logged in
+                 userNameDisplay.textContent = simulatedUserData.username;
+                 userAvatarDisplay.src = simulatedUserData.avatarUrl.replace('64x64', '32x32');
+            } else {
+                 loginButton.classList.remove('hidden');
+                 userInfo.classList.add('hidden');
+                 userInfo.classList.remove('flex');
             }
         });
 
