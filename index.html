@@ -667,34 +667,43 @@
 
         // Updated showSection to hide all others first
         function showSection(sectionId) {
+            console.log(`[showSection] Attempting to show: ${sectionId}`); // DEBUG
             hideContextMenu(); // Hide context menu when changing sections
 
             // Hide all sections first
-            Object.values(pageSections).forEach(section => {
-                if (section) { // Check if the element actually exists
-                    section.classList.add('hidden');
-                }
+            Object.keys(pageSections).forEach(key => {
+                 const sectionElement = pageSections[key];
+                 if (sectionElement) {
+                     console.log(`[showSection] Hiding: ${key}`); // DEBUG
+                     sectionElement.classList.add('hidden');
+                 } else {
+                     console.warn(`[showSection] Element not found for key: ${key}`); // DEBUG
+                 }
             });
+
 
             // Show the target section
             const sectionElement = pageSections[sectionId];
             if (sectionElement) {
                 sectionElement.classList.remove('hidden');
                 activeSectionId = sectionId; // Update the active section ID
-                console.log(`Showing section: ${sectionId}`);
+                console.log(`[showSection] Successfully shown: ${sectionId}`); // DEBUG
             } else {
-                console.warn(`Section with ID ${sectionId} not found. Defaulting to #home.`);
+                console.warn(`[showSection] Target element not found for ID: ${sectionId}. Defaulting to #home.`); // DEBUG
                 // Default to home if target not found
                 if (pageSections['#home']) {
                     pageSections['#home'].classList.remove('hidden');
                     activeSectionId = '#home';
+                    console.log(`[showSection] Defaulted to #home.`); // DEBUG
                 } else {
                      activeSectionId = null; // Or handle error appropriately
+                     console.error("[showSection] Could not find #home element either!"); // DEBUG
                 }
             }
 
              // Disconnect socket ONLY if navigating away from ticket detail AND tickets list
              if (sectionId !== '#ticketDetail' && sectionId !== '#tickets') {
+                 console.log(`[showSection] Navigating away from tickets/detail, disconnecting socket.`); // DEBUG
                  disconnectSocket(); // Disconnect if not on tickets or detail page
              }
              // Clear currentTicketId if not on detail page
@@ -705,19 +714,24 @@
 
 
         function navigateTo(hash, ticketData = null) {
+            console.log(`[navigateTo] Received hash: ${hash}`); // DEBUG
             // Handle hashes starting with /#
             const cleanHash = hash.startsWith('/#') ? hash.substring(1) : hash;
             const baseHash = cleanHash.split('?')[0] || '#home';
             const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
 
-            console.log(`Navigating to: ${cleanHash} (Base: ${baseHash}, Target: ${targetSectionId})`);
+            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Target section: ${targetSectionId}`); // DEBUG
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
+            console.log(`[navigateTo] Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`); // DEBUG
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
+                 console.log(`[navigateTo] Access denied to protected route: ${targetSectionId}`); // DEBUG
                  showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
                  if (window.location.hash !== '#home' && window.location.hash !== '/#home') { // Check both formats
+                     console.log(`[navigateTo] Redirecting to /#home`); // DEBUG
                      window.location.hash = '/#home'; // Navigate to /#home
                  } else {
+                     console.log(`[navigateTo] Already on home, showing #home section.`); // DEBUG
                      showSection('#home'); // Explicitly show home if already on #home but logged out
                  }
                  return;
@@ -725,6 +739,7 @@
 
             // Ensure socket is connected if navigating to a protected/socket-requiring page
             if (isProtected && currentUser && currentUser.logged_in) {
+                 console.log(`[navigateTo] Ensuring socket is connected for route: ${targetSectionId}`); // DEBUG
                  ensureSocketConnected();
             }
 
@@ -738,6 +753,7 @@
                     const params = new URLSearchParams(cleanHash.split('?')[1] || '');
                     id = params.get('id');
                 }
+                console.log(`[navigateTo] Ticket Detail - ID: ${id}, Subject: ${subject}`); // DEBUG
 
                 if (id) {
                     currentTicketId = id; // Set currentTicketId here
@@ -746,7 +762,7 @@
                     // Fetch full ticket details including messages
                     fetchTicketDetails(id); // Fetch details AND connect socket + join room
                 } else {
-                    console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
+                    console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
                     window.location.hash = '/#tickets'; // Navigate to /#tickets
                     return;
@@ -758,6 +774,7 @@
             localStorage.setItem('currentPage', targetSectionId); // Store the base hash
 
             if (targetSectionId === '#tickets') {
+                console.log(`[navigateTo] Fetching tickets for #tickets view.`); // DEBUG
                 fetchTickets(); // This will now handle mod/user view logic
             }
             if (targetSectionId === '#dashboard' && currentUser && currentUser.logged_in) {
@@ -768,9 +785,11 @@
         }
 
         function runNavigation() {
+            console.log(`[runNavigation] Hash changed to: ${window.location.hash}`); // DEBUG
             // Use cleanHash logic here too for initial load / direct navigation
             const cleanHash = window.location.hash.startsWith('/#') ? window.location.hash.substring(1) : window.location.hash;
             const hashToNavigate = cleanHash || '#home';
+            console.log(`[runNavigation] Navigating to: ${hashToNavigate}`); // DEBUG
             navigateTo(hashToNavigate); // Use the cleaned hash or default
         }
 
@@ -809,15 +828,16 @@
                  } else {
                      currentUser = await response.json();
                  }
-                 console.log("User status checked:", currentUser);
+                 console.log("[checkLoginStatusAndNavigate] User status checked:", currentUser);
 
                  // Connect socket if user is logged in (needed for ticket list actions)
                  if (currentUser && currentUser.logged_in) {
+                    console.log("[checkLoginStatusAndNavigate] User logged in, ensuring socket connection."); // DEBUG
                     ensureSocketConnected();
                  }
 
              } catch (error) {
-                 console.error("Error checking login status:", error);
+                 console.error("[checkLoginStatusAndNavigate] Error checking login status:", error);
                  currentUser = { logged_in: false };
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
@@ -827,10 +847,15 @@
 
         // Modified fetchTickets to handle moderator view and add context menus
         async function fetchTickets() {
+            console.log("[fetchTickets] Starting to fetch tickets..."); // DEBUG
             // Ensure elements exist
-            if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) return;
+            if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
+                console.error("[fetchTickets] One or more ticket list elements not found."); // DEBUG
+                return;
+            }
 
             if (!currentUser || !currentUser.logged_in) {
+                console.log("[fetchTickets] User not logged in."); // DEBUG
                 ticketListStatus.textContent = "Please log in to view tickets.";
                 moderatorActiveListStatus.textContent = "Please log in to view tickets.";
                 moderatorArchivedListStatus.textContent = "Please log in to view tickets.";
@@ -852,6 +877,7 @@
 
             // Determine view based on moderator status
             const isModerator = currentUser.is_moderator;
+            console.log(`[fetchTickets] Is moderator: ${isModerator}`); // DEBUG
             if (isModerator) {
                 userTicketView.classList.add('hidden'); // Hide user list container
                 moderatorManagementView.classList.remove('hidden'); // Show the dedicated mod management view
@@ -867,6 +893,7 @@
                      else throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const tickets = await response.json();
+                console.log(`[fetchTickets] Received ${tickets.length} tickets.`); // DEBUG
 
                 // Clear loading messages
                 ticketListStatus.textContent = "";
@@ -908,6 +935,7 @@
 
                         // Click to navigate (using updated format)
                         item.addEventListener('click', () => {
+                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}`); // DEBUG
                              // Use navigateTo to handle logic centrally
                              navigateTo(`/#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
                         });
@@ -937,7 +965,7 @@
                     }
                 }
             } catch (error) {
-                console.error("Error fetching tickets:", error);
+                console.error("[fetchTickets] Error fetching tickets:", error);
                 const errorMsg = `Failed to load tickets: ${error.message}`;
                 ticketListStatus.textContent = errorMsg;
                 moderatorActiveListStatus.textContent = errorMsg;
@@ -948,6 +976,7 @@
 
         // Fetch full ticket details including messages
         async function fetchTicketDetails(ticketId) {
+             console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`); // DEBUG
              if (!currentUser || !currentUser.logged_in) return;
              // Ensure socket is connected before fetching details that might need it soon
              ensureSocketConnected();
@@ -960,6 +989,7 @@
                      throw new Error(`HTTP error! status: ${response.status}`);
                  }
                  const ticket = await response.json();
+                 console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`); // DEBUG
 
                  // Clear loading message
                  chatMessagesDiv.innerHTML = '';
@@ -973,14 +1003,15 @@
 
                  // Join the specific ticket room now that we're viewing details
                  if (socket && socket.connected) {
+                     console.log(`[fetchTicketDetails] Emitting join_ticket_room for: ${ticketId}`); // DEBUG
                      socket.emit('join_ticket_room', { ticket_id: ticketId });
                  } else {
-                     console.warn("Socket not connected when trying to join room for ticket details.");
+                     console.warn("[fetchTicketDetails] Socket not connected when trying to join room.");
                      // Optionally try to connect again here, or rely on ensureSocketConnected
                  }
 
              } catch (error) {
-                 console.error("Error fetching ticket details:", error);
+                 console.error("[fetchTicketDetails] Error fetching ticket details:", error);
                  chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
                  showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
              }
@@ -1025,24 +1056,26 @@
         function connectSocket(ticketIdToJoin = null) {
             if (socket && socket.connected) {
                 // If already connected and a ticketId is provided, join that room
-                if (ticketIdToJoin) {
-                    console.log(`Socket already connected, joining room: ${ticketIdToJoin}`);
+                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) { // Only join if it's the current ticket view
+                    console.log(`[connectSocket] Socket already connected, joining room: ${ticketIdToJoin}`);
                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
+                } else {
+                    console.log(`[connectSocket] Socket already connected, not joining room ${ticketIdToJoin}.`);
                 }
                 return; // Already connected
             }
 
-            console.log(`Attempting to connect WebSocket... (Joining room ${ticketIdToJoin || 'none'})`);
+            console.log(`[connectSocket] Attempting to connect WebSocket... (Potential room join: ${ticketIdToJoin || 'none'})`);
             socket = io(SOCKET_URL, {
                 reconnectionAttempts: 3,
                 withCredentials: true
             });
 
             socket.on('connect', () => {
-                console.log('WebSocket connected:', socket.id);
+                console.log('[connectSocket] WebSocket connected:', socket.id);
                 // If a ticketId was specified during connection attempt, join its room now
-                if (ticketIdToJoin) {
-                     console.log(`Joining room post-connect: ${ticketIdToJoin}`);
+                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) { // Check again if it's still the current view
+                     console.log(`[connectSocket] Joining room post-connect: ${ticketIdToJoin}`);
                      socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
                 }
                 // Add other event listeners only once after connection
@@ -1050,12 +1083,12 @@
             });
 
             socket.on('disconnect', (reason) => {
-                console.log('WebSocket disconnected:', reason);
+                console.log('[connectSocket] WebSocket disconnected:', reason);
                 socket = null; // Clear socket object on disconnect
             });
 
             socket.on('connect_error', (error) => {
-                console.error('WebSocket connection error:', error);
+                console.error('[connectSocket] WebSocket connection error:', error);
                 showPopupMessage(errorMessagePopup, "Chat connection failed.", true);
                 socket = null; // Clear socket object on error
             });
@@ -1064,10 +1097,10 @@
         // Helper to ensure socket is connected (call when needed)
         function ensureSocketConnected() {
              if (!socket || !socket.connected) {
-                 console.log("Socket not connected, attempting connection...");
+                 console.log("[ensureSocketConnected] Socket not connected, attempting connection...");
                  connectSocket(); // Connect without joining a specific room initially
              } else {
-                 console.log("Socket already connected.");
+                 console.log("[ensureSocketConnected] Socket already connected.");
              }
         }
 
@@ -1075,6 +1108,7 @@
         // Centralized place to set up listeners to avoid duplicates
         function setupSocketListeners() {
              if (!socket) return;
+             console.log("[setupSocketListeners] Setting up listeners."); // DEBUG
              // Remove potential old listeners before adding new ones
              socket.off('new_message');
              socket.off('room_joined');
@@ -1086,6 +1120,7 @@
 
              // Add listeners
              socket.on('new_message', (data) => {
+                 console.log("[Socket Listener] Received new_message:", data); // DEBUG
                  if (!data.sender_id && data.username === currentUser?.username) {
                      data.sender_id = currentUser.user_id;
                  }
@@ -1094,34 +1129,38 @@
                  }
              });
              socket.on('room_joined', (data) => {
-                 console.log('Joined room:', data.room);
+                 console.log('[Socket Listener] Joined room:', data.room);
              });
              socket.on('error_message', (data) => {
-                 console.error('WebSocket server error:', data.message);
+                 console.error('[Socket Listener] WebSocket server error:', data.message);
                  showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
              });
              socket.on('message_deleted', (data) => {
+                 console.log("[Socket Listener] Received message_deleted:", data); // DEBUG
                  if (data.ticket_id === currentTicketId) {
                      const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
                      if (messageToRemove) {
                          messageToRemove.remove();
-                         console.log(`Removed message with timestamp: ${data.timestamp}`);
+                         console.log(`[Socket Listener] Removed message with timestamp: ${data.timestamp}`);
                      }
                  }
              });
              socket.on('ticket_status_updated', (data) => {
+                  console.log("[Socket Listener] Received ticket_status_updated:", data); // DEBUG
                   if (activeSectionId === '#tickets') {
-                      console.log(`Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
+                      console.log(`[Socket Listener] Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
                       fetchTickets();
                   }
              });
               socket.on('ticket_list_updated', () => {
+                  console.log("[Socket Listener] Received ticket_list_updated."); // DEBUG
                   if (activeSectionId === '#tickets') {
-                      console.log("Ticket list updated event received. Refreshing list.");
+                      console.log("[Socket Listener] Refreshing ticket list.");
                       fetchTickets();
                   }
               });
              socket.on('action_success', (data) => {
+                  console.log("[Socket Listener] Received action_success:", data); // DEBUG
                   showPopupMessage(paymentMessage, data.message || 'Action successful.');
               });
         }
@@ -1129,7 +1168,7 @@
 
         function disconnectSocket() {
             if (socket) {
-                console.log('Disconnecting WebSocket...');
+                console.log('[disconnectSocket] Disconnecting WebSocket...');
                 socket.disconnect();
                 socket = null;
             }
@@ -1263,6 +1302,7 @@
              contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
              contextMenuData.senderId = null; // Not relevant for ticket actions
              contextMenuData.messageTimestamp = null; // Not relevant
+             console.log("[showTicketContextMenu] Data:", contextMenuData); // DEBUG
 
              // Show/Hide options based on status and user role
              const isModerator = currentUser.is_moderator;
@@ -1290,7 +1330,7 @@
                  showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true);
                  return;
              }
-             console.log(`Attempting to delete message: T:${contextMenuData.ticketId} TS:${contextMenuData.messageTimestamp}`);
+             console.log(`[deleteChatMessage] Attempting to delete message: T:${contextMenuData.ticketId} TS:${contextMenuData.messageTimestamp}`);
              socket.emit('delete_message', {
                  ticket_id: contextMenuData.ticketId,
                  message_timestamp: contextMenuData.messageTimestamp
@@ -1304,7 +1344,7 @@
                  showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true);
                  return;
              }
-             console.log(`Attempting to close ticket: ${contextMenuData.ticketId}`);
+             console.log(`[closeTicket] Attempting to close ticket: ${contextMenuData.ticketId}`);
              socket.emit('update_ticket_status', {
                  ticket_id: contextMenuData.ticketId,
                  new_status: 'closed'
@@ -1317,7 +1357,7 @@
                  showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true);
                  return;
              }
-             console.log(`Attempting to reopen ticket: ${contextMenuData.ticketId}`);
+             console.log(`[reopenTicket] Attempting to reopen ticket: ${contextMenuData.ticketId}`);
              socket.emit('update_ticket_status', {
                  ticket_id: contextMenuData.ticketId,
                  new_status: 'open'
@@ -1332,7 +1372,7 @@
              }
              // Confirmation dialog
              if (confirm(`Are you sure you want to permanently delete ticket #${contextMenuData.ticketId.slice(-6)}? This cannot be undone.`)) {
-                 console.log(`Attempting to delete ticket: ${contextMenuData.ticketId}`);
+                 console.log(`[deleteTicket] Attempting to delete ticket: ${contextMenuData.ticketId}`);
                  socket.emit('delete_ticket', {
                      ticket_id: contextMenuData.ticketId
                  });
