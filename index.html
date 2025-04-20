@@ -782,21 +782,18 @@
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
                 let subject = null;
-                if (ticketData) { // Prioritize passed data
-                    id = ticketData.id;
-                    subject = ticketData.subject;
-                } else { // Fallback to URL params
-                    const params = new URLSearchParams(cleanHash.split('?')[1] || '');
-                    id = params.get('id');
-                    // Subject might not be in URL, fetchTicketDetails will get it
-                }
-                console.log(`[navigateTo] Ticket Detail - ID: ${id}, Subject (initial): ${subject}`);
+                // Extract ID from the hash's query parameters
+                const params = new URLSearchParams(cleanHash.split('?')[1] || '');
+                id = params.get('id');
+
+                console.log(`[navigateTo] Ticket Detail - ID from URL: ${id}`);
 
                 if (id) {
                     currentTicketId = id; // Set currentTicketId *before* fetching
-                    ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`; // Set initial subject
+                    // Set initial subject - might be overwritten by fetchTicketDetails
+                    ticketDetailSubject.textContent = `Ticket #${id.slice(-6)}`;
                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Loading state
-                    // Fetch full ticket details including messages and update subject if needed
+                    // Fetch full ticket details including messages and update subject
                     fetchTicketDetails(id); // This fetches details AND connects socket + joins room
                 } else {
                     console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
@@ -808,7 +805,7 @@
 
             // Show the correct section *after* handling potential redirects or data loading setup
             showSection(targetSectionId);
-            localStorage.setItem('currentPage', targetSectionId); // Store the base hash
+            // **Do not store currentPage here**, rely on hashchange to drive state
 
             // Fetch data if needed for the newly shown section
             if (targetSectionId === '#tickets') {
@@ -829,8 +826,9 @@
         function runNavigation() {
             console.log(`[runNavigation] Hash changed to: ${window.location.hash}`);
             // Use cleanHash logic here too for initial load / direct navigation
-            const cleanHash = window.location.hash.startsWith('/#') ? window.location.hash.substring(1) : window.location.hash;
-            const hashToNavigate = cleanHash || '#home'; // Default to #home if hash is empty
+            // Ensure it starts with # for navigateTo
+            const rawHash = window.location.hash;
+            const hashToNavigate = rawHash.startsWith('/#') ? rawHash.substring(1) : (rawHash || '#home');
             console.log(`[runNavigation] Navigating to: ${hashToNavigate}`);
             navigateTo(hashToNavigate); // Use the cleaned hash or default
         }
@@ -895,7 +893,7 @@
                  currentUser = { logged_in: false }; // Assume logged out on error
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
-                 // Run navigation AFTER checking login status
+                 // Run navigation AFTER checking login status, based on the current hash
                  runNavigation();
              }
         }
@@ -904,6 +902,7 @@
          * Fetches the list of tickets (either user's or all, based on role)
          * and populates the appropriate list(s) in the UI.
          * Adds event listeners for clicking and right-clicking ticket items.
+         * **MODIFIED**: Click listener now sets window.location.hash.
          */
         async function fetchTickets() {
             console.log("[fetchTickets] Starting to fetch tickets...");
@@ -996,11 +995,14 @@
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
 
-                        // Click to navigate (using updated format and passing data)
-                        item.addEventListener('click', () => {
-                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}`);
-                             // Use navigateTo, passing ticket data for faster initial display
-                             navigateTo(`/#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
+                        // **MODIFIED CLICK LISTENER**
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault(); // Prevent any default action if it were an anchor
+                            const targetHash = `/#ticketDetail?id=${ticketId}`;
+                            console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}. Setting hash to: ${targetHash}`);
+                            // Set the window hash. This will trigger the 'hashchange' event,
+                            // which will then call runNavigation -> navigateTo to show the section.
+                            window.location.hash = targetHash;
                         });
 
                         // Right-click for context menu
@@ -1040,7 +1042,7 @@
         /**
          * Fetches the full details for a specific ticket, including its messages.
          * Populates the chat area and joins the corresponding socket room.
-         * **Updates the "Back to Tickets" button href.**
+         * Updates the "Back to Tickets" button href.
          * @param {string} ticketId - The ID of the ticket to fetch.
          */
         async function fetchTicketDetails(ticketId) {
@@ -1050,7 +1052,7 @@
              ensureSocketConnected();
              chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>'; // Loading state
 
-             // **MODIFICATION**: Ensure the back button points to the ticket list
+             // Ensure the back button points to the ticket list
              if (backToTicketsButton) {
                 backToTicketsButton.href = '/#tickets'; // Set href correctly
              } else {
@@ -1286,11 +1288,12 @@
                       fetchTickets();
                   }
                   // If the user was viewing the ticket that got deleted, redirect them
-                  if (currentTicketId && !document.querySelector(`.ticket-list-item[data-ticket-id="${currentTicketId}"]`)) {
-                      // Check if the currentTicketId still exists in the DOM after refresh might be complex.
-                      // A simpler approach might be needed if the backend confirms deletion differently.
-                      // For now, we rely on the list refresh. If viewing the deleted ticket, maybe redirect?
-                      // This part needs careful handling based on backend signals.
+                  if (currentTicketId && activeSectionId === '#ticketDetail') {
+                      // Check if the ticket still exists (e.g., by trying to fetch it again, or if backend confirms deletion)
+                      // A simple approach: if the list is updated and we are on detail view, go back to list
+                      console.log(`[Socket Listener] Ticket list updated while viewing ticket ${currentTicketId}. Redirecting to list.`);
+                      showPopupMessage(errorMessagePopup, "The ticket you were viewing may have been deleted.", true);
+                      window.location.hash = '/#tickets'; // Redirect to the list view
                   }
               });
              socket.on('action_success', (data) => {
@@ -1623,11 +1626,10 @@
                     throw new Error(errorMsg);
                 }
                 currentUser = { logged_in: false }; // Update state
-                localStorage.removeItem('currentPage'); // Clear saved page
+                localStorage.removeItem('currentPage'); // Clear saved page state if used
                 disconnectSocket(); // Disconnect socket on logout
                 window.location.hash = '/#home'; // Redirect to home using updated format
-                updateHeaderUI(currentUser); // Update header immediately
-                showPopupMessage(paymentMessage, "Logged out successfully."); // Use success popup
+                // No need to call updateHeaderUI or showSection here, hashchange will trigger runNavigation
             } catch(error) {
                 console.error("Logout error:", error);
                 showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
@@ -1636,7 +1638,7 @@
                 localStorage.removeItem('currentPage');
                 disconnectSocket();
                 window.location.hash = '/#home';
-                updateHeaderUI(currentUser);
+                // Let hashchange handle UI updates
             }
         }
         // Attach logout handler to both buttons
@@ -1680,7 +1682,10 @@
                     createTicketStatus.textContent = 'Ticket submitted successfully!';
                     createTicketStatus.classList.add('success'); // Add success class
                     createTicketForm.reset(); // Clear the form
-                    fetchTickets(); // Refresh the ticket list to show the new ticket
+                    // If currently on the tickets page, refresh the list
+                    if (activeSectionId === '#tickets') {
+                        fetchTickets();
+                    }
                 } catch (error) {
                     console.error('Error creating ticket:', error);
                     createTicketStatus.textContent = `Error: ${error.message}`;
@@ -1771,7 +1776,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
             createSnowflakes(); // Initialize background effect
-            checkLoginStatusAndNavigate(); // Check login and navigate to initial/saved section
+            // Check login status first, then run navigation based on the current hash
+            checkLoginStatusAndNavigate();
         });
 
     </script>
