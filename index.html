@@ -108,9 +108,32 @@
         }
 
         .product-card {
-            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col transition-transform duration-300 ease-in-out hover:scale-[1.03] z-0;
+            @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col z-0;
              overflow: hidden; /* Needed for the border mask */
+             /* ** MODIFIED **: Added transition for transform and box-shadow */
+             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
         }
+        /* ** MODIFIED **: Removed hover:scale from @apply, handle it here */
+        .product-card:hover {
+            transform: scale(1.03);
+        }
+
+        /* ** NEW **: Add glow effect on hover using box-shadow */
+        .product-card.card-gradient-border.orange-border:hover {
+           /* Multiple shadows for softer glow, using orange color */
+           box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), /* Inner sharp glow */
+                       0 0 16px 4px rgba(249, 115, 22, 0.4), /* Medium glow */
+                       0 0 32px 8px rgba(249, 115, 22, 0.2); /* Outer soft glow */
+        }
+
+        /* ** NEW **: Add glow effect on hover using box-shadow */
+        .product-card.card-gradient-border.gray-border:hover {
+             /* Multiple shadows for softer glow, using gray color */
+             box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), /* Inner sharp glow */
+                         0 0 16px 4px rgba(156, 163, 175, 0.3), /* Medium glow */
+                         0 0 32px 8px rgba(156, 163, 175, 0.15); /* Outer soft glow */
+        }
+
 
         /* --- Page Section & General Content Styles --- */
         #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 {
@@ -852,7 +875,7 @@
             if (firstHashIndex !== -1) {
                 // Get the part after the first hash
                 pathPart = rawHash.substring(firstHashIndex + 1);
-                // Remove any leading slashes or additional hashes from this part using a loop
+                // Remove *all* leading slashes or additional hashes from this part using a loop
                 while (pathPart.startsWith('/') || pathPart.startsWith('#')) {
                     pathPart = pathPart.substring(1);
                 }
