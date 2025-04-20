@@ -250,11 +250,14 @@
         }
 
         /* --- Custom Context Menu --- */
-        #context-menu {
+        #chat-context-menu, #ticket-context-menu {
              @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; /* Start hidden */
         }
         .context-menu-item {
              @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left;
+        }
+        .context-menu-item.hidden {
+            display: none; /* Hide specific menu items */
         }
 
     </style>
@@ -288,9 +291,14 @@
             </div>
     </div>
 
-    <div id="context-menu">
+    <div id="chat-context-menu">
         <button class="context-menu-item" id="context-delete-message">Delete Message</button>
         <button class="context-menu-item" id="context-user-info">User Info</button>
+    </div>
+
+    <div id="ticket-context-menu">
+        <button class="context-menu-item" id="context-close-ticket">Close Ticket</button>
+        <button class="context-menu-item" id="context-reopen-ticket">Reopen Ticket</button>
         </div>
 
 
@@ -466,13 +474,13 @@
             </div>
 
             <div id="moderator-ticket-view" class="hidden lg:col-span-2 ticket-card">
-                <h3 class="text-xl font-semibold text-white mb-4">Active Tickets</h3>
-                <div id="moderator-active-ticket-list" class="ticket-list-container">
-                    </div>
-                <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+                <details class="mb-6" open> <summary>Active Tickets</summary>
+                     <div id="moderator-active-ticket-list" class="ticket-list-container mt-3">
+                         </div>
+                     <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+                </details>
 
-                <details class="mt-6">
-                    <summary>Archived Tickets</summary>
+                <details> <summary>Archived Tickets</summary>
                     <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3">
                         </div>
                     <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
@@ -562,15 +570,18 @@
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
         const dashboardUserRolesContainer = document.getElementById('dashboard-user-roles');
-        // Modal & Context Menu
+        // Modal & Context Menus
         const userInfoModal = document.getElementById('user-info-modal');
         const modalCloseButton = document.getElementById('modal-close-button');
         const modalUsername = document.getElementById('modal-username');
         const modalUserId = document.getElementById('modal-user-id');
         const modalUserRoles = document.getElementById('modal-user-roles');
-        const contextMenu = document.getElementById('context-menu');
+        const chatContextMenu = document.getElementById('chat-context-menu');
         const contextDeleteButton = document.getElementById('context-delete-message');
         const contextUserInfoButton = document.getElementById('context-user-info');
+        const ticketContextMenu = document.getElementById('ticket-context-menu');
+        const contextCloseTicketButton = document.getElementById('context-close-ticket');
+        const contextReopenTicketButton = document.getElementById('context-reopen-ticket');
 
 
         // --- Configuration ---
@@ -582,7 +593,9 @@
         let socket = null;
         let currentTicketId = null;
         let activeSectionId = null;
-        let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null }; // Store data for context actions
+        let currentContextMenu = null; // Track which context menu is active
+        let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null }; // Combined context data
+
 
         // --- Utility Functions ---
 
@@ -663,16 +676,18 @@
 
 
         function navigateTo(hash, ticketData = null) {
-            const baseHash = hash.split('?')[0] || '#home';
+            // Handle hashes starting with /#
+            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : hash;
+            const baseHash = cleanHash.split('?')[0] || '#home';
             const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
 
-            console.log(`Navigating to: ${hash} (Base: ${baseHash}, Target: ${targetSectionId})`);
+            console.log(`Navigating to: ${cleanHash} (Base: ${baseHash}, Target: ${targetSectionId})`);
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
                  showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-                 if (window.location.hash !== '#home') {
-                     window.location.hash = '#home';
+                 if (window.location.hash !== '#home' && window.location.hash !== '/#home') { // Check both formats
+                     window.location.hash = '/#home'; // Navigate to /#home
                  } else {
                      showSection('#home'); // Explicitly show home if already on #home but logged out
                  }
@@ -686,7 +701,7 @@
                     id = ticketData.id;
                     subject = ticketData.subject;
                 } else {
-                    const params = new URLSearchParams(hash.split('?')[1] || '');
+                    const params = new URLSearchParams(cleanHash.split('?')[1] || '');
                     id = params.get('id');
                 }
 
@@ -699,7 +714,7 @@
                 } else {
                     console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '#tickets';
+                    window.location.hash = '/#tickets'; // Navigate to /#tickets
                     return;
                 }
             } else {
@@ -708,7 +723,7 @@
             }
 
             showSection(targetSectionId); // Call the updated showSection
-            localStorage.setItem('currentPage', targetSectionId);
+            localStorage.setItem('currentPage', targetSectionId); // Store the base hash
 
             if (targetSectionId === '#tickets') {
                 fetchTickets(); // This will now handle mod/user view logic
@@ -721,9 +736,12 @@
         }
 
         function runNavigation() {
-            const hash = window.location.hash || '#home';
-            navigateTo(hash);
+            // Use cleanHash logic here too for initial load / direct navigation
+            const cleanHash = window.location.hash.startsWith('/#') ? window.location.hash.substring(1) : window.location.hash;
+            const hashToNavigate = cleanHash || '#home';
+            navigateTo(hashToNavigate); // Use the cleaned hash or default
         }
+
 
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
@@ -769,7 +787,7 @@
              }
         }
 
-        // Modified fetchTickets to handle moderator view
+        // Modified fetchTickets to handle moderator view and add context menus
         async function fetchTickets() {
             // Ensure elements exist
             if (!userTicketView || !moderatorTicketView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) return;
@@ -831,6 +849,10 @@
                     tickets.forEach(ticket => {
                         const item = document.createElement('div');
                         item.classList.add('ticket-list-item');
+                        // Add data attributes for context menu
+                        item.dataset.ticketId = ticket._id;
+                        item.dataset.ticketStatus = ticket.status;
+
                         const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
                         const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
                         const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
@@ -845,9 +867,16 @@
                                 <p class="text-xs text-gray-400">User: ${username} | Opened: ${dateOpened}</p>
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
+
+                        // Click to navigate (using updated format)
                         item.addEventListener('click', () => {
-                            navigateTo(`#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
+                             // Use navigateTo to handle logic centrally
+                             navigateTo(`/#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
                         });
+
+                        // Right-click for context menu
+                        item.addEventListener('contextmenu', showTicketContextMenu);
+
 
                         // Append to the correct list
                         if (isModerator) {
@@ -912,30 +941,31 @@
              }
          }
 
-
+        // Updated appendChatMessage to handle both data structures
         function appendChatMessage(data) {
              if (!chatMessagesDiv) return;
              const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
              if (loadingMsg) loadingMsg.remove();
 
              const messageElement = document.createElement('div');
-             // Add data attributes for context menu and deletion
              messageElement.classList.add('chat-message');
              messageElement.dataset.timestamp = data.timestamp; // Store ISO timestamp
              messageElement.dataset.senderId = data.sender_id;
 
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-             const safeUsername = (data.username || 'System').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             // **FIX:** Use sender_username (from DB/HTTP) or username (from socket)
+             const username = data.sender_username || data.username || 'System';
+             const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
              const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-             // Make username clickable
              const usernameSpan = document.createElement('span');
              usernameSpan.classList.add('username');
              usernameSpan.textContent = `${safeUsername}:`;
+             // Use sender_id from the message data for the modal
              usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
 
              messageElement.appendChild(usernameSpan);
-             messageElement.append(` ${safeText} `); // Add space around text
+             messageElement.append(` ${safeText} `);
 
              const timestampSpan = document.createElement('span');
              timestampSpan.classList.add('timestamp');
@@ -945,6 +975,7 @@
              chatMessagesDiv.appendChild(messageElement);
              chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
+
 
         function connectSocket(ticketId) {
             if (!ticketId) return;
@@ -974,6 +1005,10 @@
                 socket = null;
             });
             socket.on('new_message', (data) => {
+                // Ensure sender_id is present for consistency
+                if (!data.sender_id && data.username === currentUser?.username) {
+                    data.sender_id = currentUser.user_id;
+                }
                 if (data.ticket_id === currentTicketId) {
                     appendChatMessage(data);
                 }
@@ -996,6 +1031,23 @@
                     }
                 }
             });
+            // Listener for ticket status updates (from context menu actions)
+            socket.on('ticket_status_updated', (data) => {
+                 // If currently viewing the tickets list, refresh it
+                 if (activeSectionId === '#tickets') {
+                     console.log(`Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
+                     fetchTickets();
+                 }
+                 // Optionally, update status if viewing the specific ticket detail? (Less common)
+            });
+             // Listener for generic list updates (e.g., after status change)
+             socket.on('ticket_list_updated', () => {
+                 if (activeSectionId === '#tickets') {
+                     console.log("Ticket list updated event received. Refreshing list.");
+                     fetchTickets();
+                 }
+             });
+
             // Listener for general action success
              socket.on('action_success', (data) => {
                  showPopupMessage(paymentMessage, data.message || 'Action successful.');
@@ -1078,55 +1130,83 @@
         }
 
         // --- Context Menu Functions ---
-        function showContextMenu(event) {
-            event.preventDefault(); // Prevent default right-click menu
-            hideContextMenu(); // Hide any previous menu
+        function positionContextMenu(menuElement, event) {
+             const rect = event.target.getBoundingClientRect();
+             let top = event.clientY + window.scrollY + 5;
+             let left = event.clientX + window.scrollX + 5;
+             const menuHeight = menuElement.offsetHeight || 150;
+             const menuWidth = menuElement.offsetWidth || 150;
 
-            // Only show for moderators
-            if (!currentUser || !currentUser.is_moderator) return;
+             if (top + menuHeight > window.innerHeight + window.scrollY) {
+                 top = event.clientY + window.scrollY - menuHeight - 5;
+             }
+             if (left + menuWidth > window.innerWidth + window.scrollX) {
+                 left = event.clientX + window.scrollX - menuWidth - 5;
+             }
+             menuElement.style.top = `${top}px`;
+             menuElement.style.left = `${left}px`;
+             menuElement.style.display = 'block';
+        }
+
+        function hideContextMenu() {
+            if (chatContextMenu) chatContextMenu.style.display = 'none';
+            if (ticketContextMenu) ticketContextMenu.style.display = 'none';
+             document.removeEventListener('click', hideContextMenu);
+             window.removeEventListener('scroll', hideContextMenu);
+             currentContextMenu = null; // Reset active menu tracker
+        }
+
+        // Context Menu for Chat Messages
+        function showChatContextMenu(event) {
+            event.preventDefault();
+            hideContextMenu(); // Hide any other menus
+
+            if (!currentUser || !currentUser.is_moderator || !chatContextMenu) return;
 
             const messageElement = event.target.closest('.chat-message');
-            if (!messageElement || !contextMenu) return;
+            if (!messageElement) return;
 
-            // Store data from the message element for actions
             contextMenuData.ticketId = currentTicketId;
             contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
             contextMenuData.senderId = messageElement.dataset.senderId;
 
-            // Position and show the menu
-            const rect = event.target.getBoundingClientRect(); // Get position relative to viewport
-            // Adjust position slightly away from cursor
-            let top = event.clientY + window.scrollY + 5;
-            let left = event.clientX + window.scrollX + 5;
-
-            // Basic boundary check (prevent going off-screen)
-            const menuHeight = contextMenu.offsetHeight || 100; // Estimate height if not rendered
-            const menuWidth = contextMenu.offsetWidth || 150; // Estimate width
-            if (top + menuHeight > window.innerHeight + window.scrollY) {
-                top = event.clientY + window.scrollY - menuHeight - 5;
-            }
-            if (left + menuWidth > window.innerWidth + window.scrollX) {
-                left = event.clientX + window.scrollX - menuWidth - 5;
-            }
-
-
-            contextMenu.style.top = `${top}px`;
-            contextMenu.style.left = `${left}px`;
-            contextMenu.style.display = 'block';
-
-            // Add a one-time click listener to the document to hide the menu
-             document.addEventListener('click', hideContextMenu, { once: true });
-             // Also hide if scrolling
-             window.addEventListener('scroll', hideContextMenu, { once: true });
-
+            positionContextMenu(chatContextMenu, event);
+            currentContextMenu = chatContextMenu;
+            document.addEventListener('click', hideContextMenu, { once: true });
+            window.addEventListener('scroll', hideContextMenu, { once: true });
         }
 
-        function hideContextMenu() {
-            if (contextMenu) contextMenu.style.display = 'none';
-             // Clean up potential listeners if needed (though {once: true} helps)
-             document.removeEventListener('click', hideContextMenu);
-             window.removeEventListener('scroll', hideContextMenu);
+        // Context Menu for Ticket List Items
+        function showTicketContextMenu(event) {
+             event.preventDefault();
+             hideContextMenu(); // Hide any other menus
+
+             if (!currentUser || !ticketContextMenu) return; // Check if user exists
+
+             const ticketElement = event.target.closest('.ticket-list-item');
+             if (!ticketElement) return;
+
+             contextMenuData.ticketId = ticketElement.dataset.ticketId;
+             contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
+             contextMenuData.senderId = null; // Not relevant for ticket actions
+             contextMenuData.messageTimestamp = null; // Not relevant
+
+             // Show/Hide options based on status and user role
+             const canClose = contextMenuData.ticketStatus === 'open'; // Owner or Mod can close
+             const canReopen = contextMenuData.ticketStatus === 'closed' && currentUser.is_moderator;
+
+             contextCloseTicketButton.classList.toggle('hidden', !canClose);
+             contextReopenTicketButton.classList.toggle('hidden', !canReopen);
+
+             // Only show menu if there's at least one action available
+             if (canClose || canReopen) {
+                 positionContextMenu(ticketContextMenu, event);
+                 currentContextMenu = ticketContextMenu;
+                 document.addEventListener('click', hideContextMenu, { once: true });
+                 window.addEventListener('scroll', hideContextMenu, { once: true });
+             }
         }
+
 
         function deleteChatMessage() {
              if (!contextMenuData.ticketId || !contextMenuData.messageTimestamp || !socket || !socket.connected) {
@@ -1138,7 +1218,34 @@
                  ticket_id: contextMenuData.ticketId,
                  message_timestamp: contextMenuData.messageTimestamp
              });
-             hideContextMenu(); // Hide menu after action
+             hideContextMenu();
+         }
+
+        // Functions for Ticket Context Menu Actions
+         function closeTicket() {
+             if (!contextMenuData.ticketId || !socket || !socket.connected) {
+                 showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true);
+                 return;
+             }
+             console.log(`Attempting to close ticket: ${contextMenuData.ticketId}`);
+             socket.emit('update_ticket_status', {
+                 ticket_id: contextMenuData.ticketId,
+                 new_status: 'closed'
+             });
+             hideContextMenu();
+         }
+
+         function reopenTicket() {
+             if (!contextMenuData.ticketId || !socket || !socket.connected) {
+                 showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true);
+                 return;
+             }
+             console.log(`Attempting to reopen ticket: ${contextMenuData.ticketId}`);
+             socket.emit('update_ticket_status', {
+                 ticket_id: contextMenuData.ticketId,
+                 new_status: 'open'
+             });
+             hideContextMenu();
          }
 
 
@@ -1161,7 +1268,7 @@
                  currentUser = { logged_in: false };
                  localStorage.removeItem('currentPage');
                  disconnectSocket();
-                 window.location.hash = '#home';
+                 window.location.hash = '/#home'; // Use updated hash format
                  updateHeaderUI(currentUser);
                  showPopupMessage(paymentMessage, "Logged out successfully.");
             } catch(error) {
@@ -1170,7 +1277,7 @@
                  currentUser = { logged_in: false };
                  localStorage.removeItem('currentPage');
                  disconnectSocket();
-                 window.location.hash = '#home';
+                 window.location.hash = '/#home'; // Use updated hash format
                  updateHeaderUI(currentUser);
             }
         }
@@ -1246,19 +1353,18 @@
              });
         }
 
-        // Context Menu Listener on Chat Area
+        // Chat Context Menu Listener
          if (chatMessagesDiv) {
-             chatMessagesDiv.addEventListener('contextmenu', showContextMenu);
+             chatMessagesDiv.addEventListener('contextmenu', showChatContextMenu);
          } else { console.warn("Chat messages container not found for context menu."); }
 
-        // Context Menu Action Listeners
+        // Chat Context Menu Action Listeners
          if (contextDeleteButton) {
              contextDeleteButton.addEventListener('click', deleteChatMessage);
          }
          if (contextUserInfoButton) {
              contextUserInfoButton.addEventListener('click', () => {
                  if (contextMenuData.senderId) {
-                     // We need the username too, try to get it from the message element
                      const messageElement = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
                      const usernameElement = messageElement?.querySelector('.username');
                      const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'Unknown User';
@@ -1266,6 +1372,14 @@
                  }
                  hideContextMenu();
              });
+         }
+
+         // Ticket Context Menu Action Listeners
+         if (contextCloseTicketButton) {
+             contextCloseTicketButton.addEventListener('click', closeTicket);
+         }
+         if (contextReopenTicketButton) {
+             contextReopenTicketButton.addEventListener('click', reopenTicket);
          }
 
 
