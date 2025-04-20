@@ -745,16 +745,16 @@
          * Handles navigation based on URL hash changes.
          * Checks for protected routes and user login status.
          * Fetches necessary data for the target section (tickets, ticket details).
-         * @param {string} hash - The URL hash (e.g., '#home', '/#tickets', '/#ticketDetail?id=123').
+         * @param {string} hash - The URL hash (e.g., '#home', '#tickets', '#ticketDetail?id=123').
+         * **MUST start with #**
          */
-        function navigateTo(hash) { // Removed unused ticketData param
+        function navigateTo(hash) {
             console.log(`[navigateTo] Received hash: ${hash}`);
-            // Handle hashes starting with /# or just #
-            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : (hash.startsWith('#') ? hash : '#home');
-            const baseHash = cleanHash.split('?')[0] || '#home';
+            // Base hash is everything after # up to ?
+            const baseHash = hash.split('?')[0] || '#home'; // e.g., #home, #ticketDetail
             const targetSectionId = pageSections[baseHash] ? baseHash : '#home'; // Default to #home if baseHash is invalid
 
-            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Target section: ${targetSectionId}`);
+            console.log(`[navigateTo] Base hash: ${baseHash}, Target section: ${targetSectionId}`);
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
 
@@ -770,12 +770,14 @@
                 console.log(`[navigateTo] Access denied to protected route: ${targetSectionId}`);
                 showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
                 // Redirect to home only if not already there
+                // Check against the *actual* current hash to prevent redirect loops
                 if (window.location.hash !== '#home' && window.location.hash !== '/#home') {
                     console.log(`[navigateTo] Redirecting to /#home`);
-                    window.location.hash = '/#home'; // Navigate to /#home (will trigger hashchange again)
+                    window.location.hash = '/#home'; // Use consistent /# format for setting hash
                 } else {
                     console.log(`[navigateTo] Already on home, showing #home section.`);
-                    showSection('#home'); // Explicitly show home if already on #home but logged out
+                    // If already on home but shouldn't be (e.g., logged out), ensure home is shown
+                    if(activeSectionId !== '#home') showSection('#home');
                 }
                 return; // Stop further processing for this navigation attempt
             }
@@ -790,8 +792,8 @@
             // Handle Ticket Detail specific logic
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
-                // Extract ID from the hash's query parameters
-                const params = new URLSearchParams(cleanHash.split('?')[1] || '');
+                // Extract ID from the hash's query parameters (hash starts with #)
+                const params = new URLSearchParams(hash.split('?')[1] || '');
                 id = params.get('id');
 
                 console.log(`[navigateTo] Ticket Detail - ID from URL: ${id}`);
@@ -815,7 +817,7 @@
                 } else {
                     console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '/#tickets'; // Navigate to /#tickets (will trigger hashchange)
+                    window.location.hash = '/#tickets'; // Use consistent /# format
                     return; // Stop further execution for this invalid navigation
                 }
             }
@@ -838,15 +840,41 @@
         /**
          * Runs the navigation logic based on the current URL hash.
          * Called by hashchange listener (if initial check is complete) and by checkLoginStatusAndNavigate.
+         * **MODIFIED**: Cleans hash more robustly to handle /#/# or #/# cases.
          */
         function runNavigation() {
-            // This function is now simpler, just calls navigateTo with the current hash
-            console.log(`[runNavigation] Processing hash: ${window.location.hash}`);
+            console.log(`[runNavigation] Processing raw hash: ${window.location.hash}`);
             const rawHash = window.location.hash;
-            // Ensure hash starts with # for navigateTo consistency
-            const hashToNavigate = rawHash.startsWith('/#') ? rawHash.substring(1) : (rawHash || '#home');
-            navigateTo(hashToNavigate);
+            let cleanPart = '';
+            // Find the first '#'
+            const firstHashIndex = rawHash.indexOf('#');
+
+            if (firstHashIndex !== -1) {
+                // Get everything after the first '#'
+                let potentialPath = rawHash.substring(firstHashIndex + 1);
+                // Remove leading '/' or '#' if present immediately after the first '#'
+                if (potentialPath.startsWith('/') || potentialPath.startsWith('#')) {
+                    cleanPart = potentialPath.substring(1);
+                } else {
+                    cleanPart = potentialPath;
+                }
+            }
+
+            // Ensure the final hash starts with exactly one '#'
+            // Default to #home if cleanPart is empty after processing
+            const hashToNavigate = cleanPart ? `#${cleanPart}` : '#home';
+
+            console.log(`[runNavigation] Cleaned hash to navigate: ${hashToNavigate}`);
+
+            // Call navigateTo only if initial check is complete OR target is home
+            // (Prevents premature navigation to protected routes on load)
+            if (isInitialLoginCheckComplete || hashToNavigate === '#home') {
+                navigateTo(hashToNavigate);
+            } else {
+                console.log(`[runNavigation] Initial login check not complete for target ${hashToNavigate}. Deferring.`);
+            }
         }
+
 
         /**
          * Creates and appends snowflake elements for the background effect.
@@ -878,7 +906,7 @@
         /**
          * Checks the user's login status via the API and then triggers navigation.
          * Connects the socket if the user is logged in.
-         * **MODIFIED**: Sets isInitialLoginCheckComplete flag and calls runNavigation in finally block.
+         * Sets isInitialLoginCheckComplete flag and calls runNavigation in finally block.
          */
         async function checkLoginStatusAndNavigate() {
              isInitialLoginCheckComplete = false; // Reset flag at start of check
@@ -910,7 +938,7 @@
                  currentUser = { logged_in: false }; // Assume logged out on error
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
-                 // **MODIFIED**: Mark check complete and run navigation based on current hash
+                 // Mark check complete and run navigation based on current hash
                  isInitialLoginCheckComplete = true;
                  console.log("[checkLoginStatusAndNavigate] Initial check complete. Running navigation for current hash:", window.location.hash);
                  runNavigation(); // Run navigation based on the hash that might have been set while waiting
@@ -1014,9 +1042,10 @@
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
 
-                        // **MODIFIED CLICK LISTENER**
+                        // CLICK LISTENER
                         item.addEventListener('click', (e) => {
                             e.preventDefault(); // Prevent any default action if it were an anchor
+                            // Use consistent /# format when setting hash
                             const targetHash = `/#ticketDetail?id=${ticketId}`;
                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}. Setting hash to: ${targetHash}`);
                             // Set the window hash. This will trigger the 'hashchange' event,
@@ -1073,7 +1102,7 @@
 
              // Ensure the back button points to the ticket list
              if (backToTicketsButton) {
-                backToTicketsButton.href = '/#tickets'; // Set href correctly
+                backToTicketsButton.href = '/#tickets'; // Use consistent /# format
              } else {
                 console.warn("[fetchTicketDetails] Back to Tickets button not found.");
              }
