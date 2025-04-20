@@ -489,28 +489,26 @@
              </details>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div id="user-ticket-view" class="lg:col-span-2 ticket-card">
-                 <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
-                 <div id="ticket-list" class="ticket-list-container">
-                     </div>
-                 <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
-            </div>
+        <div id="user-ticket-view" class="mb-8 ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
+             <div id="ticket-list" class="ticket-list-container">
+                 </div>
+             <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
+        </div>
 
-            <div class="lg:col-span-1 ticket-card">
-                 <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
-                 <form id="create-ticket-form" novalidate>
-                     <div class="mb-4">
-                         <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
-                         <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
-                     </div>
-                     <div class="mb-4"> <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label> <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
-                     </div>
-                     <div id="create-ticket-status" class="h-6"></div> <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
-                         Submit Ticket
-                     </button>
-                 </form>
-            </div>
+        <div class="ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
+             <form id="create-ticket-form" novalidate>
+                 <div class="mb-4">
+                     <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
+                     <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
+                 </div>
+                 <div class="mb-4"> <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label> <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
+                 </div>
+                 <div id="create-ticket-status" class="h-6"></div> <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
+                     Submit Ticket
+                 </button>
+             </form>
         </div>
      </div>
 
@@ -826,10 +824,10 @@
             // Determine view based on moderator status
             const isModerator = currentUser.is_moderator;
             if (isModerator) {
-                userTicketView.classList.add('hidden');
+                userTicketView.classList.add('hidden'); // Hide user list container
                 moderatorManagementView.classList.remove('hidden'); // Show the dedicated mod management view
             } else {
-                userTicketView.classList.remove('hidden');
+                userTicketView.classList.remove('hidden'); // Show user list container
                 moderatorManagementView.classList.add('hidden');
             }
 
