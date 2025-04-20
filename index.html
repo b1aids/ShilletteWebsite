@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shillette</title>
+    <link id="favicon" rel="icon" href="images/icon.png" type="image/png"> {/* Add ID for easy selection */}
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -152,15 +153,19 @@
 
         .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; }
 
-
+        /* Product Management Table */
         #product-list-table { @apply w-full text-sm text-left text-gray-400 mt-4; }
         #product-list-table thead { @apply text-xs text-gray-300 uppercase bg-slate-700/50; }
         #product-list-table th, #product-list-table td { @apply px-4 py-3; }
         #product-list-table tbody tr { @apply border-b border-slate-700 hover:bg-slate-700/50; }
         #product-list-table .actions button { @apply text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200; }
         #product-list-table .actions .edit-btn { @apply bg-blue-600 hover:bg-blue-700 text-white; }
+        #product-list-table .actions .clone-btn { @apply bg-cyan-600 hover:bg-cyan-700 text-white; } /* Clone button style */
         #product-list-table .actions .delete-btn { @apply bg-red-600 hover:bg-red-700 text-white; }
         #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; }
+
+        /* Site Config Icon Preview */
+        #config-icon-preview { @apply w-8 h-8 ml-2 inline-block align-middle rounded border border-slate-600 bg-slate-700 object-contain; }
 
         /* Helper class for role spans */
         .role-span { @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block; }
@@ -270,7 +275,7 @@
     <header class="py-4 sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                <img id="header-site-icon" src="images/icon.png" alt="Site Icon" class="w-8 h-8" onerror="this.src='https://placehold.co/32x32/333/ccc?text=ICON'"> {/* Added ID */}
                 <span class="text-2xl font-bold text-white hidden">Shillette</span>
                 <span id="site-title-display" class="text-2xl font-bold text-white">Shillette</span>
             </div>
@@ -382,6 +387,13 @@
                             <label for="config-site-title">Site Title</label>
                             <input type="text" id="config-site-title" required>
                         </div>
+                        <div class="flex items-center">
+                            <div class="flex-grow">
+                                <label for="config-site-icon">Site Icon URL (Favicon)</label>
+                                <input type="text" id="config-site-icon">
+                            </div>
+                            <img id="config-icon-preview" src="images/icon.png" alt="Icon Preview" onerror="this.src='https://placehold.co/32x32/333/ccc?text=ICON'">
+                        </div>
                         <div>
                             <label>Header Links</label>
                             <div id="config-header-links-container" class="space-y-2 mb-2">
@@ -487,6 +499,8 @@
             '#ticketDetail': 'ticket-detail-content'
         };
         const siteTitleDisplay = document.getElementById('site-title-display');
+        const headerSiteIcon = document.getElementById('header-site-icon'); // Header icon
+        const faviconLink = document.getElementById('favicon'); // Favicon link tag
         const mainNavigation = document.getElementById('main-navigation');
         const mobileMenuNav = document.getElementById('mobile-menu');
         const loginButton = document.getElementById('login-button');
@@ -541,6 +555,8 @@
         const adminDashboardSections = document.getElementById('admin-dashboard-sections');
         const siteConfigForm = document.getElementById('site-config-form');
         const configSiteTitleInput = document.getElementById('config-site-title');
+        const configSiteIconInput = document.getElementById('config-site-icon'); // Icon URL input
+        const configIconPreview = document.getElementById('config-icon-preview'); // Icon preview img
         const configHeaderLinksContainer = document.getElementById('config-header-links-container');
         const addHeaderLinkButton = document.getElementById('add-header-link-button');
         const saveConfigButton = document.getElementById('save-config-button');
@@ -571,6 +587,8 @@
         // --- Configuration ---
         const API_BASE_URL = 'https://api.shillette.com';
         const SOCKET_URL = 'https://api.shillette.com';
+        const DEFAULT_ICON_URL = 'images/icon.png'; // Default icon path
+        const ICON_PLACEHOLDER_URL = 'https://placehold.co/32x32/333/ccc?text=ICON'; // Placeholder
 
         // --- State Variables ---
         let currentUser = null;
@@ -839,45 +857,59 @@
             } catch (error) {
                 console.error("[loadSiteConfig] Error loading site config:", error);
                 showPopupMessage(errorMessagePopup, "Failed to load site configuration. Using defaults.", true);
-                applySiteConfig(null);
+                applySiteConfig(null); // Apply defaults if fetch fails
             } finally {
                 isInitialConfigLoadComplete = true;
                 console.log("[loadSiteConfig] Initial config load complete.");
-                runNavigation();
+                runNavigation(); // Run navigation after config is loaded or defaults applied
             }
         }
 
-        /** Applies fetched site configuration to the UI. */
+        /** Applies fetched or default site configuration to the UI. */
         function applySiteConfig(config) {
-            const title = config?.siteTitle || "Shillette";
-            const links = config?.headerLinks || [
+            const effectiveConfig = config || {}; // Use empty object if config is null/undefined
+            const title = effectiveConfig.siteTitle || "Shillette";
+            const iconUrl = effectiveConfig.siteIconUrl || DEFAULT_ICON_URL;
+            const links = effectiveConfig.headerLinks || [
                 {name: "Home", href: "/#home"}, {name: "Products", href: "/#products"},
                 {name: "Tickets", href: "/#tickets"}, {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
             ];
 
+            // Update Page Title
             document.title = title;
-            siteTitleDisplay.textContent = title;
+            if (siteTitleDisplay) siteTitleDisplay.textContent = title;
 
-            mainNavigation.innerHTML = '';
-            mobileMenuNav.innerHTML = '';
+            // Update Header Icon
+            if (headerSiteIcon) headerSiteIcon.src = iconUrl;
+
+            // Update Favicon
+            if (faviconLink) faviconLink.href = iconUrl;
+
+            // Update Navigation Links
+            if (mainNavigation) mainNavigation.innerHTML = '';
+            if (mobileMenuNav) mobileMenuNav.innerHTML = '';
             links.forEach(link => {
+                // Main Navigation
                 const a = document.createElement('a');
                 a.href = link.href;
                 a.textContent = link.name;
                 a.classList.add('text-gray-300', 'hover:text-white', 'transition', 'duration-200');
                 if (link.target) a.target = link.target;
                 if (link.target === '_blank') a.rel = 'noopener noreferrer';
-                mainNavigation.appendChild(a);
+                if (mainNavigation) mainNavigation.appendChild(a);
 
+                // Mobile Navigation
                 const mob_a = a.cloneNode(true);
                 mob_a.classList.remove('text-gray-300', 'hover:text-white');
                 mob_a.classList.add('mobile-menu-link');
-                mob_a.addEventListener('click', () => mobileMenuNav.classList.add('hidden'));
-                mobileMenuNav.appendChild(mob_a);
+                mob_a.addEventListener('click', () => mobileMenuNav?.classList.add('hidden')); // Close menu on click
+                if (mobileMenuNav) mobileMenuNav.appendChild(mob_a);
             });
 
-            footerYear.textContent = new Date().getFullYear();
+            // Update Footer Year
+            if (footerYear) footerYear.textContent = new Date().getFullYear();
         }
+
 
         /** Fetches and displays products on the products page. */
         async function fetchProducts() {
@@ -958,7 +990,7 @@
                  thumbnailElement.className = 'product-thumbnail';
                  // Add onerror handler to show the placeholder
                  thumbnailElement.onerror = () => {
-                     thumbnailElement.style.display = 'none'; // Hide broken image
+                     if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
                      placeholderDiv.style.display = 'flex'; // Show placeholder
                  };
              } else {
@@ -1530,16 +1562,19 @@
 
         /** Fetches site config and populates the admin form. */
         async function loadSiteConfigForm() {
-            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus) return; // Ensure elements exist
-            // Use already fetched config if available, otherwise fetch again? (Assuming config loaded initially)
+            if (!siteConfigForm || !configSiteTitleInput || !configSiteIconInput || !configIconPreview || !configHeaderLinksContainer || !configSaveStatus) return; // Ensure elements exist
             if (!siteConfig) {
-                console.warn("Site config not loaded yet for admin form. Attempting fetch.");
-                // Potentially re-fetch config here if needed, or rely on initial load
+                console.warn("Site config not loaded yet for admin form.");
                 configSaveStatus.textContent = "Error: Config not loaded.";
                 configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
                 return;
             }
+            // Populate form fields from siteConfig
             configSiteTitleInput.value = siteConfig.siteTitle || '';
+            const iconUrl = siteConfig.siteIconUrl || DEFAULT_ICON_URL;
+            configSiteIconInput.value = siteConfig.siteIconUrl || ''; // Use stored URL or empty
+            configIconPreview.src = iconUrl; // Show current icon or default
+
             configHeaderLinksContainer.innerHTML = ''; // Clear existing links
             (siteConfig.headerLinks || []).forEach((link) => {
                 addHeaderLinkInput(link.name, link.href, link.target);
@@ -1572,7 +1607,11 @@
             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
 
             // Collect data from the form
-            const updatedConfig = { siteTitle: configSiteTitleInput.value.trim(), headerLinks: [] };
+            const updatedConfig = {
+                siteTitle: configSiteTitleInput.value.trim(),
+                siteIconUrl: configSiteIconInput.value.trim() || null, // Store null if empty
+                headerLinks: []
+            };
             configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
                 const nameInput = group.querySelector('.link-name');
                 const hrefInput = group.querySelector('.link-href');
@@ -1636,17 +1675,20 @@
                  // Populate table rows
                  products.forEach(product => {
                      const row = productListTableBody.insertRow();
+                     row.dataset.productId = product._id; // Add product ID to row for easy access
                      row.innerHTML = `
                          <td>${product.name || 'N/A'}</td>
                          <td>$${product.price?.toFixed(2) || 'N/A'}</td>
                          <td>${product.tag || '-'}</td>
                          <td class="actions">
-                             <button class="edit-btn" data-product-id="${product._id}">Edit</button>
-                             <button class="delete-btn" data-product-id="${product._id}">Delete</button>
+                             <button class="edit-btn" title="Edit Product">Edit</button>
+                             <button class="clone-btn" title="Clone Product">Clone</button>
+                             <button class="delete-btn" title="Delete Product">Delete</button>
                          </td>
                      `;
-                     // Add event listeners to buttons
+                     // Add event listeners to buttons using the product data directly
                      row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product));
+                     row.querySelector('.clone-btn').addEventListener('click', () => handleCloneProduct(product));
                      row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name));
                  });
              } catch (error) {
@@ -1657,6 +1699,20 @@
              }
         }
 
+        /** Handles cloning a product */
+        function handleCloneProduct(product) {
+            if (!product) return;
+            // Create a deep copy of the product data to avoid modifying the original object
+            const clonedProductData = JSON.parse(JSON.stringify(product));
+            // Clear the ID to indicate it's a new product
+            clonedProductData._id = null;
+            // Optionally modify the name
+            clonedProductData.name = `Clone of ${clonedProductData.name || 'Unnamed Product'}`;
+            // Open the modal with the cloned data
+            openProductEditModal(clonedProductData);
+        }
+
+
         /** Opens the Add/Edit Product modal. */
         function openProductEditModal(product = null) {
              if (!productEditModal || !productEditForm || !customHexInputContainer) return; // Ensure elements exist
@@ -1665,9 +1721,9 @@
              productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status class
 
              if (product) {
-                 // Editing existing product: Populate form
-                 productModalTitle.textContent = 'Edit Product';
-                 productEditIdInput.value = product._id;
+                 // Editing existing product or populating clone: Populate form
+                 productModalTitle.textContent = product._id ? 'Edit Product' : 'Add Cloned Product'; // Adjust title for clone
+                 productEditIdInput.value = product._id || ''; // Set ID only if editing
                  productEditNameInput.value = product.name || '';
                  productEditThumbnailInput.value = product.thumbnailUrl || '';
                  productEditPriceInput.value = product.price || '';
@@ -1680,7 +1736,7 @@
                  productEditFeaturesInput.value = (product.features || []).join('\n');
                  productEditPaymentLinkInput.value = product.paymentLink || '';
              } else {
-                 // Adding new product: Clear fields
+                 // Adding completely new product: Clear fields
                  productModalTitle.textContent = 'Add Product';
                  productEditIdInput.value = ''; // Ensure ID is empty
                  productEditTagColorSelect.value = 'gray'; // Default color
@@ -1927,6 +1983,14 @@
         if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
         // Add listener to the color dropdown to toggle HEX input visibility
         if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
+        // Add listener to icon input to update preview
+        if (configSiteIconInput && configIconPreview) {
+             configSiteIconInput.addEventListener('input', () => {
+                 configIconPreview.src = configSiteIconInput.value.trim() || DEFAULT_ICON_URL;
+             });
+             // Add error handler for preview image itself
+             configIconPreview.onerror = () => { configIconPreview.src = ICON_PLACEHOLDER_URL; };
+        }
 
 
         // --- Initial Page Load Logic ---
