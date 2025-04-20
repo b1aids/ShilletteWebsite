@@ -201,7 +201,6 @@
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
-                    {/* Login button now redirects to backend /login route */}
                     <a id="login-button" href="/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
@@ -425,15 +424,13 @@
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message');
         const ticketListDiv = document.getElementById('ticket-list');
-        const ticketListStatus = ticketListDiv ? ticketListDiv.nextElementSibling : null; // The <p> tag after the list
+        const ticketListStatus = ticketListDiv ? ticketListDiv.nextElementSibling : null;
 
-        // Use the actual Discord Auth URL for redirection via backend
-        const discordRedirectUrl = '/login'; // Point to backend login route
+        const discordRedirectUrl = '/login';
 
-        // Base URL for API calls (assuming backend runs on same origin)
-        const API_BASE_URL = ''; // Use relative paths if same origin
+        const API_BASE_URL = '';
 
-        let currentUser = null; // Store user data globally
+        let currentUser = null;
 
         function showMessage(element, message, isError = false) {
              if (!element) return;
@@ -465,9 +462,10 @@
             loadingOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
             loadingOverlay.classList.add('pointer-events-auto');
 
+
             setTimeout(() => {
                 hideAllSections();
-                showFunction(); // This now just makes the section visible
+                showFunction();
                 pageContainers.forEach(container => container.classList.remove('content-blur'));
                 loadingOverlay.classList.add('opacity-0');
                 loadingOverlay.classList.remove('pointer-events-auto');
@@ -484,17 +482,16 @@
                  userInfo.classList.remove('hidden');
                  userInfo.classList.add('flex');
                  userNameDisplay.textContent = user.username || 'User';
-                 // Construct avatar URL (example for Discord)
                  if (user.user_id && user.avatar) {
                      userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`;
                  } else {
-                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Fallback
+                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
                  }
                  dashboardUserNameDisplay.textContent = user.username || 'User';
                  if (user.user_id && user.avatar) {
                     dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`;
                  } else {
-                    dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'; // Fallback
+                    dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
                  }
 
              } else {
@@ -508,7 +505,7 @@
         function showDashboardInternal() {
             dashboardContent.classList.remove('hidden');
             localStorage.setItem('currentPage', 'dashboard');
-            updateHeaderUI(currentUser); // Update header based on fetched user
+            updateHeaderUI(currentUser);
         }
 
         function showMainContentInternal() {
@@ -527,14 +524,14 @@
             ticketsPageContent.classList.remove('hidden');
             localStorage.setItem('currentPage', 'tickets');
             updateHeaderUI(currentUser);
-            fetchTickets(); // Fetch tickets when showing the page
+            fetchTickets();
         }
 
 
         function showDashboard() {
             if (!currentUser || !currentUser.logged_in) {
                  showMessage(errorMessage, "Please log in to view the dashboard.", true);
-                 return; // Don't show dashboard if not logged in
+                 return;
             }
             showSectionWithLoading(showDashboardInternal);
         }
@@ -547,7 +544,6 @@
         function showTicketsPage() {
              if (!currentUser || !currentUser.logged_in) {
                  showMessage(errorMessage, "Please log in to view tickets.", true);
-                 // Optionally redirect to login or show login prompt
                  return;
              }
              showSectionWithLoading(showTicketsPageInternal);
@@ -586,15 +582,14 @@
                      throw new Error(`HTTP error! status: ${response.status}`);
                  }
                  const userData = await response.json();
-                 currentUser = userData; // Store user data globally
+                 currentUser = userData;
                  console.log("User status:", currentUser);
              } catch (error) {
                  console.error("Error checking login status:", error);
-                 currentUser = { logged_in: false }; // Assume not logged in on error
+                 currentUser = { logged_in: false };
              } finally {
-                 // Initial page load logic moved here, after checking status
                  const currentPage = localStorage.getItem('currentPage');
-                 hideAllSections(); // Hide all first
+                 hideAllSections();
                  if (currentUser.logged_in && currentPage === 'dashboard') {
                      showDashboardInternal();
                  } else if (currentPage === 'products') {
@@ -602,9 +597,9 @@
                  } else if (currentUser.logged_in && currentPage === 'tickets') {
                      showTicketsPageInternal();
                  } else {
-                     showMainContentInternal(); // Default to home
+                     showMainContentInternal();
                  }
-                 updateHeaderUI(currentUser); // Update header based on final status
+                 updateHeaderUI(currentUser);
              }
         }
 
@@ -616,7 +611,7 @@
             }
 
             ticketListStatus.textContent = "Loading tickets...";
-            ticketListDiv.innerHTML = ''; // Clear previous list
+            ticketListDiv.innerHTML = '';
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/tickets`);
@@ -628,7 +623,7 @@
                 if (tickets.length === 0) {
                     ticketListStatus.textContent = "You have no support tickets.";
                 } else {
-                    ticketListStatus.textContent = ""; // Clear loading message
+                    ticketListStatus.textContent = "";
                     tickets.forEach(ticket => {
                         const item = document.createElement('div');
                         item.classList.add('ticket-list-item');
@@ -642,8 +637,6 @@
                             </div>
                             <span class="${statusClass}">${ticket.status || 'N/A'}</span>
                         `;
-                        // Add click listener to view ticket details (requires detail view)
-                        // item.addEventListener('click', () => showTicketDetail(ticket._id));
                         ticketListDiv.appendChild(item);
                     });
                 }
@@ -654,30 +647,30 @@
         }
 
 
-        // --- Event Listeners ---
-
-        // Login button now redirects via href="/login" handled by browser/backend
+        loginButton.addEventListener('click', (e) => {
+             e.preventDefault(); // Prevent default link behavior
+             window.location.href = discordRedirectUrl; // Redirect to backend login route
+        });
 
         logoutButton.addEventListener('click', async () => {
             console.log('Logging out...');
             try {
                  await fetch(`${API_BASE_URL}/logout`);
-                 currentUser = { logged_in: false }; // Update local state
-                 localStorage.removeItem('isLoggedIn'); // Keep this for consistency? Or remove entirely
-                 showMainContent(); // Show main content after logout attempt
+                 currentUser = { logged_in: false };
+                 localStorage.removeItem('isLoggedIn');
+                 showMainContent();
             } catch(error) {
                  console.error("Logout error:", error);
                  showMessage(errorMessage, "Logout failed. Please try again.", true);
-                 // Still attempt to update UI
                  currentUser = { logged_in: false };
                  localStorage.removeItem('isLoggedIn');
-                 showMainContentInternal(); // Show main content directly without animation on error
+                 showMainContentInternal();
                  updateHeaderUI(currentUser);
             }
         });
 
         dashboardLogoutButton.addEventListener('click', () => {
-             logoutButton.click(); // Trigger the main logout logic
+             logoutButton.click();
         });
 
         if(homeLink) {
@@ -770,7 +763,7 @@
                     console.log('Ticket created:', result);
                     showMessage(ticketMessage, 'Ticket submitted successfully!');
                     createTicketForm.reset();
-                    fetchTickets(); // Refresh ticket list
+                    fetchTickets();
 
                 } catch (error) {
                     console.error('Error creating ticket:', error);
@@ -782,7 +775,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
-            checkLoginStatus(); // Check login status first, then show appropriate page
+            checkLoginStatus();
         });
 
     </script>
