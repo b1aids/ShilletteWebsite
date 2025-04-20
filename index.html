@@ -234,8 +234,8 @@
             avatarUrl: 'https://placehold.co/64x64/3498db/ffffff?text=D'
         };
 
-        // Store the actual Discord auth URL
-        const discordAuthUrl = 'https://discord.com/oauth2/authorize?client_id=1261763541187166299'; // Use the URL provided by the user
+        // Updated Discord Auth URL
+        const discordAuthUrl = 'https://discord.com/oauth2/authorize?client_id=1363309221659021512&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A53134%2Fauth%2Fdiscord&scope=identify';
 
         function showDashboard() {
             mainContent.classList.add('hidden');
@@ -249,7 +249,6 @@
             dashboardUserNameDisplay.textContent = simulatedUserData.username;
             dashboardUserAvatarDisplay.src = simulatedUserData.avatarUrl;
 
-            // In a real app, this state might be set by the backend after successful login
             localStorage.setItem('isLoggedIn', 'true');
         }
 
@@ -265,20 +264,11 @@
 
         loginButton.addEventListener('click', () => {
             console.log('Redirecting to Discord for authorization...');
-            // Redirect to the actual Discord authorization URL
             window.location.href = discordAuthUrl;
-
-            // --- IMPORTANT ---
-            // The code below this point in the previous simulation (showDashboard())
-            // will NOT run immediately after the redirect.
-            // The user must authorize on Discord, and then Discord redirects back.
-            // A backend server MUST handle that redirect back to complete the login.
-            // This frontend code cannot complete the login process alone.
         });
 
         logoutButton.addEventListener('click', () => {
             console.log('Simulating Logout...');
-            // In a real app, this might also call a backend endpoint to invalidate the session
             showMainContent();
         });
 
@@ -287,14 +277,7 @@
              showMainContent();
         });
 
-        // Check if user is logged in (e.g., after returning from Discord and being processed by backend)
-        // This part remains simulation - in reality, the backend would set a cookie/token
-        // or redirect in a way that indicates login success.
-        // For now, we still check localStorage for demo purposes, but it won't be set
-        // automatically by the login button anymore.
         if (localStorage.getItem('isLoggedIn') === 'true') {
-             // If you manually set isLoggedIn='true' in localStorage for testing,
-             // this will show the dashboard on page load.
             showDashboard();
         } else {
             showMainContent();
