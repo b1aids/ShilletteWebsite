@@ -197,16 +197,27 @@
         #create-ticket-status.success { @apply text-green-400; }
         #create-ticket-status.error { @apply text-red-400; }
 
+        /* Moderator Ticket View Styles */
+        #moderator-ticket-view details summary {
+             @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors;
+        }
+        #moderator-ticket-view details[open] summary {
+             @apply text-orange-400;
+        }
+        .ticket-list-container {
+             @apply space-y-3 max-h-96 overflow-y-auto pr-2;
+        }
+
 
         /* --- Chat Styles --- */
         #chat-messages {
              @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2;
         }
         .chat-message {
-             @apply text-sm break-words; /* Allow long words to wrap */
+             @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors; /* Added padding/hover for context menu target */
         }
         .chat-message .username {
-             @apply font-semibold text-orange-400 mr-2;
+             @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; /* Make username clickable */
         }
          .chat-message .timestamp {
              @apply text-xs text-gray-500 ml-2 whitespace-nowrap;
@@ -220,6 +231,31 @@
          #send-chat-button {
              @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
          }
+
+        /* --- User Info Modal --- */
+        #user-info-modal {
+             @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300;
+        }
+        #user-info-modal.active {
+             @apply opacity-100 pointer-events-auto;
+        }
+        .modal-content {
+             @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white;
+        }
+        .modal-close-button {
+             @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors;
+        }
+        #modal-user-roles {
+             @apply flex flex-wrap gap-1 mt-3;
+        }
+
+        /* --- Custom Context Menu --- */
+        #context-menu {
+             @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; /* Start hidden */
+        }
+        .context-menu-item {
+             @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left;
+        }
 
     </style>
 </head>
@@ -237,6 +273,26 @@
             <span class="loader-bar"></span>
         </div>
     </div>
+
+    <div id="user-info-modal">
+        <div class="modal-content relative">
+            <button id="modal-close-button" class="modal-close-button">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <h3 class="text-lg font-semibold mb-3" id="modal-username">Username</h3>
+            <p class="text-sm text-gray-400 mb-1">User ID: <span id="modal-user-id">N/A</span></p>
+            <p class="text-sm font-medium mb-2">Roles:</p>
+            <div id="modal-user-roles">
+                <p class="text-gray-500 text-xs">Roles not available.</p>
+            </div>
+            </div>
+    </div>
+
+    <div id="context-menu">
+        <button class="context-menu-item" id="context-delete-message">Delete Message</button>
+        <button class="context-menu-item" id="context-user-info">User Info</button>
+        </div>
+
 
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
@@ -402,12 +458,27 @@
         </div>
         <h2>Support Tickets</h2>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 ticket-card">
+            <div id="user-ticket-view" class="lg:col-span-2 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
-                 <div id="ticket-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                 <div id="ticket-list" class="ticket-list-container">
                      </div>
                  <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
             </div>
+
+            <div id="moderator-ticket-view" class="hidden lg:col-span-2 ticket-card">
+                <h3 class="text-xl font-semibold text-white mb-4">Active Tickets</h3>
+                <div id="moderator-active-ticket-list" class="ticket-list-container">
+                    </div>
+                <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+
+                <details class="mt-6">
+                    <summary>Archived Tickets</summary>
+                    <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3">
+                        </div>
+                    <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
+                </details>
+            </div>
+
             <div class="lg:col-span-1 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
                  <form id="create-ticket-form" novalidate>
@@ -468,44 +539,56 @@
         const dashboardUserAvatarDisplay = document.getElementById('dashboard-user-avatar');
         const snowContainer = document.getElementById('snow-container');
         const paymentMessage = document.getElementById('payment-message');
-        const ticketMessagePopup = document.getElementById('ticket-message'); // Renamed for clarity
-        const errorMessagePopup = document.getElementById('error-message'); // Renamed for clarity
+        const ticketMessagePopup = document.getElementById('ticket-message');
+        const errorMessagePopup = document.getElementById('error-message');
         const loadingOverlay = document.getElementById('loading-overlay');
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
-        const ticketMessageInput = document.getElementById('ticket-message-input'); // Corrected ID
-        const createTicketStatus = document.getElementById('create-ticket-status'); // Added for form feedback
+        const ticketMessageInput = document.getElementById('ticket-message-input');
+        const createTicketStatus = document.getElementById('create-ticket-status');
+        // Ticket List Views
+        const userTicketView = document.getElementById('user-ticket-view');
+        const moderatorTicketView = document.getElementById('moderator-ticket-view');
         const ticketListDiv = document.getElementById('ticket-list');
         const ticketListStatus = document.getElementById('ticket-list-status');
+        const moderatorActiveTicketListDiv = document.getElementById('moderator-active-ticket-list');
+        const moderatorActiveListStatus = document.getElementById('moderator-active-list-status');
+        const moderatorArchivedTicketListDiv = document.getElementById('moderator-archived-ticket-list');
+        const moderatorArchivedListStatus = document.getElementById('moderator-archived-list-status');
+        // Ticket Detail
         const ticketDetailSubject = document.getElementById('ticket-detail-subject');
         const chatMessagesDiv = document.getElementById('chat-messages');
         const chatInputForm = document.getElementById('chat-input-form');
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
-        const dashboardUserRolesContainer = document.getElementById('dashboard-user-roles'); // Added Role Container Ref
+        const dashboardUserRolesContainer = document.getElementById('dashboard-user-roles');
+        // Modal & Context Menu
+        const userInfoModal = document.getElementById('user-info-modal');
+        const modalCloseButton = document.getElementById('modal-close-button');
+        const modalUsername = document.getElementById('modal-username');
+        const modalUserId = document.getElementById('modal-user-id');
+        const modalUserRoles = document.getElementById('modal-user-roles');
+        const contextMenu = document.getElementById('context-menu');
+        const contextDeleteButton = document.getElementById('context-delete-message');
+        const contextUserInfoButton = document.getElementById('context-user-info');
+
 
         // --- Configuration ---
-        const API_BASE_URL = 'https://api.shillette.com'; // Ensure this is correct
-        const SOCKET_URL = 'https://api.shillette.com';   // Ensure this is correct
+        const API_BASE_URL = 'https://api.shillette.com';
+        const SOCKET_URL = 'https://api.shillette.com';
 
         // --- State Variables ---
         let currentUser = null;
         let socket = null;
         let currentTicketId = null;
-        let activeSectionId = null; // Store the ID ('#home', '#tickets', etc.)
+        let activeSectionId = null;
+        let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null }; // Store data for context actions
 
         // --- Utility Functions ---
 
-        /**
-         * Shows a temporary popup message at the bottom of the screen.
-         * @param {HTMLElement} element The message container element.
-         * @param {string} message The text to display.
-         * @param {boolean} [isError=false] If true, styles as an error message.
-         */
         function showPopupMessage(element, message, isError = false) {
              if (!element) return;
              element.textContent = message;
-             // Set background color based on error status
              if (isError) {
                  element.classList.remove('bg-green-600');
                  element.classList.add('bg-red-600');
@@ -513,31 +596,23 @@
                  element.classList.remove('bg-red-600');
                  element.classList.add('bg-green-600');
              }
-             // Show the message and hide after a delay
              element.classList.add('show');
              setTimeout(() => {
                  element.classList.remove('show');
-             }, 3500); // Slightly longer duration
+             }, 3500);
          }
 
-        /**
-         * Updates the header UI based on login status.
-         * @param {object|null} user The user object or null if logged out.
-         */
         function updateHeaderUI(user) {
              if (user && user.logged_in) {
-                 // Logged In View
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex'); // Ensure flex display
+                 userInfo.classList.add('flex');
                  userNameDisplay.textContent = user.username || 'User';
-                 // Display Discord avatar with fallback
                  if (user.user_id && user.avatar) {
                      userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`;
                  } else {
-                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Placeholder
+                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
                  }
-                 // Update dashboard elements as well
                  dashboardUserNameDisplay.textContent = user.username || 'User';
                  if (user.user_id && user.avatar) {
                     dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`;
@@ -545,34 +620,25 @@
                     dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
                  }
              } else {
-                 // Logged Out View
                  loginButton.classList.remove('hidden');
                  userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex'); // Remove flex display
+                 userInfo.classList.remove('flex');
              }
         }
 
-        /**
-         * Shows the specified page section and hides others. (FIXED LOGIC)
-         * @param {string} sectionId The ID of the section to show (e.g., '#home').
-         */
         function showSection(sectionId) {
-            if (activeSectionId === sectionId) return; // Already active
-
-            // Hide the currently active section, if any
+            hideContextMenu(); // Hide context menu when changing sections
+            if (activeSectionId === sectionId) return;
             if (activeSectionId && pageSections[activeSectionId]) {
                  pageSections[activeSectionId].classList.add('hidden');
             }
-
-            // Show the new section
             const sectionElement = pageSections[sectionId];
             if (sectionElement) {
                 sectionElement.classList.remove('hidden');
-                activeSectionId = sectionId; // Update the active section ID
+                activeSectionId = sectionId;
                 console.log(`Showing section: ${sectionId}`);
             } else {
                 console.warn(`Section with ID ${sectionId} not found.`);
-                // Optionally default to home if section not found
                 if (pageSections['#home']) {
                     pageSections['#home'].classList.remove('hidden');
                     activeSectionId = '#home';
@@ -580,387 +646,380 @@
                      activeSectionId = null;
                 }
             }
-             // Disconnect socket if navigating away from ticket detail
              if (sectionId !== '#ticketDetail') {
                  disconnectSocket();
+                 currentTicketId = null; // Clear ticket ID when leaving detail page
              }
         }
 
-        /**
-         * Handles navigation based on URL hash changes.
-         * @param {string} hash The current URL hash (e.g., '#tickets', '#ticketDetail?id=123').
-         * @param {object|null} [ticketData=null] Optional pre-fetched ticket data.
-         */
         function navigateTo(hash, ticketData = null) {
-            const baseHash = hash.split('?')[0] || '#home'; // Default to home if hash is empty
-            const targetSectionId = pageSections[baseHash] ? baseHash : '#home'; // Fallback to home if hash invalid
+            const baseHash = hash.split('?')[0] || '#home';
+            const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
 
             console.log(`Navigating to: ${hash} (Base: ${baseHash}, Target: ${targetSectionId})`);
 
-            // --- Authentication Check for Protected Routes ---
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
                  showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-                 // Redirect to home if not logged in and trying to access protected route
                  if (window.location.hash !== '#home') {
                      window.location.hash = '#home';
                  } else {
-                     // If already on #home, just show the home section
                      showSection('#home');
                  }
-                 return; // Stop further processing
+                 return;
             }
 
-            // --- Handle Ticket Detail View ---
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
                 let subject = null;
-
-                // Extract ID and Subject
-                if (ticketData) { // If passed directly (e.g., from ticket list click)
+                if (ticketData) {
                     id = ticketData.id;
                     subject = ticketData.subject;
-                } else { // If navigating via URL directly
+                } else {
                     const params = new URLSearchParams(hash.split('?')[1] || '');
                     id = params.get('id');
-                    // Subject might not be in URL, will be fetched or use placeholder
                 }
 
                 if (id) {
-                    currentTicketId = id;
-                    // Update subject display (use placeholder if not provided)
+                    currentTicketId = id; // Set currentTicketId here
                     ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
-                    // Prepare chat area and connect
                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                    connectSocket(id); // Connect WebSocket for this ticket
+                    // Fetch full ticket details including messages
+                    fetchTicketDetails(id); // Fetch details before connecting socket
                 } else {
-                    // If no ID found for ticket detail, redirect to the tickets list
                     console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '#tickets'; // This will trigger another navigation cycle
-                    return; // Stop this navigation cycle
+                    window.location.hash = '#tickets';
+                    return;
                 }
             } else {
-                 // Disconnect socket if navigating away from ticket detail
                  disconnectSocket();
-                 currentTicketId = null;
+                 // currentTicketId is cleared in showSection or disconnectSocket
             }
 
-            // --- Show the Target Section ---
             showSection(targetSectionId);
+            localStorage.setItem('currentPage', targetSectionId);
 
-            // --- Post-Navigation Actions ---
-            localStorage.setItem('currentPage', targetSectionId); // Remember last page
-
-            // Fetch data if needed for the new section
             if (targetSectionId === '#tickets') {
-                fetchTickets();
+                fetchTickets(); // This will now handle mod/user view logic
             }
-            // Update dashboard roles if navigating to dashboard
             if (targetSectionId === '#dashboard' && currentUser && currentUser.logged_in) {
                 displayUserRoles(currentUser.roles);
             }
 
-
-            // Ensure header UI is up-to-date
             updateHeaderUI(currentUser);
         }
 
-
-        /**
-         * Wrapper function to call navigateTo based on the current window hash.
-         */
         function runNavigation() {
-            const hash = window.location.hash || '#home'; // Default to #home if no hash
+            const hash = window.location.hash || '#home';
             navigateTo(hash);
         }
 
-        /**
-         * Creates snowflake elements for the background effect.
-         */
         function createSnowflakes() {
-            const numberOfSnowflakes = 75; // Adjust density as needed
-            if (!snowContainer) return; // Exit if container not found
-
-            snowContainer.innerHTML = ''; // Clear existing snowflakes
+            const numberOfSnowflakes = 75;
+            if (!snowContainer) return;
+            snowContainer.innerHTML = '';
             for (let i = 0; i < numberOfSnowflakes; i++) {
                 const snowflake = document.createElement('div');
                 snowflake.classList.add('snowflake');
-
-                // Randomize properties
-                const size = Math.random() * 3 + 2; // Size between 2px and 5px
-                const duration = Math.random() * 10 + 5; // Fall duration 5-15 seconds
-                const delay = Math.random() * 10; // Start delay 0-10 seconds
-                const startLeft = Math.random() * 100; // Horizontal start position
-                const opacity = Math.random() * 0.5 + 0.5; // Opacity 0.5-1.0
-
-                // Apply styles
+                const size = Math.random() * 3 + 2;
+                const duration = Math.random() * 10 + 5;
+                const delay = Math.random() * 10;
+                const startLeft = Math.random() * 100;
+                const opacity = Math.random() * 0.5 + 0.5;
                 snowflake.style.width = `${size}px`;
                 snowflake.style.height = `${size}px`;
                 snowflake.style.left = `${startLeft}vw`;
                 snowflake.style.opacity = opacity;
                 snowflake.style.animationDuration = `${duration}s`;
-                snowflake.style.animationDelay = `-${delay}s`; // Negative delay starts animation partway through
-
+                snowflake.style.animationDelay = `-${delay}s`;
                 snowContainer.appendChild(snowflake);
             }
         }
 
-        /**
-         * Checks user login status via API and then runs initial navigation.
-         */
         async function checkLoginStatusAndNavigate() {
              try {
-                 // Fetch user status from the backend API
                  const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
-
                  if (!response.ok) {
-                     // Handle non-OK responses (like 401 Unauthorized)
                      if (response.status === 401 || response.status === 403) {
-                         currentUser = { logged_in: false }; // Treat as logged out
+                         currentUser = { logged_in: false };
                      } else {
-                         // Throw error for other unexpected HTTP issues
                          throw new Error(`HTTP error! status: ${response.status}`);
                      }
                  } else {
-                     // If response is OK, parse the user data
                      currentUser = await response.json();
                  }
                  console.log("User status checked:", currentUser);
-
              } catch (error) {
                  console.error("Error checking login status:", error);
-                 currentUser = { logged_in: false }; // Assume logged out on error
+                 currentUser = { logged_in: false };
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
-                 // Always run navigation after checking status
-                 runNavigation();
+                 runNavigation(); // Run navigation regardless of login status
              }
         }
 
-        /**
-         * Fetches the list of user's tickets from the API.
-         */
+        // Modified fetchTickets to handle moderator view
         async function fetchTickets() {
-            if (!ticketListDiv || !ticketListStatus) return; // Ensure elements exist
+            // Ensure elements exist
+            if (!userTicketView || !moderatorTicketView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) return;
 
-            // Check if user is logged in
             if (!currentUser || !currentUser.logged_in) {
-                ticketListStatus.textContent = "Please log in to view your tickets.";
-                ticketListDiv.innerHTML = ''; // Clear list
+                ticketListStatus.textContent = "Please log in to view tickets.";
+                moderatorActiveListStatus.textContent = "Please log in to view tickets.";
+                moderatorArchivedListStatus.textContent = "Please log in to view tickets.";
+                ticketListDiv.innerHTML = '';
+                moderatorActiveTicketListDiv.innerHTML = '';
+                moderatorArchivedTicketListDiv.innerHTML = '';
+                userTicketView.classList.remove('hidden'); // Show default view if logged out
+                moderatorTicketView.classList.add('hidden');
                 return;
             }
 
-            ticketListStatus.textContent = "Loading tickets..."; // Provide loading feedback
-            ticketListDiv.innerHTML = ''; // Clear previous list
+            // Show loading states
+            ticketListStatus.textContent = "Loading tickets...";
+            moderatorActiveListStatus.textContent = "Loading active tickets...";
+            moderatorArchivedListStatus.textContent = "Loading archived tickets...";
+            ticketListDiv.innerHTML = '';
+            moderatorActiveTicketListDiv.innerHTML = '';
+            moderatorArchivedTicketListDiv.innerHTML = '';
+
+            // Determine view based on moderator status
+            const isModerator = currentUser.is_moderator;
+            if (isModerator) {
+                userTicketView.classList.add('hidden');
+                moderatorTicketView.classList.remove('hidden');
+            } else {
+                userTicketView.classList.remove('hidden');
+                moderatorTicketView.classList.add('hidden');
+            }
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/tickets`, { credentials: 'include' });
-
                 if (!response.ok) {
-                     if (response.status === 401 || response.status === 403) {
-                         throw new Error("Authentication required.");
-                     } else {
-                         throw new Error(`HTTP error! status: ${response.status}`);
-                     }
+                     if (response.status === 401 || response.status === 403) throw new Error("Authentication required.");
+                     else throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
                 const tickets = await response.json();
 
+                // Clear loading messages
+                ticketListStatus.textContent = "";
+                moderatorActiveListStatus.textContent = "";
+                moderatorArchivedListStatus.textContent = "";
+
+                let hasActive = false;
+                let hasArchived = false;
+
                 if (tickets.length === 0) {
-                    ticketListStatus.textContent = "You have no support tickets.";
+                    if (isModerator) {
+                        moderatorActiveListStatus.textContent = "No active tickets found.";
+                        moderatorArchivedListStatus.textContent = "No archived tickets found.";
+                    } else {
+                        ticketListStatus.textContent = "You have no support tickets.";
+                    }
                 } else {
-                    ticketListStatus.textContent = ""; // Clear loading/status message
                     tickets.forEach(ticket => {
                         const item = document.createElement('div');
                         item.classList.add('ticket-list-item');
-
-                        // Determine status class and display text
                         const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
-                        const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A'; // Capitalize status
-
-                        // Format date nicely
+                        const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
                         const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
-
-                        // Use fallback for missing ID or subject
                         const ticketId = ticket._id || 'N/A';
                         const subject = ticket.subject || 'No Subject';
-                        const shortId = ticketId !== 'N/A' ? ticketId.slice(-6) : 'N/A'; // Show last 6 chars of ID
+                        const shortId = ticketId !== 'N/A' ? ticketId.slice(-6) : 'N/A';
+                        const username = ticket.username || 'Unknown User'; // Added username display for mods
 
-                        // Populate the list item HTML
                         item.innerHTML = `
                             <div>
                                 <p class="font-medium text-white">#${shortId}: ${subject}</p>
-                                <p class="text-xs text-gray-400">Opened: ${dateOpened}</p>
+                                <p class="text-xs text-gray-400">User: ${username} | Opened: ${dateOpened}</p>
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
-
-                        // Add click listener to navigate to the detail view
                         item.addEventListener('click', () => {
-                            // Pass ticket data directly to avoid fetching subject again on detail page if possible
                             navigateTo(`#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
                         });
 
-                        ticketListDiv.appendChild(item);
+                        // Append to the correct list
+                        if (isModerator) {
+                            if (ticket.status === 'open') {
+                                moderatorActiveTicketListDiv.appendChild(item);
+                                hasActive = true;
+                            } else {
+                                moderatorArchivedTicketListDiv.appendChild(item);
+                                hasArchived = true;
+                            }
+                        } else {
+                            ticketListDiv.appendChild(item);
+                        }
                     });
+
+                    // Update status messages if lists ended up empty
+                    if (isModerator) {
+                        if (!hasActive) moderatorActiveListStatus.textContent = "No active tickets found.";
+                        if (!hasArchived) moderatorArchivedListStatus.textContent = "No archived tickets found.";
+                    }
                 }
             } catch (error) {
                 console.error("Error fetching tickets:", error);
-                ticketListStatus.textContent = `Failed to load tickets: ${error.message}`;
+                const errorMsg = `Failed to load tickets: ${error.message}`;
+                ticketListStatus.textContent = errorMsg;
+                moderatorActiveListStatus.textContent = errorMsg;
+                moderatorArchivedListStatus.textContent = errorMsg;
                 showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
             }
         }
 
-        /**
-         * Appends a message to the chat display area.
-         * @param {object} data The message data {username, text, timestamp}.
-         */
-        function appendChatMessage(data) {
-             if (!chatMessagesDiv) return; // Ensure chat area exists
+        // Fetch full ticket details including messages
+        async function fetchTicketDetails(ticketId) {
+             if (!currentUser || !currentUser.logged_in) return;
+             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
+             try {
+                 const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
+                 if (!response.ok) {
+                     if (response.status === 401 || response.status === 403) throw new Error("Forbidden or Not Authenticated.");
+                     if (response.status === 404) throw new Error("Ticket not found.");
+                     throw new Error(`HTTP error! status: ${response.status}`);
+                 }
+                 const ticket = await response.json();
 
-             // Remove the initial "Loading chat..." or "Connecting..." message
+                 // Clear loading message
+                 chatMessagesDiv.innerHTML = '';
+
+                 // Populate chat messages
+                 if (ticket.messages && ticket.messages.length > 0) {
+                     ticket.messages.forEach(appendChatMessage);
+                 } else {
+                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet.</p>';
+                 }
+
+                 // Now connect to socket for real-time updates
+                 connectSocket(ticketId);
+
+             } catch (error) {
+                 console.error("Error fetching ticket details:", error);
+                 chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
+                 showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
+             }
+         }
+
+
+        function appendChatMessage(data) {
+             if (!chatMessagesDiv) return;
              const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
              if (loadingMsg) loadingMsg.remove();
 
              const messageElement = document.createElement('div');
+             // Add data attributes for context menu and deletion
              messageElement.classList.add('chat-message');
+             messageElement.dataset.timestamp = data.timestamp; // Store ISO timestamp
+             messageElement.dataset.senderId = data.sender_id;
 
-             // Format timestamp (optional: make more user-friendly)
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-             // Sanitize username and text to prevent basic HTML injection
              const safeUsername = (data.username || 'System').replace(/</g, "&lt;").replace(/>/g, "&gt;");
              const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-             // Construct the message HTML
-             messageElement.innerHTML = `<span class="username">${safeUsername}:</span> ${safeText} <span class="timestamp">${timestamp}</span>`;
+             // Make username clickable
+             const usernameSpan = document.createElement('span');
+             usernameSpan.classList.add('username');
+             usernameSpan.textContent = `${safeUsername}:`;
+             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
+
+             messageElement.appendChild(usernameSpan);
+             messageElement.append(` ${safeText} `); // Add space around text
+
+             const timestampSpan = document.createElement('span');
+             timestampSpan.classList.add('timestamp');
+             timestampSpan.textContent = timestamp;
+             messageElement.appendChild(timestampSpan);
 
              chatMessagesDiv.appendChild(messageElement);
-
-             // Auto-scroll to the bottom
              chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
-        /**
-         * Connects to the Socket.IO server for a specific ticket room.
-         * @param {string} ticketId The ID of the ticket to join.
-         */
         function connectSocket(ticketId) {
-            if (!ticketId) return; // Don't connect without an ID
-
-            // If already connected and trying to join the same room, do nothing extra
-            if (socket && socket.connected && currentTicketId === ticketId) {
-                console.log(`Already connected to socket and in room for ticket ${ticketId}`);
-                // Optionally re-emit join event if needed, but usually handled by server persistence
-                // socket.emit('join_ticket_room', { ticket_id: ticketId });
-                return;
-            }
-
-            // Disconnect previous socket if exists
-             if (socket) {
-                 disconnectSocket();
-             }
-
+            if (!ticketId) return;
+            if (socket && socket.connected && currentTicketId === ticketId) return; // Already connected to this ticket
+            if (socket) disconnectSocket(); // Disconnect previous if joining new
 
             console.log(`Attempting to connect WebSocket for ticket: ${ticketId}`);
-            // Establish new connection
             socket = io(SOCKET_URL, {
-                reconnectionAttempts: 3, // Limit reconnection attempts
-                withCredentials: true     // Send cookies for authentication
+                reconnectionAttempts: 3,
+                withCredentials: true
             });
 
-            // --- Socket Event Handlers ---
             socket.on('connect', () => {
                 console.log('WebSocket connected:', socket.id);
-                appendChatMessage({ username: 'System', text: 'Connected to chat.' });
-                // Join the specific ticket room after connection
+                // No need for system message here, handled by fetchTicketDetails
                 socket.emit('join_ticket_room', { ticket_id: ticketId });
             });
-
             socket.on('disconnect', (reason) => {
                 console.log('WebSocket disconnected:', reason);
-                appendChatMessage({ username: 'System', text: `Disconnected: ${reason}` });
-                // Clear current ticket ID on disconnect to avoid sending messages to wrong room on reconnect
-                // currentTicketId = null; // Keep currentTicketId to potentially rejoin on reconnect
-                socket = null; // Clear socket object
+                // Optionally show a disconnected message
+                // appendChatMessage({ username: 'System', text: `Disconnected: ${reason}` });
+                socket = null;
             });
-
             socket.on('connect_error', (error) => {
                 console.error('WebSocket connection error:', error);
-                appendChatMessage({ username: 'System', text: `Connection error: ${error.message}` });
                 showPopupMessage(errorMessagePopup, "Chat connection failed.", true);
-                socket = null; // Clear socket object on error
+                socket = null;
             });
-
             socket.on('new_message', (data) => {
-                // Ensure the message is for the currently viewed ticket
                 if (data.ticket_id === currentTicketId) {
                     appendChatMessage(data);
-                } else {
-                    console.log(`Received message for different ticket: ${data.ticket_id}`);
-                    // Optionally show a notification for other tickets
                 }
             });
-
             socket.on('room_joined', (data) => {
                 console.log('Joined room:', data.room);
-                appendChatMessage({ username: 'System', text: `Joined ticket room.` });
-                // Potentially fetch message history here if not done via HTTP
+                // No need for system message here
             });
-
             socket.on('error_message', (data) => {
-                // Handle errors sent from the server via socket
                 console.error('WebSocket server error:', data.message);
-                appendChatMessage({ username: 'System', text: `Error: ${data.message || 'Unknown chat error.'}` });
                 showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
             });
+            // Listener for message deletion confirmation
+            socket.on('message_deleted', (data) => {
+                if (data.ticket_id === currentTicketId) {
+                    const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
+                    if (messageToRemove) {
+                        messageToRemove.remove();
+                        console.log(`Removed message with timestamp: ${data.timestamp}`);
+                    }
+                }
+            });
+            // Listener for general action success
+             socket.on('action_success', (data) => {
+                 showPopupMessage(paymentMessage, data.message || 'Action successful.');
+             });
         }
 
-        /**
-         * Disconnects the current Socket.IO connection.
-         */
         function disconnectSocket() {
             if (socket) {
                 console.log('Disconnecting WebSocket...');
                 socket.disconnect();
-                socket = null; // Clear the socket variable
+                socket = null;
             }
-            // currentTicketId = null; // Clear ticket ID when explicitly disconnecting
         }
 
-        /**
-         * Displays user roles in the dashboard.
-         * @param {Array} roles Array of role objects {id, name, color, icon}.
-         */
         function displayUserRoles(roles) {
             const rolesContainer = document.getElementById('dashboard-user-roles');
             if (!rolesContainer) return;
-
             rolesContainer.innerHTML = '';
-
             if (roles && roles.length > 0) {
                 roles.forEach(role => {
                     const roleElement = document.createElement('span');
                     roleElement.classList.add('px-2', 'py-0.5', 'rounded-md', 'text-xs', 'font-medium', 'mr-1', 'mb-1', 'inline-block');
-
-                    let hexColor = '#9CA3AF'; // Default Tailwind gray-400
+                    let hexColor = '#9CA3AF';
                     if (role.color && role.color !== 0) {
                         hexColor = '#' + role.color.toString(16).padStart(6, '0');
                     }
-
                     const r = parseInt(hexColor.slice(1, 3), 16);
                     const g = parseInt(hexColor.slice(3, 5), 16);
                     const b = parseInt(hexColor.slice(5, 7), 16);
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                     const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
-
                     roleElement.textContent = role.name || `Role ${role.id}`;
                     roleElement.style.backgroundColor = hexColor;
                     roleElement.classList.add(textColorClass);
-
-                    // Optional: Add role icon handling here if needed
-                    // if (role.icon) { ... }
-
                     rolesContainer.appendChild(roleElement);
                 });
             } else {
@@ -968,43 +1027,136 @@
             }
         }
 
+        // --- Modal Functions ---
+        function showUserInfoModal(senderId, username) {
+             if (!userInfoModal || !senderId) return;
+
+             modalUsername.textContent = username || 'Unknown User';
+             modalUserId.textContent = senderId;
+             modalUserRoles.innerHTML = ''; // Clear previous roles
+
+             // Check if the clicked user is the currently logged-in user
+             if (currentUser && currentUser.user_id === senderId && currentUser.roles) {
+                 if (currentUser.roles.length > 0) {
+                     // Use displayUserRoles logic but target the modal container
+                     currentUser.roles.forEach(role => {
+                         const roleElement = document.createElement('span');
+                         roleElement.classList.add('px-2', 'py-0.5', 'rounded-md', 'text-xs', 'font-medium', 'mr-1', 'mb-1', 'inline-block');
+                         let hexColor = '#9CA3AF';
+                         if (role.color && role.color !== 0) hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                         const r = parseInt(hexColor.slice(1, 3), 16), g = parseInt(hexColor.slice(3, 5), 16), b = parseInt(hexColor.slice(5, 7), 16);
+                         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                         const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+                         roleElement.textContent = role.name || `Role ${role.id}`;
+                         roleElement.style.backgroundColor = hexColor;
+                         roleElement.classList.add(textColorClass);
+                         modalUserRoles.appendChild(roleElement);
+                     });
+                 } else {
+                      modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
+                 }
+             } else {
+                 // Placeholder for fetching other users' info if backend endpoint existed
+                 modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information only available for yourself currently.</p>';
+             }
+
+             userInfoModal.classList.add('active');
+         }
+
+        function hideUserInfoModal() {
+             if (userInfoModal) userInfoModal.classList.remove('active');
+        }
+
+        // --- Context Menu Functions ---
+        function showContextMenu(event) {
+            event.preventDefault(); // Prevent default right-click menu
+            hideContextMenu(); // Hide any previous menu
+
+            // Only show for moderators
+            if (!currentUser || !currentUser.is_moderator) return;
+
+            const messageElement = event.target.closest('.chat-message');
+            if (!messageElement || !contextMenu) return;
+
+            // Store data from the message element for actions
+            contextMenuData.ticketId = currentTicketId;
+            contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
+            contextMenuData.senderId = messageElement.dataset.senderId;
+
+            // Position and show the menu
+            const rect = event.target.getBoundingClientRect(); // Get position relative to viewport
+            // Adjust position slightly away from cursor
+            let top = event.clientY + window.scrollY + 5;
+            let left = event.clientX + window.scrollX + 5;
+
+            // Basic boundary check (prevent going off-screen)
+            const menuHeight = contextMenu.offsetHeight || 100; // Estimate height if not rendered
+            const menuWidth = contextMenu.offsetWidth || 150; // Estimate width
+            if (top + menuHeight > window.innerHeight + window.scrollY) {
+                top = event.clientY + window.scrollY - menuHeight - 5;
+            }
+            if (left + menuWidth > window.innerWidth + window.scrollX) {
+                left = event.clientX + window.scrollX - menuWidth - 5;
+            }
+
+
+            contextMenu.style.top = `${top}px`;
+            contextMenu.style.left = `${left}px`;
+            contextMenu.style.display = 'block';
+
+            // Add a one-time click listener to the document to hide the menu
+             document.addEventListener('click', hideContextMenu, { once: true });
+             // Also hide if scrolling
+             window.addEventListener('scroll', hideContextMenu, { once: true });
+
+        }
+
+        function hideContextMenu() {
+            if (contextMenu) contextMenu.style.display = 'none';
+             // Clean up potential listeners if needed (though {once: true} helps)
+             document.removeEventListener('click', hideContextMenu);
+             window.removeEventListener('scroll', hideContextMenu);
+        }
+
+        function deleteChatMessage() {
+             if (!contextMenuData.ticketId || !contextMenuData.messageTimestamp || !socket || !socket.connected) {
+                 showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true);
+                 return;
+             }
+             console.log(`Attempting to delete message: T:${contextMenuData.ticketId} TS:${contextMenuData.messageTimestamp}`);
+             socket.emit('delete_message', {
+                 ticket_id: contextMenuData.ticketId,
+                 message_timestamp: contextMenuData.messageTimestamp
+             });
+             hideContextMenu(); // Hide menu after action
+         }
+
 
         // --- Event Listeners Setup ---
 
-        // Login Button
         loginButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link behavior
-            window.location.href = loginButton.href; // Navigate to Discord login
+            e.preventDefault();
+            window.location.href = loginButton.href;
         });
 
-        // Logout Buttons (Header and Dashboard)
         async function handleLogout() {
             console.log('Logging out...');
             try {
                  const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
                  if (!response.ok) {
-                     // Try to parse error if possible
                      let errorMsg = 'Logout request failed';
-                     try {
-                         const errorData = await response.json();
-                         errorMsg = errorData.error || errorMsg;
-                     } catch (parseError) { /* Ignore parsing error */ }
+                     try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
                      throw new Error(errorMsg);
                  }
-
-                 // Logout successful
                  currentUser = { logged_in: false };
-                 localStorage.removeItem('currentPage'); // Clear saved page
-                 disconnectSocket(); // Disconnect chat if connected
-                 window.location.hash = '#home'; // Go to home page
-                 // runNavigation(); // Let hashchange handle UI update
-                 updateHeaderUI(currentUser); // Update header immediately
-                 showPopupMessage(paymentMessage, "Logged out successfully."); // Use payment message for success
-
+                 localStorage.removeItem('currentPage');
+                 disconnectSocket();
+                 window.location.hash = '#home';
+                 updateHeaderUI(currentUser);
+                 showPopupMessage(paymentMessage, "Logged out successfully.");
             } catch(error) {
                  console.error("Logout error:", error);
                  showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
-                 // Still attempt to clear local state on error
                  currentUser = { logged_in: false };
                  localStorage.removeItem('currentPage');
                  disconnectSocket();
@@ -1015,32 +1167,23 @@
         logoutButton.addEventListener('click', handleLogout);
         dashboardLogoutButton.addEventListener('click', handleLogout);
 
-        // Hash Change Listener (Handles navigation)
         window.addEventListener('hashchange', runNavigation);
 
-        // Create Ticket Form Submission
         if(createTicketForm) {
             createTicketForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
+                event.preventDefault();
                 const subject = ticketSubjectInput.value.trim();
                 const message = ticketMessageInput.value.trim();
-
-                // Clear previous status messages
                 createTicketStatus.textContent = '';
-                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center'; // Reset classes
-
-                // Basic validation
+                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
                 if (!subject || !message) {
                     createTicketStatus.textContent = 'Please fill out both subject and message.';
                     createTicketStatus.classList.add('error');
                     return;
                 }
-
-                // Disable button to prevent multiple submissions
                 const submitButton = document.getElementById('create-ticket-button');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Submitting...';
-
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/tickets`, {
                         method: 'POST',
@@ -1048,68 +1191,79 @@
                         body: JSON.stringify({ subject, message }),
                         credentials: 'include'
                     });
-
                     if (!response.ok) {
-                        // Try to get error message from response body
-                        let errorData;
-                        try {
-                            errorData = await response.json();
-                        } catch (e) { /* Ignore if body isn't JSON */ }
+                        let errorData; try { errorData = await response.json(); } catch (e) {}
                         throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
                     }
-
-                    // Success
-                    const result = await response.json(); // Get ticket ID if needed
+                    const result = await response.json();
                     createTicketStatus.textContent = 'Ticket submitted successfully!';
                     createTicketStatus.classList.add('success');
-                    createTicketForm.reset(); // Clear the form
-                    fetchTickets(); // Refresh the ticket list
-
-                    // Optional: Redirect to the new ticket detail page
-                    // window.location.hash = `#ticketDetail?id=${result.ticket_id}`;
-
+                    createTicketForm.reset();
+                    fetchTickets(); // Refresh list
                 } catch (error) {
                     console.error('Error creating ticket:', error);
                     createTicketStatus.textContent = `Error: ${error.message}`;
                     createTicketStatus.classList.add('error');
                 } finally {
-                    // Re-enable button
                     submitButton.disabled = false;
                     submitButton.textContent = 'Submit Ticket';
                 }
             });
-        } else {
-            console.warn("Create ticket form not found.");
-        }
+        } else { console.warn("Create ticket form not found."); }
 
-        // Chat Input Form Submission
         if(chatInputForm) {
              chatInputForm.addEventListener('submit', (event) => {
-                 event.preventDefault(); // Prevent page reload
+                 event.preventDefault();
                  const messageText = chatInput.value.trim();
-
                  if (messageText && socket && socket.connected && currentTicketId) {
-                     // Send message via WebSocket
                      socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                     chatInput.value = ''; // Clear the input field
-                 } else if (!socket || !socket.connected) {
-                     showPopupMessage(errorMessagePopup, 'Not connected to chat.', true);
-                 } else if (!messageText) {
-                     // Optionally show a message or just do nothing for empty input
-                     // showPopupMessage(errorMessagePopup, 'Cannot send empty message.', true);
-                 } else if (!currentTicketId) {
-                      showPopupMessage(errorMessagePopup, 'No active ticket selected.', true);
+                     chatInput.value = '';
+                 } else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true);
+                 } else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
+             });
+        } else { console.warn("Chat input form not found."); }
+
+        // Modal Close Button
+        if (modalCloseButton) {
+             modalCloseButton.addEventListener('click', hideUserInfoModal);
+        }
+        // Close modal if clicking outside the content
+        if (userInfoModal) {
+             userInfoModal.addEventListener('click', (event) => {
+                 if (event.target === userInfoModal) { // Check if click is on the backdrop
+                     hideUserInfoModal();
                  }
              });
-        } else {
-            console.warn("Chat input form not found.");
         }
+
+        // Context Menu Listener on Chat Area
+         if (chatMessagesDiv) {
+             chatMessagesDiv.addEventListener('contextmenu', showContextMenu);
+         } else { console.warn("Chat messages container not found for context menu."); }
+
+        // Context Menu Action Listeners
+         if (contextDeleteButton) {
+             contextDeleteButton.addEventListener('click', deleteChatMessage);
+         }
+         if (contextUserInfoButton) {
+             contextUserInfoButton.addEventListener('click', () => {
+                 if (contextMenuData.senderId) {
+                     // We need the username too, try to get it from the message element
+                     const messageElement = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
+                     const usernameElement = messageElement?.querySelector('.username');
+                     const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'Unknown User';
+                     showUserInfoModal(contextMenuData.senderId, username);
+                 }
+                 hideContextMenu();
+             });
+         }
+
 
         // --- Initial Page Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
-            createSnowflakes(); // Start the snow effect
-            checkLoginStatusAndNavigate(); // Check login status and navigate to initial page
+            createSnowflakes();
+            checkLoginStatusAndNavigate();
         });
 
     </script>
