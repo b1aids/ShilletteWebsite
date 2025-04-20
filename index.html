@@ -727,40 +727,41 @@
         }
 
 
-        // *** MODIFIED navigateTo function to handle #tickets?id=... format ***
+        // *** MODIFIED navigateTo function to handle #tickets/ID format ***
         function navigateTo(hash, ticketData = null) {
             console.log(`[navigateTo] Received hash: ${hash}`); // DEBUG
             // Handle hashes starting with /#
-            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : hash;
-            const baseHash = cleanHash.split('?')[0] || '#home';
-            // Determine the logical target section ID based on the base hash
-            const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
+            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : hash; // Result: #tickets/ID or #home etc.
 
-            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Logical target section: ${targetSectionId}`); // DEBUG
-
-            // --- NEW LOGIC START: Check if #tickets hash contains an ID ---
+            // --- NEW LOGIC START: Check for #tickets/ID format ---
             let isTicketDetailView = false; // Flag to indicate if we should show detail content
             let ticketIdFromHash = null;
             let ticketSubjectFromData = ticketData ? ticketData.subject : null; // Get subject if passed directly
 
-            if (baseHash === '#tickets') {
-                const params = new URLSearchParams(cleanHash.split('?')[1] || '');
-                ticketIdFromHash = params.get('id');
-                if (ticketIdFromHash) {
-                    console.log(`[navigateTo] Detected #tickets with ID: ${ticketIdFromHash}. Will show detail view.`); // DEBUG
-                    isTicketDetailView = true; // Set flag to show detail content
-                    // Ensure we have a subject if possible (passed directly or fetch later)
-                    // Set subject early for better UX
-                    ticketDetailSubject.textContent = ticketSubjectFromData || `Ticket #${ticketIdFromHash.slice(-6)}`;
-                    // Show loading state for chat
-                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                }
+            const ticketPathMatch = cleanHash.match(/^#tickets\/([a-zA-Z0-9]+)$/); // Regex to match #tickets/ followed by an ID
+
+            if (ticketPathMatch && ticketPathMatch[1]) {
+                // If the hash matches the #tickets/ID pattern
+                ticketIdFromHash = ticketPathMatch[1]; // Extract the ID from the regex match
+                console.log(`[navigateTo] Detected #tickets/ID format. ID: ${ticketIdFromHash}. Will show detail view.`); // DEBUG
+                isTicketDetailView = true; // Set flag to show detail content
+                // Set subject early for better UX
+                ticketDetailSubject.textContent = ticketSubjectFromData || `Ticket #${ticketIdFromHash.slice(-6)}`;
+                // Show loading state for chat
+                chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
             }
             // --- NEW LOGIC END ---
 
+            // Determine the logical target section ID based on the base hash (part before / or ?)
+            // If it's a ticket detail view, the *logical* section is still #tickets for permission checks,
+            // but we will *display* #ticketDetail content later.
+            const baseHash = isTicketDetailView ? '#tickets' : (cleanHash.split(/[\/?]/)[0] || '#home');
+            const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
+            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash for logic: ${baseHash}, Logical target section: ${targetSectionId}`); // DEBUG
+
+
             // Determine if the target view (list or detail) requires login
-            // Use targetSectionId for general page access, add isTicketDetailView for the specific case
-            const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId) || isTicketDetailView;
+            const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId) || isTicketDetailView; // Check includes logical section or if it's a detail view override
             console.log(`[navigateTo] Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`); // DEBUG
 
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
@@ -784,33 +785,18 @@
 
             // --- MODIFIED SECTION DISPLAY LOGIC ---
             if (isTicketDetailView && ticketIdFromHash) {
-                // If it's #tickets?id=..., show the TICKET DETAIL section content
+                // If it's #tickets/ID..., show the TICKET DETAIL section content
                 currentTicketId = ticketIdFromHash; // Set currentTicketId here
                 showSection('#ticketDetail'); // Explicitly show the detail section *content*
                 fetchTicketDetails(ticketIdFromHash); // Fetch details for the ticket
-            } else if (targetSectionId === '#ticketDetail') {
-                 // Handle direct navigation to #ticketDetail?id= (fallback/optional, if someone uses old link)
-                 let id = null;
-                 let subject = null;
-                 if (ticketData) { id = ticketData.id; subject = ticketData.subject; }
-                 else { const params = new URLSearchParams(cleanHash.split('?')[1] || ''); id = params.get('id'); }
-
-                 if (id) {
-                     currentTicketId = id;
-                     ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
-                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                     showSection('#ticketDetail'); // Show detail section content
-                     fetchTicketDetails(id);
-                 } else {
-                     // If #ticketDetail is accessed without an ID, redirect to the list
-                     console.warn("[navigateTo] #ticketDetail hash without ID. Redirecting to tickets list.");
-                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                     window.location.hash = '/#tickets'; // Navigate to /#tickets list
-                     return; // Stop further processing
-                 }
-            } else {
+            }
+            // --- Optional: Handle old #ticketDetail?id= format as fallback ---
+            // else if (targetSectionId === '#ticketDetail') {
+            //      // ... (code to handle old format or redirect) ...
+            // }
+             else {
                  // Original logic for other sections (#home, #products, #dashboard)
-                 // OR for the #tickets list view (when no ID is present)
+                 // OR for the #tickets list view (when hash is just #tickets)
                  showSection(targetSectionId); // Show the correct section content
                  localStorage.setItem('currentPage', targetSectionId); // Store the base hash
 
@@ -978,11 +964,11 @@
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
 
-                        // *** MODIFIED Click to navigate using #tickets?id=... format ***
+                        // *** MODIFIED Click to navigate using #tickets/ID format ***
                         item.addEventListener('click', () => {
-                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}, navigating to #tickets?id=...`); // DEBUG
-                             // Use navigateTo to handle logic centrally, pointing hash to #tickets
-                             navigateTo(`/#tickets?id=${ticketId}`, { id: ticketId, subject: subject });
+                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}, navigating to #tickets/ID...`); // DEBUG
+                             // Use navigateTo to handle logic centrally, pointing hash to #tickets/ID
+                             navigateTo(`/#tickets/${ticketId}`, { id: ticketId, subject: subject });
                         });
 
                         // Right-click for context menu
@@ -1587,12 +1573,14 @@
                     createTicketStatus.textContent = 'Ticket submitted successfully!';
                     createTicketStatus.classList.add('success');
                     createTicketForm.reset(); // Clear the form fields
-                    // Optionally, navigate to the new ticket or refresh the list
-                    // For now, just refresh the list if the user is on the tickets page
-                    if (activeSectionId === '#tickets') {
-                        fetchTickets();
+
+                    // *** MODIFIED: Navigate to new ticket using #tickets/ID format ***
+                    if (result.ticket_id) {
+                        navigateTo(`/#tickets/${result.ticket_id}`, { id: result.ticket_id, subject: subject });
+                    } else {
+                         // Fallback: Refresh list if ID is missing (shouldn't happen)
+                         if (activeSectionId === '#tickets') { fetchTickets(); }
                     }
-                    // Or navigate directly: navigateTo(`/#tickets?id=${result.ticket_id}`, { id: result.ticket_id, subject: subject });
 
                 } catch (error) {
                     console.error('Error creating ticket:', error);
