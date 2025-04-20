@@ -173,7 +173,7 @@
             /* transition: opacity 0.3s ease-in-out; Optional: fade effect, but display handles layout */
         }
         .page-section.hidden {
-             display: none; /* Completely remove from layout */
+             display: none !important; /* Use important to ensure override if needed */
         }
         .page-section:not(.hidden) {
              display: block; /* Or flex/grid if the container uses it */
@@ -626,31 +626,41 @@
              }
         }
 
+        // Updated showSection to hide all others first
         function showSection(sectionId) {
             hideContextMenu(); // Hide context menu when changing sections
-            if (activeSectionId === sectionId) return;
-            if (activeSectionId && pageSections[activeSectionId]) {
-                 pageSections[activeSectionId].classList.add('hidden');
-            }
+
+            // Hide all sections first
+            Object.values(pageSections).forEach(section => {
+                if (section) { // Check if the element actually exists
+                    section.classList.add('hidden');
+                }
+            });
+
+            // Show the target section
             const sectionElement = pageSections[sectionId];
             if (sectionElement) {
                 sectionElement.classList.remove('hidden');
-                activeSectionId = sectionId;
+                activeSectionId = sectionId; // Update the active section ID
                 console.log(`Showing section: ${sectionId}`);
             } else {
-                console.warn(`Section with ID ${sectionId} not found.`);
+                console.warn(`Section with ID ${sectionId} not found. Defaulting to #home.`);
+                // Default to home if target not found
                 if (pageSections['#home']) {
                     pageSections['#home'].classList.remove('hidden');
                     activeSectionId = '#home';
                 } else {
-                     activeSectionId = null;
+                     activeSectionId = null; // Or handle error appropriately
                 }
             }
+
+             // Disconnect socket if navigating away from ticket detail
              if (sectionId !== '#ticketDetail') {
                  disconnectSocket();
                  currentTicketId = null; // Clear ticket ID when leaving detail page
              }
         }
+
 
         function navigateTo(hash, ticketData = null) {
             const baseHash = hash.split('?')[0] || '#home';
@@ -664,7 +674,7 @@
                  if (window.location.hash !== '#home') {
                      window.location.hash = '#home';
                  } else {
-                     showSection('#home');
+                     showSection('#home'); // Explicitly show home if already on #home but logged out
                  }
                  return;
             }
@@ -697,7 +707,7 @@
                  // currentTicketId is cleared in showSection or disconnectSocket
             }
 
-            showSection(targetSectionId);
+            showSection(targetSectionId); // Call the updated showSection
             localStorage.setItem('currentPage', targetSectionId);
 
             if (targetSectionId === '#tickets') {
