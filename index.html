@@ -133,11 +133,12 @@
         #loading-overlay {
             position: fixed;
             inset: 0;
-            @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out;
+            @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none;
         }
-        #loading-overlay.opacity-0 {
-             @apply pointer-events-none;
+        #loading-overlay.active {
+             @apply opacity-100 pointer-events-auto;
         }
+
 
         .loader {
             display: flex;
@@ -161,9 +162,16 @@
             animation-delay: 0.4s;
         }
 
-        .content-blur {
-            @apply filter blur-sm transition-all duration-300 ease-in-out;
+        .page-section {
+            @apply transition-opacity duration-300 ease-in-out;
         }
+        .page-section.hidden {
+             @apply opacity-0 pointer-events-none absolute;
+        }
+         .page-section:not(.hidden) {
+             @apply opacity-100 pointer-events-auto relative;
+         }
+
 
         .ticket-list-item {
             @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors;
@@ -202,7 +210,7 @@
     <div id="ticket-message">Placeholder</div>
     <div id="error-message">Placeholder</div>
 
-    <div id="loading-overlay" class="hidden opacity-0 pointer-events-none">
+    <div id="loading-overlay">
         <div class="loader">
             <span class="loader-bar"></span>
             <span class="loader-bar"></span>
@@ -218,9 +226,9 @@
             </div>
             <div class="flex items-center space-x-6">
                 <nav class="hidden md:flex space-x-6">
-                    <a href="#" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
-                    <a href="#" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
-                    <a href="#" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200">Tickets</a>
+                    <a href="#home" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                    <a href="#products" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
+                    <a href="#tickets" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200">Tickets</a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
@@ -228,11 +236,11 @@
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </a>
-                    <div id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
+                    <a href="#dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
                         <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600">
                         <span id="user-name" class="text-white text-sm font-medium">Username</span>
                         <button id="logout-button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
-                    </div>
+                    </a>
                 </div>
             </div>
             <div class="md:hidden">
@@ -243,7 +251,7 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-grow">
+    <main id="main-content" class="flex-grow page-section">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="hero-bg-element"></div>
             <div class="container mx-auto px-6 relative z-10">
@@ -253,9 +261,9 @@
                     Fully undetected DMA firmware, battle-tested for reliable performance. Join thousands of satisfied users.
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16">
-                    <button id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
+                    <a href="#products" id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
                         Purchase Product
-                    </button>
+                    </a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Join Discord</span>
@@ -283,12 +291,12 @@
         </section>
     </main>
 
-    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
+    <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
         <div class="flex justify-start mb-8">
-             <button id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
-             </button>
+             </a>
         </div>
         <h2>Our Products</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -334,7 +342,7 @@
         </div>
     </div>
 
-    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10">
+    <div id="dashboard-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
         <h2>Dashboard</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="dashboard-card md:col-span-1">
@@ -363,12 +371,12 @@
         </div>
     </div>
 
-     <div id="tickets-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
+     <div id="tickets-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <button id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="#home" id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
-             </button>
+             </a>
         </div>
         <h2>Support Tickets</h2>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -385,9 +393,9 @@
                          <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
                          <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
                      </div>
-                     <div class="mb-4">
+                     <div class="mb-6"> {# Increased margin bottom #}
                          <label for="ticket-message" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
-                         <textarea id="ticket-message" name="ticket-message" rows="4" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
+                         <textarea id="ticket-message" name="ticket-message" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea> {# Increased rows #}
                      </div>
                      <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
                          Submit Ticket
@@ -397,12 +405,12 @@
         </div>
      </div>
 
-     <div id="ticket-detail-content" class="hidden flex-grow container mx-auto px-6 py-10">
+     <div id="ticket-detail-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <button id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Tickets</span>
-             </button>
+             </a>
         </div>
         <h2 id="ticket-detail-subject">Ticket Subject</h2>
         <div class="ticket-card">
@@ -424,32 +432,26 @@
     </footer>
 
     <script>
+        const pageSections = {
+            '#home': document.getElementById('main-content'),
+            '#products': document.getElementById('products-page-content'),
+            '#tickets': document.getElementById('tickets-page-content'),
+            '#dashboard': document.getElementById('dashboard-content'),
+            '#ticketDetail': document.getElementById('ticket-detail-content')
+        };
         const loginButton = document.getElementById('login-button');
         const logoutButton = document.getElementById('logout-button');
         const dashboardLogoutButton = document.getElementById('dashboard-logout-button');
-        const mainContent = document.getElementById('main-content');
-        const dashboardContent = document.getElementById('dashboard-content');
-        const productsPageContent = document.getElementById('products-page-content');
-        const ticketsPageContent = document.getElementById('tickets-page-content');
-        const ticketDetailContent = document.getElementById('ticket-detail-content');
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
         const dashboardUserNameDisplay = document.getElementById('dashboard-user-name');
         const dashboardUserAvatarDisplay = document.getElementById('dashboard-user-avatar');
         const snowContainer = document.getElementById('snow-container');
-        const homeLink = document.getElementById('home-link');
-        const productsLink = document.getElementById('products-link');
-        const ticketsLink = document.getElementById('tickets-link');
-        const backToHomeButtonProducts = document.getElementById('back-to-home-button-products');
-        const backToHomeButtonTickets = document.getElementById('back-to-home-button-tickets');
-        const backToTicketsButton = document.getElementById('back-to-tickets-button');
         const paymentMessage = document.getElementById('payment-message');
         const ticketMessage = document.getElementById('ticket-message');
         const errorMessage = document.getElementById('error-message');
-        const purchaseButton = document.getElementById('purchase-button');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content, #tickets-page-content, #ticket-detail-content');
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message');
@@ -467,6 +469,7 @@
         let currentUser = null;
         let socket = null;
         let currentTicketId = null;
+        let activeSection = null;
 
         function showMessage(element, message, isError = false) {
              if (!element) return;
@@ -483,36 +486,6 @@
                  element.classList.remove('show');
              }, 3000);
          }
-
-        function hideAllSections() {
-             mainContent.classList.add('hidden');
-             dashboardContent.classList.add('hidden');
-             productsPageContent.classList.add('hidden');
-             ticketsPageContent.classList.add('hidden');
-             ticketDetailContent.classList.add('hidden');
-             disconnectSocket();
-        }
-
-        function showSectionWithLoading(showFunction) {
-            if (!loadingOverlay) { showFunction(); return; }
-
-            pageContainers.forEach(container => container.classList.add('content-blur'));
-            loadingOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-            loadingOverlay.classList.add('pointer-events-auto');
-
-
-            setTimeout(() => {
-                hideAllSections();
-                showFunction();
-                pageContainers.forEach(container => container.classList.remove('content-blur'));
-                loadingOverlay.classList.add('opacity-0');
-                loadingOverlay.classList.remove('pointer-events-auto');
-                loadingOverlay.classList.add('pointer-events-none');
-                setTimeout(() => {
-                    loadingOverlay.classList.add('hidden');
-                }, 300);
-            }, 500);
-        }
 
         function updateHeaderUI(user) {
              if (user && user.logged_in) {
@@ -531,7 +504,6 @@
                  } else {
                     dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
                  }
-
              } else {
                  loginButton.classList.remove('hidden');
                  userInfo.classList.add('hidden');
@@ -539,71 +511,85 @@
              }
         }
 
-
-        function showDashboardInternal() {
-            dashboardContent.classList.remove('hidden');
-            localStorage.setItem('currentPage', 'dashboard');
-            updateHeaderUI(currentUser);
-        }
-
-        function showMainContentInternal() {
-            mainContent.classList.remove('hidden');
-            localStorage.setItem('currentPage', 'home');
-            updateHeaderUI(currentUser);
-        }
-
-        function showProductsPageInternal() {
-            productsPageContent.classList.remove('hidden');
-            localStorage.setItem('currentPage', 'products');
-            updateHeaderUI(currentUser);
-        }
-
-        function showTicketsPageInternal() {
-            ticketsPageContent.classList.remove('hidden');
-            localStorage.setItem('currentPage', 'tickets');
-            updateHeaderUI(currentUser);
-            fetchTickets();
-        }
-
-        function showTicketDetailInternal(ticketId, ticketSubject) {
-             ticketDetailContent.classList.remove('hidden');
-             localStorage.setItem('currentPage', 'ticketDetail');
-             currentTicketId = ticketId;
-             ticketDetailSubject.textContent = ticketSubject || `Ticket #${ticketId.slice(-6)}`;
-             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-             updateHeaderUI(currentUser);
-             connectSocket(ticketId);
-        }
-
-
-        function showDashboard() {
-            if (!currentUser || !currentUser.logged_in) {
-                 showMessage(errorMessage, "Please log in to view the dashboard.", true);
-                 return;
+        function showSection(sectionElement) {
+            if (activeSection === sectionElement) return;
+            if (activeSection) {
+                 activeSection.classList.add('hidden');
             }
-            showSectionWithLoading(showDashboardInternal);
+            if (sectionElement) {
+                sectionElement.classList.remove('hidden');
+                activeSection = sectionElement;
+            } else {
+                 activeSection = null;
+            }
+             disconnectSocket();
         }
-        function showMainContent() {
-            showSectionWithLoading(showMainContentInternal);
-        }
-        function showProductsPage() {
-             showSectionWithLoading(showProductsPageInternal);
-        }
-        function showTicketsPage() {
-             if (!currentUser || !currentUser.logged_in) {
-                 showMessage(errorMessage, "Please log in to view tickets.", true);
-                 return;
-             }
-             showSectionWithLoading(showTicketsPageInternal);
-        }
-         function showTicketDetail(ticketId, ticketSubject) {
-             if (!currentUser || !currentUser.logged_in) {
-                 showMessage(errorMessage, "Please log in to view ticket details.", true);
-                 return;
-             }
-             showSectionWithLoading(() => showTicketDetailInternal(ticketId, ticketSubject));
-         }
 
+        function navigateTo(hash, ticketData = null) {
+            const baseHash = hash.split('?')[0] || '#home'; // Get hash without query params
+            let targetSection = pageSections[baseHash];
+
+            const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(baseHash);
+            if (isProtected && (!currentUser || !currentUser.logged_in)) {
+                 showMessage(errorMessage, "Please log in to view this page.", true);
+                 window.location.hash = '#home';
+                 return; // Prevent further processing if not logged in
+            }
+
+            if (baseHash === '#ticketDetail') {
+                let id = null;
+                let subject = null;
+                if (ticketData) { // Passed directly from click
+                    id = ticketData.id;
+                    subject = ticketData.subject;
+                } else { // Attempt to get from hash query param (e.g., on refresh)
+                    const params = new URLSearchParams(hash.split('?')[1] || '');
+                    id = params.get('id');
+                    // We don't have subject on refresh, backend would need to provide it
+                }
+
+                if (id) {
+                    currentTicketId = id;
+                    ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
+                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
+                    connectSocket(id);
+                } else {
+                    console.warn("Ticket ID missing for detail view. Redirecting to tickets list.");
+                    window.location.hash = '#tickets'; // Go back to list if ID is missing
+                    return; // Prevent showing empty detail section
+                }
+            } else {
+                 disconnectSocket();
+                 currentTicketId = null;
+            }
+
+            if (!targetSection) {
+                console.warn(`No section found for hash: ${baseHash}. Defaulting to home.`);
+                window.location.hash = '#home';
+                targetSection = pageSections['#home'];
+            }
+
+            showSection(targetSection);
+            localStorage.setItem('currentPage', baseHash); // Store base hash
+            if (baseHash === '#tickets') {
+                fetchTickets();
+            }
+            updateHeaderUI(currentUser);
+        }
+
+
+        function runNavigation() {
+            const hash = window.location.hash;
+            const baseHash = hash.split('?')[0];
+            if (baseHash === '#ticketDetail') {
+                 const params = new URLSearchParams(hash.split('?')[1] || '');
+                 const id = params.get('id');
+                 // Pass minimal data needed for navigation function
+                 navigateTo(baseHash, id ? { id: id } : null);
+            } else {
+                 navigateTo(hash);
+            }
+        }
 
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
@@ -612,77 +598,49 @@
             for (let i = 0; i < numberOfSnowflakes; i++) {
                 const snowflake = document.createElement('div');
                 snowflake.classList.add('snowflake');
-
                 const size = Math.random() * 3 + 2;
                 const duration = Math.random() * 10 + 5;
                 const delay = Math.random() * 10;
                 const startLeft = Math.random() * 100;
                 const opacity = Math.random() * 0.5 + 0.5;
-
                 snowflake.style.width = `${size}px`;
                 snowflake.style.height = `${size}px`;
                 snowflake.style.left = `${startLeft}vw`;
                 snowflake.style.opacity = opacity;
                 snowflake.style.animationDuration = `${duration}s`;
                 snowflake.style.animationDelay = `-${delay}s`;
-
                 snowContainer.appendChild(snowflake);
             }
         }
 
-        async function checkLoginStatus() {
+        async function checkLoginStatusAndNavigate() {
              try {
                  const response = await fetch(`${API_BASE_URL}/api/user`, {credentials: 'include'});
                  if (!response.ok) {
-                     if (response.status === 401 || response.status === 403) {
-                         currentUser = { logged_in: false };
-                     } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                     }
-                 } else {
-                    currentUser = await response.json();
-                 }
+                     if (response.status === 401 || response.status === 403) { currentUser = { logged_in: false }; }
+                     else { throw new Error(`HTTP error! status: ${response.status}`); }
+                 } else { currentUser = await response.json(); }
                  console.log("User status:", currentUser);
              } catch (error) {
                  console.error("Error checking login status:", error);
                  currentUser = { logged_in: false };
              } finally {
-                 const currentPage = localStorage.getItem('currentPage');
-                 hideAllSections();
-                 if (currentUser.logged_in) {
-                     showDashboardInternal();
-                 } else {
-                     if (currentPage === 'products') {
-                         showProductsPageInternal();
-                     } else {
-                         showMainContentInternal();
-                     }
-                 }
-                 updateHeaderUI(currentUser);
+                 runNavigation(); // Navigate based on hash AFTER checking status
              }
         }
 
         async function fetchTickets() {
             if (!ticketListDiv || !ticketListStatus) return;
-            if (!currentUser || !currentUser.logged_in) {
-                ticketListStatus.textContent = "Please log in to view tickets.";
-                return;
-            }
-
+            if (!currentUser || !currentUser.logged_in) { ticketListStatus.textContent = "Please log in."; return; }
             ticketListStatus.textContent = "Loading tickets...";
             ticketListDiv.innerHTML = '';
-
             try {
                 const response = await fetch(`${API_BASE_URL}/api/tickets`, {credentials: 'include'});
                 if (!response.ok) {
-                     if (response.status === 401 || response.status === 403) {
-                         throw new Error("Not authorized to view tickets.");
-                     } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                     }
+                     if (response.status === 401 || response.status === 403) { throw new Error("Not authorized."); }
+                     else { throw new Error(`HTTP error! status: ${response.status}`); }
                 }
                 const tickets = await response.json();
-
                 if (tickets.length === 0) {
                     ticketListStatus.textContent = "You have no support tickets.";
                 } else {
@@ -694,262 +652,88 @@
                         const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
                         const ticketId = ticket._id || 'N/A';
                         const subject = ticket.subject || 'No Subject';
-
                         item.innerHTML = `
-                            <div>
-                                <p class="font-medium text-white">Ticket #${ticketId.slice(-6)}: ${subject}</p>
-                                <p class="text-xs text-gray-400">Opened: ${dateOpened}</p>
-                            </div>
-                            <span class="${statusClass}">${ticket.status || 'N/A'}</span>
-                        `;
-                        item.addEventListener('click', () => showTicketDetail(ticketId, subject));
+                            <div><p class="font-medium text-white">Ticket #${ticketId.slice(-6)}: ${subject}</p><p class="text-xs text-gray-400">Opened: ${dateOpened}</p></div>
+                            <span class="${statusClass}">${ticket.status || 'N/A'}</span>`;
+                        item.addEventListener('click', () => { window.location.hash = `#ticketDetail?id=${ticketId}`; });
                         ticketListDiv.appendChild(item);
                     });
                 }
-            } catch (error) {
-                console.error("Error fetching tickets:", error);
-                ticketListStatus.textContent = `Failed to load tickets: ${error.message}`;
-            }
+            } catch (error) { console.error("Error fetching tickets:", error); ticketListStatus.textContent = `Failed to load tickets: ${error.message}`; }
         }
 
         function appendChatMessage(data) {
              if (!chatMessagesDiv) return;
              const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
              if (loadingMsg) loadingMsg.remove();
-
              const messageElement = document.createElement('div');
              messageElement.classList.add('chat-message');
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '';
              const safeUsername = (data.username || 'System').replace(/</g, "&lt;").replace(/>/g, "&gt;");
              const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
              messageElement.innerHTML = `<span class="username">${safeUsername}:</span> ${safeText} <span class="timestamp">${timestamp}</span>`;
              chatMessagesDiv.appendChild(messageElement);
              chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
         function connectSocket(ticketId) {
-            if (socket && socket.connected) {
-                socket.emit('join_ticket_room', { ticket_id: ticketId });
-                return;
-            }
-            if (socket) {
-                 socket.off('connect');
-                 socket.off('disconnect');
-                 socket.off('connect_error');
-                 socket.off('new_message');
-                 socket.off('room_joined');
-                 socket.off('past_messages');
-                 socket.off('error_message');
-            }
-
-            socket = io(SOCKET_URL, {
-                reconnectionAttempts: 3,
-                withCredentials: true,
-            });
-
-            socket.on('connect', () => {
-                console.log('WebSocket connected:', socket.id);
-                appendChatMessage({text: 'Connected to chat.'});
-                socket.emit('join_ticket_room', { ticket_id: ticketId });
-            });
-
-            socket.on('disconnect', (reason) => {
-                console.log('WebSocket disconnected:', reason);
-                appendChatMessage({text: `Disconnected: ${reason}`});
-                currentTicketId = null;
-            });
-
-            socket.on('connect_error', (error) => {
-                 console.error('WebSocket connection error:', error);
-                 appendChatMessage({text: `Connection error: ${error.message}`});
-            });
-
-            socket.on('new_message', (data) => {
-                console.log('New message received:', data);
-                if (data.ticket_id === currentTicketId) {
-                     appendChatMessage(data);
-                }
-            });
-
-             socket.on('room_joined', (data) => {
-                 console.log('Joined room:', data.room);
-                 appendChatMessage({text: `Joined ticket room.`});
-             });
-
-             socket.on('error_message', (data) => {
-                 console.error('Server error message:', data.message);
-                 showMessage(errorMessage, data.message || 'An error occurred.', true);
-             });
+            if (!ticketId) return;
+            if (socket && socket.connected) { socket.emit('join_ticket_room', { ticket_id: ticketId }); return; }
+            if (socket) { socket.removeAllListeners(); } // Use removeAllListeners for cleaner setup
+            socket = io(SOCKET_URL, { reconnectionAttempts: 3, withCredentials: true });
+            socket.on('connect', () => { console.log('WS connected:', socket.id); appendChatMessage({text: 'Connected.'}); socket.emit('join_ticket_room', { ticket_id: ticketId }); });
+            socket.on('disconnect', (reason) => { console.log('WS disconnected:', reason); appendChatMessage({text: `Disconnected: ${reason}`}); currentTicketId = null; });
+            socket.on('connect_error', (error) => { console.error('WS connection error:', error); appendChatMessage({text: `Connection error.`}); });
+            socket.on('new_message', (data) => { if (data.ticket_id === currentTicketId) { appendChatMessage(data); } });
+            socket.on('room_joined', (data) => { console.log('Joined room:', data.room); appendChatMessage({text: `Joined ticket room.`}); /* TODO: Fetch past messages */ });
+            socket.on('error_message', (data) => { console.error('WS error:', data.message); showMessage(errorMessage, data.message || 'Chat error.', true); });
         }
 
-        function disconnectSocket() {
-            if (socket) {
-                console.log('Disconnecting socket...');
-                socket.disconnect();
-                socket = null;
-            }
-             currentTicketId = null;
-        }
+        function disconnectSocket() { if (socket) { console.log('Disconnecting socket...'); socket.disconnect(); socket = null; } currentTicketId = null; }
 
-
-        loginButton.addEventListener('click', (e) => {
-             e.preventDefault();
-             window.location.href = loginButton.href;
-        });
-
+        // --- Event Listeners ---
+        loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
         logoutButton.addEventListener('click', async () => {
             console.log('Logging out...');
             try {
                  const response = await fetch(`${API_BASE_URL}/logout`, {credentials: 'include'});
                  if (!response.ok) { throw new Error('Logout request failed'); }
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('isLoggedIn');
-                 localStorage.removeItem('currentPage');
-                 showMainContent();
-            } catch(error) {
-                 console.error("Logout error:", error);
-                 showMessage(errorMessage, "Logout failed. Please try again.", true);
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('isLoggedIn');
-                 localStorage.removeItem('currentPage');
-                 showMainContentInternal();
-                 updateHeaderUI(currentUser);
-            }
+                 currentUser = { logged_in: false }; localStorage.removeItem('currentPage'); window.location.hash = '#home'; runNavigation(); updateHeaderUI(currentUser);
+            } catch(error) { console.error("Logout error:", error); showMessage(errorMessage, "Logout failed.", true); currentUser = { logged_in: false }; localStorage.removeItem('currentPage'); window.location.hash = '#home'; runNavigation(); updateHeaderUI(currentUser); }
         });
+        dashboardLogoutButton.addEventListener('click', () => { logoutButton.click(); });
+        window.addEventListener('hashchange', runNavigation);
 
-        dashboardLogoutButton.addEventListener('click', () => {
-             logoutButton.click();
-        });
-
-        if(homeLink) {
-            homeLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showMainContent();
-            });
-        }
-
-        if(productsLink) {
-            productsLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showProductsPage();
-            });
-        }
-
-        if(ticketsLink) {
-             ticketsLink.addEventListener('click', (event) => {
-                event.preventDefault();
-                showTicketsPage();
-            });
-        }
-
-         if(backToHomeButtonProducts) {
-            backToHomeButtonProducts.addEventListener('click', (event) => {
-                event.preventDefault();
-                showMainContent();
-            });
-        }
-         if(backToHomeButtonTickets) {
-            backToHomeButtonTickets.addEventListener('click', (event) => {
-                event.preventDefault();
-                showTicketsPage();
-            });
-        }
-         if(backToTicketsButton) {
-             backToTicketsButton.addEventListener('click', (event) => {
-                 event.preventDefault();
-                 showTicketsPage();
-             });
-         }
-
-
-        if(userInfo) {
-             userInfo.addEventListener('click', (event) => {
-                 if (!event.target.closest('#logout-button')) {
-                     showDashboard();
-                 }
-             });
-        }
-
-        if(purchaseButton) {
-            purchaseButton.addEventListener('click', (event) => {
-                event.preventDefault();
-                showProductsPage();
-            });
-        }
-
-        document.addEventListener('click', (event) => {
-            const target = event.target.closest('button');
-            if (!target) return;
-
-            const productId = target.dataset.productId;
-            if (productId && target.classList.contains('paypal-button')) {
-                event.preventDefault();
-                console.log(`Simulating PayPal payment for product: ${productId}`);
-                showMessage(paymentMessage, `Redirecting to PayPal for ${productId}...`);
-            }
-        });
-
+        // Create Ticket Form
         if(createTicketForm) {
             createTicketForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default browser validation/submission
+                event.preventDefault();
                 const subject = ticketSubjectInput.value.trim();
                 const message = ticketMessageInput.value.trim();
-                if (!subject || !message) {
-                     showMessage(errorMessage, 'Please fill out both subject and message.', true);
-                     return; // Stop if fields are empty
-                }
-
+                if (!subject || !message) { showMessage(errorMessage, 'Please fill out both subject and message.', true); return; }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ subject, message }),
-                        credentials: 'include'
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    console.log('Ticket created:', result);
-                    showMessage(ticketMessage, 'Ticket submitted successfully!');
-                    createTicketForm.reset();
-                    fetchTickets(); // Refresh ticket list
-
-                } catch (error) {
-                    console.error('Error creating ticket:', error);
-                    showMessage(errorMessage, `Error: ${error.message}`, true);
-                }
+                    const response = await fetch(`${API_BASE_URL}/api/tickets`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ subject, message }), credentials: 'include' });
+                    if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `HTTP error! status: ${response.status}`); }
+                    const result = await response.json(); showMessage(ticketMessage, 'Ticket submitted!'); createTicketForm.reset(); fetchTickets();
+                } catch (error) { console.error('Error creating ticket:', error); showMessage(errorMessage, `Error: ${error.message}`, true); }
             });
         }
 
+        // Chat Input Form
         if(chatInputForm) {
              chatInputForm.addEventListener('submit', (event) => {
-                 event.preventDefault(); // Prevent default form submission
+                 event.preventDefault();
                  const messageText = chatInput.value.trim();
-                 if (messageText && socket && socket.connected && currentTicketId) {
-                     socket.emit('send_message', {
-                         ticket_id: currentTicketId,
-                         text: messageText
-                     });
-                     chatInput.value = '';
-                 } else if (!socket || !socket.connected) {
-                     showMessage(errorMessage, 'Not connected to chat server.', true);
-                 } else if (!messageText) {
-                      showMessage(errorMessage, 'Cannot send empty message.', true);
-                 }
+                 if (messageText && socket && socket.connected && currentTicketId) { socket.emit('send_message', { ticket_id: currentTicketId, text: messageText }); chatInput.value = ''; }
+                 else if (!socket || !socket.connected) { showMessage(errorMessage, 'Not connected to chat.', true); }
+                 else if (!messageText) { showMessage(errorMessage, 'Cannot send empty message.', true); }
              });
         }
 
-
+        // Initial Load
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
-            checkLoginStatus();
+            checkLoginStatusAndNavigate(); // Check status then navigate
         });
 
     </script>
