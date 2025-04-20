@@ -115,16 +115,19 @@
 
         .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
 
-        #payment-message, #ticket-message {
+        #payment-message, #ticket-message, #error-message {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            @apply bg-green-600 text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
+            @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
         }
-         #payment-message.show, #ticket-message.show {
+         #payment-message.show, #ticket-message.show, #error-message.show {
              opacity: 1;
          }
+         #payment-message, #ticket-message { @apply bg-green-600; }
+         #error-message { @apply bg-red-600; }
+
 
         #loading-overlay {
             position: fixed;
@@ -161,7 +164,6 @@
             @apply filter blur-sm transition-all duration-300 ease-in-out;
         }
 
-        /* Ticket specific styles */
         .ticket-list-item {
             @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center;
         }
@@ -173,8 +175,9 @@
 <body class="min-h-screen flex flex-col">
 
     <div id="snow-container"></div>
-    <div id="payment-message">Payment initiated...</div>
-    <div id="ticket-message">Ticket submitted!</div>
+    <div id="payment-message">Placeholder</div>
+    <div id="ticket-message">Placeholder</div>
+    <div id="error-message">Placeholder</div>
 
     <div id="loading-overlay" class="hidden opacity-0 pointer-events-none">
         <div class="loader">
@@ -198,10 +201,11 @@
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
-                    <button id="login-button" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
+                    {/* Login button now redirects to backend /login route */}
+                    <a id="login-button" href="/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
-                    </button>
+                    </a>
                     <div id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
                         <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600">
                         <span id="user-name" class="text-white text-sm font-medium">Username</span>
@@ -337,7 +341,6 @@
         </div>
     </div>
 
-    {/* New Tickets Page Content (Initially Hidden) */}
      <div id="tickets-page-content" class="hidden flex-grow container mx-auto px-6 py-10">
          <div class="flex justify-start mb-8">
              <button id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
@@ -347,11 +350,9 @@
         </div>
         <h2>Support Tickets</h2>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Existing Tickets List */}
             <div class="lg:col-span-2 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
                  <div id="ticket-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                     {/* Mock Ticket Data */}
                      <div class="ticket-list-item">
                          <div>
                              <p class="font-medium text-white">Ticket #1234: Login Issue</p>
@@ -366,11 +367,9 @@
                          </div>
                          <span class="status-closed">Closed</span>
                      </div>
-                     {/* More mock tickets can be added */}
                  </div>
-                 <p class="text-sm text-gray-500 mt-4">This is a simulation. Tickets are not saved.</p>
+                 <p class="text-sm text-gray-500 mt-4">Loading tickets...</p>
             </div>
-            {/* Create New Ticket Form */}
             <div class="lg:col-span-1 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
                  <form id="create-ticket-form">
@@ -404,7 +403,7 @@
         const mainContent = document.getElementById('main-content');
         const dashboardContent = document.getElementById('dashboard-content');
         const productsPageContent = document.getElementById('products-page-content');
-        const ticketsPageContent = document.getElementById('tickets-page-content'); // New tickets page
+        const ticketsPageContent = document.getElementById('tickets-page-content');
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
@@ -413,43 +412,62 @@
         const snowContainer = document.getElementById('snow-container');
         const homeLink = document.getElementById('home-link');
         const productsLink = document.getElementById('products-link');
-        const ticketsLink = document.getElementById('tickets-link'); // Tickets nav link
-        const backToHomeButtonProducts = document.getElementById('back-to-home-button-products'); // Back button on products page
-        const backToHomeButtonTickets = document.getElementById('back-to-home-button-tickets'); // Back button on tickets page
+        const ticketsLink = document.getElementById('tickets-link');
+        const backToHomeButtonProducts = document.getElementById('back-to-home-button-products');
+        const backToHomeButtonTickets = document.getElementById('back-to-home-button-tickets');
         const paymentMessage = document.getElementById('payment-message');
-        const ticketMessage = document.getElementById('ticket-message'); // Ticket message div
+        const ticketMessage = document.getElementById('ticket-message');
+        const errorMessage = document.getElementById('error-message');
         const purchaseButton = document.getElementById('purchase-button');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content, #tickets-page-content'); // Target all page containers
+        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content, #tickets-page-content');
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message');
+        const ticketListDiv = document.getElementById('ticket-list');
+        const ticketListStatus = ticketListDiv ? ticketListDiv.nextElementSibling : null; // The <p> tag after the list
 
-        const simulatedUserData = {
-            username: 'TestUser#0001',
-            avatarUrl: 'https://placehold.co/64x64/f39c12/ffffff?text=T'
-        };
+        // Use the actual Discord Auth URL for redirection via backend
+        const discordRedirectUrl = '/login'; // Point to backend login route
 
-        const discordAuthUrl = 'https://discord.com/oauth2/authorize?client_id=1363309221659021512&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fauth%2Fdiscord&scope=identify';
+        // Base URL for API calls (assuming backend runs on same origin)
+        const API_BASE_URL = ''; // Use relative paths if same origin
+
+        let currentUser = null; // Store user data globally
+
+        function showMessage(element, message, isError = false) {
+             if (!element) return;
+             element.textContent = message;
+             if (isError) {
+                 element.classList.remove('bg-green-600');
+                 element.classList.add('bg-red-600');
+             } else {
+                 element.classList.remove('bg-red-600');
+                 element.classList.add('bg-green-600');
+             }
+             element.classList.add('show');
+             setTimeout(() => {
+                 element.classList.remove('show');
+             }, 3000);
+         }
 
         function hideAllSections() {
              mainContent.classList.add('hidden');
              dashboardContent.classList.add('hidden');
              productsPageContent.classList.add('hidden');
-             ticketsPageContent.classList.add('hidden'); // Hide tickets page
+             ticketsPageContent.classList.add('hidden');
         }
 
         function showSectionWithLoading(showFunction) {
-            if (!loadingOverlay) return;
+            if (!loadingOverlay) { showFunction(); return; }
 
             pageContainers.forEach(container => container.classList.add('content-blur'));
             loadingOverlay.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
             loadingOverlay.classList.add('pointer-events-auto');
 
-
             setTimeout(() => {
                 hideAllSections();
-                showFunction();
+                showFunction(); // This now just makes the section visible
                 pageContainers.forEach(container => container.classList.remove('content-blur'));
                 loadingOverlay.classList.add('opacity-0');
                 loadingOverlay.classList.remove('pointer-events-auto');
@@ -460,64 +478,64 @@
             }, 500);
         }
 
+        function updateHeaderUI(user) {
+             if (user && user.logged_in) {
+                 loginButton.classList.add('hidden');
+                 userInfo.classList.remove('hidden');
+                 userInfo.classList.add('flex');
+                 userNameDisplay.textContent = user.username || 'User';
+                 // Construct avatar URL (example for Discord)
+                 if (user.user_id && user.avatar) {
+                     userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`;
+                 } else {
+                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Fallback
+                 }
+                 dashboardUserNameDisplay.textContent = user.username || 'User';
+                 if (user.user_id && user.avatar) {
+                    dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`;
+                 } else {
+                    dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'; // Fallback
+                 }
+
+             } else {
+                 loginButton.classList.remove('hidden');
+                 userInfo.classList.add('hidden');
+                 userInfo.classList.remove('flex');
+             }
+        }
+
 
         function showDashboardInternal() {
             dashboardContent.classList.remove('hidden');
-            loginButton.classList.add('hidden');
-            userInfo.classList.remove('hidden');
-            userInfo.classList.add('flex');
-            userNameDisplay.textContent = simulatedUserData.username;
-            userAvatarDisplay.src = simulatedUserData.avatarUrl.replace('64x64', '32x32');
-            dashboardUserNameDisplay.textContent = simulatedUserData.username;
-            dashboardUserAvatarDisplay.src = simulatedUserData.avatarUrl;
-            localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('currentPage', 'dashboard');
+            updateHeaderUI(currentUser); // Update header based on fetched user
         }
 
         function showMainContentInternal() {
             mainContent.classList.remove('hidden');
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                 loginButton.classList.add('hidden');
-                 userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex');
-            } else {
-                 loginButton.classList.remove('hidden');
-                 userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex');
-            }
             localStorage.setItem('currentPage', 'home');
+            updateHeaderUI(currentUser);
         }
 
         function showProductsPageInternal() {
             productsPageContent.classList.remove('hidden');
-             if (localStorage.getItem('isLoggedIn') === 'true') {
-                 loginButton.classList.add('hidden');
-                 userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex');
-            } else {
-                 loginButton.classList.remove('hidden');
-                 userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex');
-            }
             localStorage.setItem('currentPage', 'products');
+            updateHeaderUI(currentUser);
         }
 
         function showTicketsPageInternal() {
             ticketsPageContent.classList.remove('hidden');
-             if (localStorage.getItem('isLoggedIn') === 'true') {
-                 loginButton.classList.add('hidden');
-                 userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex');
-            } else {
-                 loginButton.classList.remove('hidden');
-                 userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex');
-            }
             localStorage.setItem('currentPage', 'tickets');
+            updateHeaderUI(currentUser);
+            fetchTickets(); // Fetch tickets when showing the page
         }
 
 
         function showDashboard() {
+            if (!currentUser || !currentUser.logged_in) {
+                 showMessage(errorMessage, "Please log in to view the dashboard.", true);
+                 return; // Don't show dashboard if not logged in
+            }
             showSectionWithLoading(showDashboardInternal);
         }
         function showMainContent() {
@@ -527,6 +545,11 @@
              showSectionWithLoading(showProductsPageInternal);
         }
         function showTicketsPage() {
+             if (!currentUser || !currentUser.logged_in) {
+                 showMessage(errorMessage, "Please log in to view tickets.", true);
+                 // Optionally redirect to login or show login prompt
+                 return;
+             }
              showSectionWithLoading(showTicketsPageInternal);
         }
 
@@ -556,37 +579,110 @@
             }
         }
 
-         function showGenericMessage(element, message) {
-             if (!element) return;
-             element.textContent = message;
-             element.classList.add('show');
-             setTimeout(() => {
-                 element.classList.remove('show');
-             }, 3000);
-         }
+        async function checkLoginStatus() {
+             try {
+                 const response = await fetch(`${API_BASE_URL}/api/user`);
+                 if (!response.ok) {
+                     throw new Error(`HTTP error! status: ${response.status}`);
+                 }
+                 const userData = await response.json();
+                 currentUser = userData; // Store user data globally
+                 console.log("User status:", currentUser);
+             } catch (error) {
+                 console.error("Error checking login status:", error);
+                 currentUser = { logged_in: false }; // Assume not logged in on error
+             } finally {
+                 // Initial page load logic moved here, after checking status
+                 const currentPage = localStorage.getItem('currentPage');
+                 hideAllSections(); // Hide all first
+                 if (currentUser.logged_in && currentPage === 'dashboard') {
+                     showDashboardInternal();
+                 } else if (currentPage === 'products') {
+                     showProductsPageInternal();
+                 } else if (currentUser.logged_in && currentPage === 'tickets') {
+                     showTicketsPageInternal();
+                 } else {
+                     showMainContentInternal(); // Default to home
+                 }
+                 updateHeaderUI(currentUser); // Update header based on final status
+             }
+        }
+
+        async function fetchTickets() {
+            if (!ticketListDiv || !ticketListStatus) return;
+            if (!currentUser || !currentUser.logged_in) {
+                ticketListStatus.textContent = "Please log in to view tickets.";
+                return;
+            }
+
+            ticketListStatus.textContent = "Loading tickets...";
+            ticketListDiv.innerHTML = ''; // Clear previous list
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tickets`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const tickets = await response.json();
+
+                if (tickets.length === 0) {
+                    ticketListStatus.textContent = "You have no support tickets.";
+                } else {
+                    ticketListStatus.textContent = ""; // Clear loading message
+                    tickets.forEach(ticket => {
+                        const item = document.createElement('div');
+                        item.classList.add('ticket-list-item');
+                        const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
+                        const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
+
+                        item.innerHTML = `
+                            <div>
+                                <p class="font-medium text-white">Ticket #${(ticket._id || 'N/A').slice(-6)}: ${ticket.subject || 'No Subject'}</p>
+                                <p class="text-xs text-gray-400">Opened: ${dateOpened}</p>
+                            </div>
+                            <span class="${statusClass}">${ticket.status || 'N/A'}</span>
+                        `;
+                        // Add click listener to view ticket details (requires detail view)
+                        // item.addEventListener('click', () => showTicketDetail(ticket._id));
+                        ticketListDiv.appendChild(item);
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching tickets:", error);
+                ticketListStatus.textContent = "Failed to load tickets.";
+            }
+        }
 
 
-        loginButton.addEventListener('click', () => {
-            console.log('Simulating Login...');
-            showDashboard();
-        });
+        // --- Event Listeners ---
 
-        logoutButton.addEventListener('click', () => {
-            console.log('Simulating Logout...');
-            localStorage.removeItem('isLoggedIn');
-            showMainContent();
+        // Login button now redirects via href="/login" handled by browser/backend
+
+        logoutButton.addEventListener('click', async () => {
+            console.log('Logging out...');
+            try {
+                 await fetch(`${API_BASE_URL}/logout`);
+                 currentUser = { logged_in: false }; // Update local state
+                 localStorage.removeItem('isLoggedIn'); // Keep this for consistency? Or remove entirely
+                 showMainContent(); // Show main content after logout attempt
+            } catch(error) {
+                 console.error("Logout error:", error);
+                 showMessage(errorMessage, "Logout failed. Please try again.", true);
+                 // Still attempt to update UI
+                 currentUser = { logged_in: false };
+                 localStorage.removeItem('isLoggedIn');
+                 showMainContentInternal(); // Show main content directly without animation on error
+                 updateHeaderUI(currentUser);
+            }
         });
 
         dashboardLogoutButton.addEventListener('click', () => {
-             console.log('Simulating Logout from Dashboard...');
-             localStorage.removeItem('isLoggedIn');
-             showMainContent();
+             logoutButton.click(); // Trigger the main logout logic
         });
 
         if(homeLink) {
             homeLink.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Home link clicked, showing main content...');
                 showMainContent();
             });
         }
@@ -594,7 +690,6 @@
         if(productsLink) {
             productsLink.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Products link clicked, showing products page...');
                 showProductsPage();
             });
         }
@@ -602,7 +697,6 @@
         if(ticketsLink) {
              ticketsLink.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Tickets link clicked, showing tickets page...');
                 showTicketsPage();
             });
         }
@@ -610,14 +704,12 @@
          if(backToHomeButtonProducts) {
             backToHomeButtonProducts.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Back button clicked, showing main content...');
                 showMainContent();
             });
         }
          if(backToHomeButtonTickets) {
             backToHomeButtonTickets.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Back button clicked, showing main content...');
                 showMainContent();
             });
         }
@@ -626,7 +718,6 @@
         if(userInfo) {
              userInfo.addEventListener('click', (event) => {
                  if (!event.target.closest('#logout-button')) {
-                     console.log('User info panel clicked, showing dashboard...');
                      showDashboard();
                  }
              });
@@ -635,12 +726,10 @@
         if(purchaseButton) {
             purchaseButton.addEventListener('click', (event) => {
                 event.preventDefault();
-                console.log('Purchase button clicked, showing products page...');
                 showProductsPage();
             });
         }
 
-        // Delegated listener for payment buttons
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button');
             if (!target) return;
@@ -649,29 +738,43 @@
             if (productId && target.classList.contains('paypal-button')) {
                 event.preventDefault();
                 console.log(`Simulating PayPal payment for product: ${productId}`);
-                showGenericMessage(paymentMessage, `Redirecting to PayPal for ${productId}...`);
+                showMessage(paymentMessage, `Redirecting to PayPal for ${productId}...`);
             }
         });
 
-        // Listener for create ticket form
         if(createTicketForm) {
-            createTicketForm.addEventListener('submit', (event) => {
+            createTicketForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 const subject = ticketSubjectInput.value.trim();
                 const message = ticketMessageInput.value.trim();
-                if (subject && message) {
-                    console.log(`Simulating ticket creation: Subject - ${subject}`);
-                    showGenericMessage(ticketMessage, 'Ticket submitted successfully!');
-                    // Optionally add to mock list visually here (won't persist)
-                    createTicketForm.reset(); // Clear form
-                } else {
-                     showGenericMessage(ticketMessage, 'Please fill out both subject and message.');
-                     ticketMessage.classList.remove('bg-green-600');
-                     ticketMessage.classList.add('bg-red-600');
-                      setTimeout(() => {
-                         ticketMessage.classList.remove('bg-red-600');
-                         ticketMessage.classList.add('bg-green-600');
-                     }, 3000);
+                if (!subject || !message) {
+                     showMessage(errorMessage, 'Please fill out both subject and message.', true);
+                     return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ subject, message }),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log('Ticket created:', result);
+                    showMessage(ticketMessage, 'Ticket submitted successfully!');
+                    createTicketForm.reset();
+                    fetchTickets(); // Refresh ticket list
+
+                } catch (error) {
+                    console.error('Error creating ticket:', error);
+                    showMessage(errorMessage, `Error: ${error.message}`, true);
                 }
             });
         }
@@ -679,33 +782,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             createSnowflakes();
-
-            const currentPage = localStorage.getItem('currentPage');
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
-            hideAllSections();
-            if (isLoggedIn && currentPage === 'dashboard') {
-                 showDashboardInternal();
-            } else if (currentPage === 'products') {
-                 showProductsPageInternal();
-            } else if (currentPage === 'tickets') {
-                 showTicketsPageInternal();
-            }
-            else {
-                 showMainContentInternal();
-            }
-
-             if (isLoggedIn) {
-                 loginButton.classList.add('hidden');
-                 userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex');
-                 userNameDisplay.textContent = simulatedUserData.username;
-                 userAvatarDisplay.src = simulatedUserData.avatarUrl.replace('64x64', '32x32');
-            } else {
-                 loginButton.classList.remove('hidden');
-                 userInfo.classList.add('hidden');
-                 userInfo.classList.remove('flex');
-            }
+            checkLoginStatus(); // Check login status first, then show appropriate page
         });
 
     </script>
