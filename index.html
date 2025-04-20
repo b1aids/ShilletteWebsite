@@ -198,10 +198,13 @@
         #create-ticket-status.error { @apply text-red-400; }
 
         /* Moderator Ticket View Styles */
-        #moderator-ticket-view details summary {
+        #moderator-management-view h3 {
+             @apply text-xl font-semibold text-white mb-4;
+        }
+        #moderator-management-view details summary {
              @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors;
         }
-        #moderator-ticket-view details[open] summary {
+        #moderator-management-view details[open] summary {
              @apply text-orange-400;
         }
         .ticket-list-container {
@@ -259,6 +262,10 @@
         .context-menu-item.hidden {
             display: none; /* Hide specific menu items */
         }
+        .context-menu-item.delete {
+             @apply hover:bg-red-600 text-red-400 hover:text-white; /* Style delete differently */
+        }
+
 
     </style>
 </head>
@@ -299,7 +306,8 @@
     <div id="ticket-context-menu">
         <button class="context-menu-item" id="context-close-ticket">Close Ticket</button>
         <button class="context-menu-item" id="context-reopen-ticket">Reopen Ticket</button>
-        </div>
+        <button class="context-menu-item delete" id="context-delete-ticket">Delete Ticket</button>
+    </div>
 
 
     <header class="py-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
@@ -465,26 +473,28 @@
              </a>
         </div>
         <h2>Support Tickets</h2>
+
+        <div id="moderator-management-view" class="hidden mb-8 ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
+             <details class="mb-6" open> <summary>Active Tickets</summary>
+                  <div id="moderator-active-ticket-list" class="ticket-list-container mt-3">
+                      </div>
+                  <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+             </details>
+
+             <details> <summary>Archived Tickets</summary>
+                 <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3">
+                     </div>
+                 <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
+             </details>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div id="user-ticket-view" class="lg:col-span-2 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
                  <div id="ticket-list" class="ticket-list-container">
                      </div>
                  <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
-            </div>
-
-            <div id="moderator-ticket-view" class="hidden lg:col-span-2 ticket-card">
-                <details class="mb-6" open> <summary>Active Tickets</summary>
-                     <div id="moderator-active-ticket-list" class="ticket-list-container mt-3">
-                         </div>
-                     <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
-                </details>
-
-                <details> <summary>Archived Tickets</summary>
-                    <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3">
-                        </div>
-                    <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
-                </details>
             </div>
 
             <div class="lg:col-span-1 ticket-card">
@@ -556,7 +566,7 @@
         const createTicketStatus = document.getElementById('create-ticket-status');
         // Ticket List Views
         const userTicketView = document.getElementById('user-ticket-view');
-        const moderatorTicketView = document.getElementById('moderator-ticket-view');
+        const moderatorManagementView = document.getElementById('moderator-management-view'); // New container for mod view
         const ticketListDiv = document.getElementById('ticket-list');
         const ticketListStatus = document.getElementById('ticket-list-status');
         const moderatorActiveTicketListDiv = document.getElementById('moderator-active-ticket-list');
@@ -582,6 +592,7 @@
         const ticketContextMenu = document.getElementById('ticket-context-menu');
         const contextCloseTicketButton = document.getElementById('context-close-ticket');
         const contextReopenTicketButton = document.getElementById('context-reopen-ticket');
+        const contextDeleteTicketButton = document.getElementById('context-delete-ticket'); // Added delete ticket button
 
 
         // --- Configuration ---
@@ -790,7 +801,7 @@
         // Modified fetchTickets to handle moderator view and add context menus
         async function fetchTickets() {
             // Ensure elements exist
-            if (!userTicketView || !moderatorTicketView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) return;
+            if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) return;
 
             if (!currentUser || !currentUser.logged_in) {
                 ticketListStatus.textContent = "Please log in to view tickets.";
@@ -799,8 +810,8 @@
                 ticketListDiv.innerHTML = '';
                 moderatorActiveTicketListDiv.innerHTML = '';
                 moderatorArchivedTicketListDiv.innerHTML = '';
-                userTicketView.classList.remove('hidden'); // Show default view if logged out
-                moderatorTicketView.classList.add('hidden');
+                userTicketView.classList.remove('hidden'); // Show user view if logged out
+                moderatorManagementView.classList.add('hidden'); // Hide mod view
                 return;
             }
 
@@ -816,10 +827,10 @@
             const isModerator = currentUser.is_moderator;
             if (isModerator) {
                 userTicketView.classList.add('hidden');
-                moderatorTicketView.classList.remove('hidden');
+                moderatorManagementView.classList.remove('hidden'); // Show the dedicated mod management view
             } else {
                 userTicketView.classList.remove('hidden');
-                moderatorTicketView.classList.add('hidden');
+                moderatorManagementView.classList.add('hidden');
             }
 
             try {
@@ -1040,7 +1051,7 @@
                  }
                  // Optionally, update status if viewing the specific ticket detail? (Less common)
             });
-             // Listener for generic list updates (e.g., after status change)
+             // Listener for generic list updates (e.g., after status change or delete)
              socket.on('ticket_list_updated', () => {
                  if (activeSectionId === '#tickets') {
                      console.log("Ticket list updated event received. Refreshing list.");
@@ -1192,14 +1203,18 @@
              contextMenuData.messageTimestamp = null; // Not relevant
 
              // Show/Hide options based on status and user role
-             const canClose = contextMenuData.ticketStatus === 'open'; // Owner or Mod can close
-             const canReopen = contextMenuData.ticketStatus === 'closed' && currentUser.is_moderator;
+             const isModerator = currentUser.is_moderator;
+             const canClose = contextMenuData.ticketStatus === 'open'; // Owner or Mod can close (Backend enforces ownership if not mod)
+             const canReopen = contextMenuData.ticketStatus === 'closed' && isModerator;
+             const canDelete = isModerator; // Only mods can delete
 
              contextCloseTicketButton.classList.toggle('hidden', !canClose);
              contextReopenTicketButton.classList.toggle('hidden', !canReopen);
+             contextDeleteTicketButton.classList.toggle('hidden', !canDelete);
+
 
              // Only show menu if there's at least one action available
-             if (canClose || canReopen) {
+             if (canClose || canReopen || canDelete) {
                  positionContextMenu(ticketContextMenu, event);
                  currentContextMenu = ticketContextMenu;
                  document.addEventListener('click', hideContextMenu, { once: true });
@@ -1245,6 +1260,21 @@
                  ticket_id: contextMenuData.ticketId,
                  new_status: 'open'
              });
+             hideContextMenu();
+         }
+
+         function deleteTicket() {
+             if (!contextMenuData.ticketId || !socket || !socket.connected) {
+                 showPopupMessage(errorMessagePopup, 'Cannot delete ticket: Invalid state or not connected.', true);
+                 return;
+             }
+             // Confirmation dialog
+             if (confirm(`Are you sure you want to permanently delete ticket #${contextMenuData.ticketId.slice(-6)}? This cannot be undone.`)) {
+                 console.log(`Attempting to delete ticket: ${contextMenuData.ticketId}`);
+                 socket.emit('delete_ticket', {
+                     ticket_id: contextMenuData.ticketId
+                 });
+             }
              hideContextMenu();
          }
 
@@ -1380,6 +1410,9 @@
          }
          if (contextReopenTicketButton) {
              contextReopenTicketButton.addEventListener('click', reopenTicket);
+         }
+         if (contextDeleteTicketButton) {
+             contextDeleteTicketButton.addEventListener('click', deleteTicket);
          }
 
 
