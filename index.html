@@ -10,11 +10,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style type="text/tailwindcss">
+        /* --- Animations --- */
         @keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
         @keyframes scaleUpDown { 0%, 100% { transform: scaleY(0.4); } 20% { transform: scaleY(1.0); } }
 
+        /* --- Base Styles --- */
         body {
             font-family: 'Inter', sans-serif;
             @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
@@ -24,9 +26,11 @@
         }
         body::before { content: ''; position: fixed; inset: 0; background-image: url('images/background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; opacity: 0.2; z-index: -1; }
 
+        /* --- Snow Effect --- */
         #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; overflow: hidden; }
         .snowflake { position: absolute; background-color: white; border-radius: 50%; pointer-events: none; animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite; }
 
+        /* --- Card Styles --- */
         .card-gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: 0.5rem; padding: 2px; background-size: 300% 300%; animation: spinBorder 5s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1; }
         .card-gradient-border.orange-border::before { background-image: linear-gradient(145deg, #f97316, #9a3412, #000000); }
         .card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; }
@@ -37,10 +41,16 @@
         .card-gradient-border.yellow-border::before { background-image: linear-gradient(145deg, #eab308, #a16207, #000000); animation-duration: 5.2s; }
         .card-gradient-border.pink-border::before { background-image: linear-gradient(145deg, #ec4899, #be185d, #000000); animation-duration: 5.6s; }
         .card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; }
-        .card-gradient-border.custom-border { border-width: 2px; border-style: solid; }
+        .card-gradient-border.custom-border { border-width: 2px; border-style: solid; } /* Style for custom HEX border */
 
-        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg p-6 shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+        /* Product Card General Styling */
+        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
+        .product-card:not(.custom-border) { @apply p-0; } /* Remove padding only if using gradient border */
+        .product-card.custom-border { @apply p-0; } /* Remove padding for custom border too, rely on inner div */
+        .product-card-inner { @apply p-6 flex flex-col flex-grow; } /* Inner container for padding */
         .product-card:hover { transform: scale(1.03); }
+
+        /* Hover effects for Gradient Borders */
         .product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); }
         .product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175, 0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); }
         .product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); }
@@ -50,11 +60,14 @@
         .product-card.card-gradient-border.yellow-border:hover { box-shadow: 0 0 8px 1px rgba(234, 179, 8, 0.6), 0 0 16px 4px rgba(234, 179, 8, 0.4), 0 0 32px 8px rgba(234, 179, 8, 0.2); }
         .product-card.card-gradient-border.pink-border:hover { box-shadow: 0 0 8px 1px rgba(236, 72, 153, 0.6), 0 0 16px 4px rgba(236, 72, 153, 0.4), 0 0 32px 8px rgba(236, 72, 153, 0.2); }
         .product-card.card-gradient-border.teal-border:hover { box-shadow: 0 0 8px 1px rgba(20, 184, 166, 0.6), 0 0 16px 4px rgba(20, 184, 166, 0.4), 0 0 32px 8px rgba(20, 184, 166, 0.2); }
+        /* Hover effect for Custom Border */
         .product-card.custom-border:hover { box-shadow: var(--custom-hover-shadow, 0 0 8px 1px rgba(255, 255, 255, 0.6), 0 0 16px 4px rgba(255, 255, 255, 0.4), 0 0 32px 8px rgba(255, 255, 255, 0.2)); }
 
-        .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg mb-4; }
-        .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg mb-4 flex items-center justify-center text-gray-500; }
+        /* Product Thumbnail */
+        .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg; } /* Removed mb-4, handled by inner div */
+        .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; } /* Removed mb-4 */
 
+        /* --- Page Section & General Content Styles --- */
         #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
         #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
 
@@ -62,6 +75,7 @@
             @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
         }
 
+        /* --- Message Popups --- */
         #payment-message, #ticket-message, #error-message, #config-message, #product-message {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
@@ -70,15 +84,18 @@
         #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; }
         #error-message { @apply bg-red-600; }
 
+        /* --- Loading Overlay --- */
         #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; }
         #loading-overlay.active { @apply opacity-100 pointer-events-auto; }
         .loader { display: flex; align-items: center; justify-content: space-between; width: 50px; height: 25px; }
         .loader-bar { display: block; width: 8px; height: 100%; background-color: #f97316; border-radius: 4px; animation: scaleUpDown 1.2s infinite ease-in-out; }
         .loader-bar:nth-child(2) { animation-delay: 0.2s; } .loader-bar:nth-child(3) { animation-delay: 0.4s; }
 
+        /* --- Page Section Visibility --- */
         .page-section { display: none; }
         .page-section.active { display: block; }
 
+        /* --- Ticket Specific Styles --- */
         .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors; }
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
@@ -89,6 +106,7 @@
         #moderator-management-view details[open] summary { @apply text-orange-400; }
         .ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2; }
 
+        /* --- Chat Styles --- */
         #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; }
         .chat-message { @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors; }
         .chat-message .username { @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; }
@@ -97,29 +115,37 @@
         #chat-input { @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; }
         #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; }
 
+        /* --- Modals (User Info, Product Edit) --- */
         .modal { @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
         .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; }
         .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors; }
         #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; }
 
+        /* --- Custom Context Menu --- */
         #chat-context-menu, #ticket-context-menu { @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; }
         .context-menu-item { @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left; }
         .context-menu-item.hidden { display: none; }
         .context-menu-item.delete { @apply hover:bg-red-600 text-red-400 hover:text-white; }
 
+        /* --- Mobile Menu --- */
         #mobile-menu { @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; }
         .mobile-menu-link { @apply block text-gray-300 hover:text-white transition duration-200 py-1; }
 
+        /* --- Admin Dashboard Styles --- */
         .admin-section h3 { @apply text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2; }
         .admin-form label { @apply block text-sm font-medium text-gray-300 mb-1; }
+        /* General input style for admin form, EXCLUDING inputs inside .link-group */
         .admin-form > div > input[type="text"],
         .admin-form > div > input[type="number"],
         .admin-form > div > input[type="color"],
         .admin-form > div > textarea,
-        .admin-form > div > select {
-             @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500 mb-4;
+        .admin-form > div > select,
+        .admin-form > .grid > div > input[type="text"], /* Target inputs within the grid */
+        .admin-form > .grid > div > select { /* Target select within the grid */
+             @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4; /* Adjusted placeholder color */
         }
+        /* Specific style for inputs inside .link-group (handled by JS now) */
         .admin-form .link-group { @apply flex items-center space-x-2 mb-2; }
         .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0; }
 
@@ -135,6 +161,7 @@
         #product-list-table .actions .delete-btn { @apply bg-red-600 hover:bg-red-700 text-white; }
         #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; }
 
+        /* Helper class for role spans */
         .role-span { @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block; }
 
     </style>
@@ -205,8 +232,8 @@
                             <option value="custom">Custom HEX</option>
                          </select>
                      </div>
-                     <div>
-                         <label for="product-edit-customHex">Custom HEX Color (if selected)</label>
+                     <div id="custom-hex-input-container" class="hidden"> {/* Container for conditional visibility */}
+                         <label for="product-edit-customHex">Custom HEX Color</label>
                          <input type="text" id="product-edit-customHex" placeholder="#RRGGBB">
                      </div>
                 </div>
@@ -251,7 +278,7 @@
                     </nav>
                 <div id="user-area" class="flex items-center">
                     <a id="login-button" href="https://api.shillette.com/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44 4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </a>
                     <a href="/#dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
@@ -284,7 +311,7 @@
                         Purchase Product
                     </a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44 4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Join Discord</span>
                     </a>
                 </div>
@@ -450,6 +477,7 @@
     </footer>
 
     <script>
+        // --- DOM Element References ---
         const pageSections = {
             '#home': 'main-content',
             '#products': 'products-page-content',
@@ -530,6 +558,7 @@
         const productEditTagInput = document.getElementById('product-edit-tag');
         const productEditTagColorSelect = document.getElementById('product-edit-tagColor');
         const productEditCustomHexInput = document.getElementById('product-edit-customHex');
+        const customHexInputContainer = document.getElementById('custom-hex-input-container'); // Get the container
         const productEditDescriptionInput = document.getElementById('product-edit-description');
         const productEditFeaturesInput = document.getElementById('product-edit-features');
         const productEditPaymentLinkInput = document.getElementById('product-edit-paymentLink');
@@ -538,9 +567,11 @@
         const footerYear = document.getElementById('footer-year');
 
 
+        // --- Configuration ---
         const API_BASE_URL = 'https://api.shillette.com';
         const SOCKET_URL = 'https://api.shillette.com';
 
+        // --- State Variables ---
         let currentUser = null;
         let siteConfig = null;
         let socket = null;
@@ -552,6 +583,9 @@
         let isInitialConfigLoadComplete = false;
 
 
+        // --- Utility Functions ---
+
+        /** Shows a temporary pop-up message. */
         function showPopupMessage(element, message, isError = false, duration = 3500) {
              if (!element) return;
              element.textContent = message;
@@ -561,6 +595,7 @@
              setTimeout(() => element.classList.remove('show'), duration);
         }
 
+        /** Updates header UI based on login status and toggles admin sections. */
         function updateHeaderUI(user) {
              const isLoggedIn = user && user.logged_in;
              loginButton.classList.toggle('hidden', isLoggedIn);
@@ -584,6 +619,7 @@
              }
         }
 
+        /** Hides all page sections and shows the specified one by its element ID. */
         function showSection(sectionElementId) {
             console.log(`[showSection] Attempting to show element ID: ${sectionElementId}`);
             hideContextMenu();
@@ -632,6 +668,7 @@
             }
         }
 
+        /** Handles navigation based on URL hash changes. */
         function navigateTo(hash) {
             console.log(`[navigateTo] Received hash: ${hash}`);
             const baseHash = hash.split('?')[0] || '#home';
@@ -688,8 +725,10 @@
                 }
             }
 
+            // Show the correct section
             showSection(targetElementId);
 
+            // Fetch data if needed for the newly shown section
             if (baseHash === '#tickets') {
                 console.log(`[navigateTo] Fetching tickets for #tickets view.`);
                 fetchTickets();
@@ -707,9 +746,11 @@
                  }
             }
 
+            // Update header UI (which also handles admin section visibility)
             updateHeaderUI(currentUser);
         }
 
+        /** Runs navigation logic based on current URL hash. */
         function runNavigation() {
             console.log(`[runNavigation] Processing raw hash: ${window.location.hash}`);
             const rawHash = window.location.hash;
@@ -731,6 +772,7 @@
             }
         }
 
+        /** Creates snowflake effect. */
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
             if (!snowContainer) return;
@@ -755,6 +797,7 @@
             }
         }
 
+        /** Checks login status via API, then triggers config load. */
         async function checkLoginStatus() {
              isInitialLoginCheckComplete = false;
              try {
@@ -781,6 +824,7 @@
              }
         }
 
+        /** Fetches site config and applies it, then runs navigation. */
         async function loadSiteConfigAndNavigate() {
             isInitialConfigLoadComplete = false;
             try {
@@ -802,6 +846,7 @@
             }
         }
 
+        /** Applies fetched site configuration to the UI. */
         function applySiteConfig(config) {
             const title = config?.siteTitle || "Shillette";
             const links = config?.headerLinks || [
@@ -833,6 +878,7 @@
             footerYear.textContent = new Date().getFullYear();
         }
 
+        /** Fetches and displays products on the products page. */
         async function fetchProducts() {
              if (!productGrid || !productLoadingStatus) return;
              productGrid.innerHTML = '';
@@ -860,11 +906,12 @@
              }
         }
 
+        /** Renders a single product card and appends it to the grid. */
         function renderProductCard(product) {
              if (!productGrid) return;
 
              const card = document.createElement('div');
-             card.className = `product-card flex flex-col`;
+             card.className = `product-card flex flex-col`; // Base classes
 
              const tagColor = product.tagColor || 'gray';
              const customHex = product.customBorderHex;
@@ -872,7 +919,9 @@
              let inlineStyle = '';
              let hoverStyleVar = '';
 
+             // Determine border style
              if (customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
+                 // Valid Custom HEX
                  borderClasses = 'custom-border';
                  inlineStyle = `border-color: ${customHex};`;
                  // Generate hover shadow based on hex (adjust alpha as needed)
@@ -880,16 +929,19 @@
                  card.style.cssText = inlineStyle + hoverStyleVar; // Apply inline style
                  card.classList.add(borderClasses);
              } else if (tagColor !== 'custom') {
+                 // Predefined Gradient Color
                  borderClasses = `card-gradient-border ${tagColor}-border`;
                  card.classList.add(...borderClasses.split(' '));
              } else {
-                  // Default case if 'custom' is selected but no valid HEX provided
+                  // Fallback (e.g., 'custom' selected but no valid HEX)
                   borderClasses = `card-gradient-border gray-border`;
                   card.classList.add(...borderClasses.split(' '));
              }
 
-             const tagBgClass = `bg-${tagColor}-500/20`;
-             const tagTextClass = `text-${tagColor}-300`;
+             // Determine tag text/bg color (use the original tagColor, not 'custom')
+             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor; // Fallback if custom invalid
+             const tagBgClass = `bg-${displayTagColor}-500/20`;
+             const tagTextClass = `text-${displayTagColor}-300`;
 
              // Thumbnail part
              let thumbnailHTML = '';
@@ -900,21 +952,27 @@
                  thumbnailHTML = `<div class="product-thumbnail-placeholder"><span>No Image</span></div>`;
              }
 
-             card.innerHTML = `
-                 ${thumbnailHTML}
-                 <div class="flex justify-between items-center mb-4 px-0">
+             // Inner content div for padding
+             const innerDiv = document.createElement('div');
+             innerDiv.className = 'product-card-inner'; // Apply padding here
+             innerDiv.innerHTML = `
+                 <div class="flex justify-between items-center mb-4">
                      <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
                  </div>
-                 <h3 class="text-xl font-semibold text-white mb-2 px-0">${product.name || 'Unnamed Product'}</h3>
-                 <p class="text-3xl font-bold text-white mb-4 px-0">$${product.price?.toFixed(2) || 'N/A'}</p>
-                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow px-0">
+                 <h3 class="text-xl font-semibold text-white mb-2">${product.name || 'Unnamed Product'}</h3>
+                 <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
+                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
                      ${(product.features || []).map(feature => `<li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${feature}</li>`).join('')}
                      ${!(product.features && product.features.length > 0) ? '<li class="text-gray-500">No features listed.</li>' : ''}
                  </ul>
-                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50 px-0">
+                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
                      ${product.paymentLink ? `<button class="purchase-button" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button" disabled>Purchase Unavailable</button>'}
                  </div>
              `;
+
+             // Assemble the card
+             card.appendChild(thumbnailHTML);
+             card.appendChild(innerDiv);
 
              const purchaseBtn = card.querySelector('.purchase-button');
              if (purchaseBtn && !purchaseBtn.disabled) {
@@ -924,6 +982,7 @@
              productGrid.appendChild(card);
         }
 
+        /** Placeholder for handling purchase clicks */
         function handlePurchaseClick(event) {
             const button = event.target;
             const productId = button.dataset.productId;
@@ -931,12 +990,14 @@
             console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
             if (paymentLink) {
                  showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration needed)`);
+                 // Potentially redirect or open PayPal link here
             } else {
                  showPopupMessage(errorMessagePopup, 'Payment link is missing for this product.', true);
             }
         }
 
 
+        /** Fetches the list of tickets (user's or all). */
         async function fetchTickets() {
             console.log("[fetchTickets] Starting...");
             if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
@@ -981,6 +1042,7 @@
                         ticketListStatus.textContent = "You have no support tickets.";
                     }
                 } else {
+                    // tickets are pre-sorted by backend now
                     tickets.forEach(ticket => {
                         const item = document.createElement('div');
                         item.classList.add('ticket-list-item');
@@ -1029,12 +1091,13 @@
                 showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
             }
         }
+        /** Fetches details for a specific ticket. */
         async function fetchTicketDetails(ticketId) {
             console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`);
             if (!currentUser || !currentUser.logged_in) return;
             ensureSocketConnected();
             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
-            if (backToTicketsButton) backToTicketsButton.href = '/#tickets';
+            if (backToTicketsButton) backToTicketsButton.href = '/#tickets'; // Ensure back button works
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
@@ -1043,13 +1106,14 @@
                     if (response.status === 404) throw new Error("Ticket not found.");
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                const ticket = await response.json();
+                const ticket = await response.json(); // Data is already serialized by backend helper
                 console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`);
 
                 ticketDetailSubject.textContent = ticket.subject || `Ticket #${ticketId.slice(-6)}`;
                 chatMessagesDiv.innerHTML = '';
 
                 if (ticket.messages && ticket.messages.length > 0) {
+                    // Messages should be pre-sorted by backend now
                     ticket.messages.forEach(appendChatMessage);
                 } else {
                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet.</p>';
@@ -1066,47 +1130,58 @@
                 console.error("[fetchTicketDetails] Error fetching ticket details:", error);
                 chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
                 showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
+                // Optionally redirect if ticket not found or forbidden
+                if (error.message.includes("not found") || error.message.includes("Forbidden")) {
+                    window.location.hash = '/#tickets';
+                }
             }
         }
+        /** Appends a chat message to the display. */
         function appendChatMessage(data) {
             if (!chatMessagesDiv) return;
+            // Remove placeholder if it exists
             const placeholderMsg = chatMessagesDiv.querySelector('p.text-gray-500, p.text-red-400');
             if (placeholderMsg) placeholderMsg.remove();
 
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message');
-            messageElement.dataset.timestamp = data.timestamp;
+            messageElement.dataset.timestamp = data.timestamp; // ISO timestamp
             messageElement.dataset.senderId = data.sender_id;
 
             const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-            const username = data.sender_username || data.username || 'System';
+            const username = data.sender_username || data.username || 'System'; // Prefer sender_username if available
             const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Sanitize text
 
+            // Username Span (clickable)
             const usernameSpan = document.createElement('span');
             usernameSpan.classList.add('username');
             usernameSpan.textContent = `${safeUsername}:`;
             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
 
             messageElement.appendChild(usernameSpan);
-            messageElement.append(` ${safeText} `);
+            messageElement.append(` ${safeText} `); // Add space after username
 
+            // Timestamp Span
             const timestampSpan = document.createElement('span');
             timestampSpan.classList.add('timestamp');
             timestampSpan.textContent = timestamp;
             messageElement.appendChild(timestampSpan);
 
+            // Add context menu for moderators
             if (currentUser && currentUser.is_moderator) {
                messageElement.addEventListener('contextmenu', showChatContextMenu);
             }
 
             chatMessagesDiv.appendChild(messageElement);
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
         }
+        /** Establishes WebSocket connection. */
         function connectSocket(ticketIdToJoin = null) {
+            // If already connected and trying to join the same room, just emit join
             if (socket && socket.connected) {
                 if (ticketIdToJoin && currentTicketId === ticketIdToJoin) {
-                    console.log(`[connectSocket] Socket already connected, joining room: ${ticketIdToJoin}`);
+                    console.log(`[connectSocket] Socket already connected, re-joining room: ${ticketIdToJoin}`);
                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
                 } else {
                     console.log(`[connectSocket] Socket already connected, not joining room ${ticketIdToJoin || 'N/A'}.`);
@@ -1115,38 +1190,54 @@
             }
 
             console.log(`[connectSocket] Attempting to connect WebSocket... (Potential room join: ${ticketIdToJoin || 'none'})`);
+            // Ensure previous socket is fully cleaned up if exists but disconnected
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
             socket = io(SOCKET_URL, { reconnectionAttempts: 3, withCredentials: true });
 
             socket.on('connect', () => {
                 console.log('[connectSocket] WebSocket connected:', socket.id);
+                // Join room immediately after connection if needed
                 if (ticketIdToJoin && currentTicketId === ticketIdToJoin) {
                     console.log(`[connectSocket] Joining room post-connect: ${ticketIdToJoin}`);
                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
                 }
-                setupSocketListeners();
+                setupSocketListeners(); // Setup listeners only once connected
             });
 
-            socket.on('disconnect', (reason) => { console.log('[connectSocket] WebSocket disconnected:', reason); socket = null; });
-            socket.on('connect_error', (error) => { console.error('[connectSocket] WebSocket connection error:', error); showPopupMessage(errorMessagePopup, "Chat connection failed.", true); socket = null; });
+            socket.on('disconnect', (reason) => { console.log('[connectSocket] WebSocket disconnected:', reason); socket = null; }); // Clear socket on disconnect
+            socket.on('connect_error', (error) => { console.error('[connectSocket] WebSocket connection error:', error); showPopupMessage(errorMessagePopup, "Chat connection failed.", true); socket = null; }); // Clear socket on error
         }
+        /** Ensures WebSocket is connected. */
         function ensureSocketConnected() {
              if (!socket || !socket.connected) {
                  console.log("[ensureSocketConnected] Socket not connected, attempting connection...");
-                 connectSocket();
+                 connectSocket(currentTicketId); // Pass current ticket ID if available
              } else {
                  console.log("[ensureSocketConnected] Socket already connected.");
+                 // If already connected but maybe not in the room (e.g., page reload)
+                 if (currentTicketId) {
+                     socket.emit('join_ticket_room', { ticket_id: currentTicketId });
+                 }
              }
         }
+        /** Sets up WebSocket event listeners. */
         function setupSocketListeners() {
              if (!socket) return;
              console.log("[setupSocketListeners] Setting up listeners.");
+             // Remove potential old listeners first to prevent duplicates
              socket.off('new_message'); socket.off('room_joined'); socket.off('error_message');
              socket.off('message_deleted'); socket.off('ticket_status_updated');
              socket.off('ticket_list_updated'); socket.off('action_success');
 
+             // Add listeners
              socket.on('new_message', (data) => {
                  console.log("[Socket Listener] Received new_message:", data);
+                 // Add sender_id if missing and message is from current user (heuristic)
                  if (!data.sender_id && data.username === currentUser?.username) data.sender_id = currentUser.user_id;
+                 // Only append if viewing the correct ticket
                  if (data.ticket_id === currentTicketId) appendChatMessage(data);
              });
              socket.on('room_joined', (data) => { console.log('[Socket Listener] Joined room:', data.room); });
@@ -1154,21 +1245,30 @@
              socket.on('message_deleted', (data) => {
                  console.log("[Socket Listener] Received message_deleted:", data);
                  if (data.ticket_id === currentTicketId) {
+                     // Find message by timestamp (assuming timestamps are unique enough within context)
                      const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
                      if (messageToRemove) { messageToRemove.remove(); console.log(`[Socket Listener] Removed message with timestamp: ${data.timestamp}`); }
+                     else { console.warn(`[Socket Listener] Could not find message to delete with timestamp: ${data.timestamp}`); }
                  }
              });
              socket.on('ticket_status_updated', (data) => {
                   console.log("[Socket Listener] Received ticket_status_updated:", data);
+                  // If viewing the main tickets list, refresh it
                   if (activeSectionId === pageSections['#tickets']) { console.log(`[Socket Listener] Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`); fetchTickets(); }
+                  // If viewing the affected ticket, show a popup
                   if (data.ticket_id === currentTicketId) { showPopupMessage(ticketMessagePopup, `Ticket status updated to ${data.status}.`); }
+                  // Update status in list item data attribute if it exists in the DOM
                   const ticketItem = document.querySelector(`.ticket-list-item[data-ticket-id="${data.ticket_id}"]`);
                   if(ticketItem) ticketItem.dataset.ticketStatus = data.status;
              });
               socket.on('ticket_list_updated', () => {
                   console.log("[Socket Listener] Received ticket_list_updated (likely due to deletion/creation).");
+                  // If viewing the main tickets list, refresh it
                   if (activeSectionId === pageSections['#tickets']) { console.log("[Socket Listener] Refreshing ticket list."); fetchTickets(); }
+                  // If viewing a ticket detail page when the list updates (e.g., ticket deleted), redirect
                   if (currentTicketId && activeSectionId === pageSections['#ticketDetail']) {
+                      // Check if the current ticket still exists? For now, just redirect.
+                      // TODO: Could add a check here to see if the current ticket ID is still valid before redirecting
                       console.log(`[Socket Listener] Ticket list updated while viewing ticket ${currentTicketId}. Redirecting to list.`);
                       showPopupMessage(errorMessagePopup, "The ticket list was updated. Returning to list.", true);
                       window.location.hash = '/#tickets';
@@ -1176,8 +1276,10 @@
               });
              socket.on('action_success', (data) => { console.log("[Socket Listener] Received action_success:", data); showPopupMessage(paymentMessage, data.message || 'Action successful.'); });
         }
+        /** Disconnects WebSocket. */
         function disconnectSocket() { if (socket) { console.log('[disconnectSocket] Disconnecting WebSocket...'); socket.disconnect(); socket = null; } }
 
+        /** Displays user roles in the specified container. */
         function displayUserRoles(roles) {
             console.log('[displayUserRoles] Received roles:', roles);
 
@@ -1186,22 +1288,25 @@
                 console.error('[displayUserRoles] Container #dashboard-user-roles not found!');
                 return;
             }
-            rolesContainer.innerHTML = '';
+            rolesContainer.innerHTML = ''; // Clear previous roles
 
             if (roles && Array.isArray(roles) && roles.length > 0) {
+                // Roles are already sorted by backend based on position
                 roles.forEach(role => {
                     const roleElement = document.createElement('span');
-                    roleElement.classList.add('role-span');
+                    roleElement.classList.add('role-span'); // Use shared class
 
-                    let hexColor = '#9CA3AF';
+                    let hexColor = '#9CA3AF'; // Default gray
+                    // Convert Discord decimal color to HEX if valid
                     if (role.color && role.color !== 0) {
                         hexColor = '#' + role.color.toString(16).padStart(6, '0');
                     }
+                    // Simple luminance check for text color contrast
                     const r = parseInt(hexColor.slice(1, 3), 16);
                     const g = parseInt(hexColor.slice(3, 5), 16);
                     const b = parseInt(hexColor.slice(5, 7), 16);
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white'; // Choose black or white text
 
                     roleElement.textContent = role.name || `Role ${role.id}`;
                     roleElement.style.backgroundColor = hexColor;
@@ -1214,175 +1319,264 @@
             }
         }
 
+        /** Shows user info modal. */
         function showUserInfoModal(senderId, username) {
              if (!userInfoModal || !senderId) return;
              modalUsername.textContent = username || 'Unknown User';
              modalUserId.textContent = senderId;
-             modalUserRoles.innerHTML = '';
+             modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Loading roles...</p>'; // Loading state
 
+             // Check if info is for the currently logged-in user
              if (currentUser && currentUser.user_id === senderId && currentUser.roles) {
-                 if (currentUser.roles.length > 0) {
-                     currentUser.roles.forEach(role => {
-                         const roleElement = document.createElement('span');
-                         roleElement.classList.add('role-span');
-                         let hexColor = '#9CA3AF';
-                         if (role.color && role.color !== 0) hexColor = '#' + role.color.toString(16).padStart(6, '0');
-                         const r = parseInt(hexColor.slice(1, 3), 16), g = parseInt(hexColor.slice(3, 5), 16), b = parseInt(hexColor.slice(5, 7), 16);
-                         const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                         const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
-                         roleElement.textContent = role.name || `Role ${role.id}`;
-                         roleElement.style.backgroundColor = hexColor;
-                         roleElement.classList.add(textColorClass);
-                         modalUserRoles.appendChild(roleElement);
-                     });
-                 } else {
-                      modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
+                 // Use displayUserRoles logic but target the modal container
+                 const modalRolesContainer = document.getElementById('modal-user-roles');
+                 if (modalRolesContainer) {
+                     modalRolesContainer.innerHTML = ''; // Clear loading state
+                     if (currentUser.roles.length > 0) {
+                         currentUser.roles.forEach(role => { // Assumes roles are already sorted
+                             const roleElement = document.createElement('span');
+                             roleElement.classList.add('role-span');
+                             let hexColor = '#9CA3AF';
+                             if (role.color && role.color !== 0) hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                             const r = parseInt(hexColor.slice(1, 3), 16), g = parseInt(hexColor.slice(3, 5), 16), b = parseInt(hexColor.slice(5, 7), 16);
+                             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                             const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+                             roleElement.textContent = role.name || `Role ${role.id}`;
+                             roleElement.style.backgroundColor = hexColor;
+                             roleElement.classList.add(textColorClass);
+                             modalRolesContainer.appendChild(roleElement);
+                         });
+                     } else {
+                          modalRolesContainer.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
+                     }
                  }
              } else {
+                 // TODO: Add fetch for other user roles if backend endpoint exists
+                 // For now, show unavailable message
                  modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information unavailable.</p>';
              }
              userInfoModal.classList.add('active');
         }
+        /** Hides user info modal. */
         function hideUserInfoModal() { if (userInfoModal) userInfoModal.classList.remove('active'); }
+        /** Positions context menu. */
         function positionContextMenu(menuElement, event) {
-             const rect = event.target.getBoundingClientRect();
-             let top = event.clientY + window.scrollY + 5; let left = event.clientX + window.scrollX + 5;
-             const menuHeight = menuElement.offsetHeight || 150; const menuWidth = menuElement.offsetWidth || 150;
-             const windowHeight = window.innerHeight + window.scrollY; const windowWidth = window.innerWidth + window.scrollX;
-             if (top + menuHeight > windowHeight) top = event.clientY + window.scrollY - menuHeight - 5;
-             if (left + menuWidth > windowWidth) left = event.clientX + window.scrollX - menuWidth - 5;
-             if (top < window.scrollY) top = window.scrollY; if (left < window.scrollX) left = window.scrollX;
-             menuElement.style.top = `${top}px`; menuElement.style.left = `${left}px`; menuElement.style.display = 'block';
+             const rect = event.target.getBoundingClientRect(); // Use target's rect for positioning relative to it
+             let top = event.clientY + window.scrollY + 5; // Initial position below cursor
+             let left = event.clientX + window.scrollX + 5; // Initial position right of cursor
+
+             const menuHeight = menuElement.offsetHeight || 150; // Estimate height if needed
+             const menuWidth = menuElement.offsetWidth || 150; // Estimate width if needed
+
+             const windowHeight = window.innerHeight + window.scrollY;
+             const windowWidth = window.innerWidth + window.scrollX;
+
+             // Adjust if menu goes off-screen vertically
+             if (top + menuHeight > windowHeight) {
+                 top = event.clientY + window.scrollY - menuHeight - 5; // Position above cursor
+             }
+             // Adjust if menu goes off-screen horizontally
+             if (left + menuWidth > windowWidth) {
+                 left = event.clientX + window.scrollX - menuWidth - 5; // Position left of cursor
+             }
+             // Ensure menu doesn't go off-screen top or left
+             if (top < window.scrollY) top = window.scrollY;
+             if (left < window.scrollX) left = window.scrollX;
+
+             menuElement.style.top = `${top}px`;
+             menuElement.style.left = `${left}px`;
+             menuElement.style.display = 'block'; // Make it visible
         }
+        /** Hides context menu. */
         function hideContextMenu() {
             if (chatContextMenu) chatContextMenu.style.display = 'none';
             if (ticketContextMenu) ticketContextMenu.style.display = 'none';
-            document.removeEventListener('click', hideContextMenu); window.removeEventListener('scroll', hideContextMenu);
+            // Remove listeners added specifically for hiding the menu
+            document.removeEventListener('click', hideContextMenuOnClickOutside);
+            window.removeEventListener('scroll', hideContextMenu);
             currentContextMenu = null;
         }
-        function showChatContextMenu(event) {
-            event.preventDefault(); hideContextMenu();
-            if (!currentUser || !currentUser.is_moderator || !chatContextMenu) return;
-            const messageElement = event.target.closest('.chat-message'); if (!messageElement) return;
-            contextMenuData.ticketId = currentTicketId; contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
-            contextMenuData.senderId = messageElement.dataset.senderId; contextMenuData.ticketStatus = null;
-            positionContextMenu(chatContextMenu, event); currentContextMenu = chatContextMenu;
-            document.addEventListener('click', hideContextMenu, { once: true }); window.addEventListener('scroll', hideContextMenu, { once: true });
+        /** Specific handler to hide context menu only if click is outside */
+        function hideContextMenuOnClickOutside(event) {
+            if (currentContextMenu && !currentContextMenu.contains(event.target)) {
+                hideContextMenu();
+            }
         }
+        /** Shows chat context menu. */
+        function showChatContextMenu(event) {
+            event.preventDefault(); hideContextMenu(); // Hide any existing menu first
+            if (!currentUser || !currentUser.is_moderator || !chatContextMenu) return; // Only mods can use chat context menu
+            const messageElement = event.target.closest('.chat-message'); if (!messageElement) return; // Ensure click was on a message
+
+            // Store data about the clicked message
+            contextMenuData.ticketId = currentTicketId;
+            contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
+            contextMenuData.senderId = messageElement.dataset.senderId;
+            contextMenuData.ticketStatus = null; // Not relevant for chat messages
+
+            positionContextMenu(chatContextMenu, event);
+            currentContextMenu = chatContextMenu;
+
+            // Add listeners to close the menu
+            setTimeout(() => { // Use timeout to prevent immediate closing from the same click event
+                 document.addEventListener('click', hideContextMenuOnClickOutside);
+                 window.addEventListener('scroll', hideContextMenu, { once: true });
+            }, 0);
+        }
+        /** Shows ticket context menu. */
         function showTicketContextMenu(event) {
-             event.preventDefault(); hideContextMenu();
-             if (!currentUser || !ticketContextMenu) return;
-             const ticketElement = event.target.closest('.ticket-list-item'); if (!ticketElement) return;
-             contextMenuData.ticketId = ticketElement.dataset.ticketId; contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
-             contextMenuData.senderId = null; contextMenuData.messageTimestamp = null;
+             event.preventDefault(); hideContextMenu(); // Hide any existing menu first
+             if (!currentUser || !ticketContextMenu) return; // Must be logged in
+             const ticketElement = event.target.closest('.ticket-list-item'); if (!ticketElement) return; // Ensure click was on a ticket item
+
+             // Store data about the clicked ticket
+             contextMenuData.ticketId = ticketElement.dataset.ticketId;
+             contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
+             contextMenuData.senderId = null; // Not relevant for ticket list items
+             contextMenuData.messageTimestamp = null; // Not relevant for ticket list items
              console.log("[showTicketContextMenu] Data:", contextMenuData);
 
-             const isMod = currentUser.is_moderator === true;
-             const canClose = contextMenuData.ticketStatus === 'open';
-             const canReopen = contextMenuData.ticketStatus === 'closed' && isMod;
-             const canDelete = isMod;
+             const isMod = currentUser.is_moderator === true; // Explicit check
+             // Determine which actions are available based on status and role
+             const canClose = contextMenuData.ticketStatus === 'open'; // User or mod can close
+             const canReopen = contextMenuData.ticketStatus === 'closed' && isMod; // Mod only
+             const canDelete = isMod; // Mod only
 
+             // Show/hide menu items accordingly
              contextCloseTicketButton.classList.toggle('hidden', !canClose);
              contextReopenTicketButton.classList.toggle('hidden', !canReopen);
              contextDeleteTicketButton.classList.toggle('hidden', !canDelete);
 
+             // Only show the menu if there's at least one action available
              if (canClose || canReopen || canDelete) {
-                 positionContextMenu(ticketContextMenu, event); currentContextMenu = ticketContextMenu;
-                 document.addEventListener('click', hideContextMenu, { once: true }); window.addEventListener('scroll', hideContextMenu, { once: true });
+                 positionContextMenu(ticketContextMenu, event);
+                 currentContextMenu = ticketContextMenu;
+                 // Add listeners to close the menu
+                 setTimeout(() => { // Use timeout to prevent immediate closing
+                      document.addEventListener('click', hideContextMenuOnClickOutside);
+                      window.addEventListener('scroll', hideContextMenu, { once: true });
+                 }, 0);
              }
         }
+        /** Deletes chat message via socket. */
         function deleteChatMessage() {
              if (!contextMenuData.ticketId || !contextMenuData.messageTimestamp || !socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true); return; }
+             // Optional: Add confirmation?
              console.log(`[deleteChatMessage] Attempting to delete message: T:${contextMenuData.ticketId} TS:${contextMenuData.messageTimestamp}`);
              socket.emit('delete_message', { ticket_id: contextMenuData.ticketId, message_timestamp: contextMenuData.messageTimestamp });
-             hideContextMenu();
+             hideContextMenu(); // Hide menu after action
         }
+        /** Closes ticket via socket. */
          function closeTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true); return; }
              console.log(`[closeTicket] Attempting to close ticket: ${contextMenuData.ticketId}`);
              socket.emit('update_ticket_status', { ticket_id: contextMenuData.ticketId, new_status: 'closed' });
-             hideContextMenu();
+             hideContextMenu(); // Hide menu after action
          }
+         /** Reopens ticket via socket. */
          function reopenTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true); return; }
              if (!currentUser?.is_moderator) { showPopupMessage(errorMessagePopup, 'You do not have permission to reopen tickets.', true); hideContextMenu(); return; }
              console.log(`[reopenTicket] Attempting to reopen ticket: ${contextMenuData.ticketId}`);
              socket.emit('update_ticket_status', { ticket_id: contextMenuData.ticketId, new_status: 'open' });
-             hideContextMenu();
+             hideContextMenu(); // Hide menu after action
          }
+         /** Deletes ticket via socket. */
          function deleteTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Cannot delete ticket: Invalid state or not connected.', true); return; }
              if (!currentUser?.is_moderator) { showPopupMessage(errorMessagePopup, 'You do not have permission to delete tickets.', true); hideContextMenu(); return; }
+             // Confirmation dialog
              if (confirm(`Are you sure you want to permanently delete ticket #${contextMenuData.ticketId.slice(-6)}? This action cannot be undone.`)) {
                  console.log(`[deleteTicket] Attempting to delete ticket: ${contextMenuData.ticketId}`);
                  socket.emit('delete_ticket', { ticket_id: contextMenuData.ticketId });
              }
-             hideContextMenu();
+             hideContextMenu(); // Hide menu after action
          }
 
 
+        // --- Admin Dashboard Functions ---
+
+        /** Loads data needed for the admin sections (config, products). */
         async function loadAdminDashboardData() {
             console.log("Loading admin dashboard data...");
-            if (!currentUser?.is_moderator) return;
-            await loadSiteConfigForm();
-            await loadProductManagementTable();
+            if (!currentUser?.is_moderator) return; // Double check permission
+            await loadSiteConfigForm(); // Load config form data
+            await loadProductManagementTable(); // Load product table data
         }
 
+        /** Fetches site config and populates the admin form. */
         async function loadSiteConfigForm() {
-            if (!siteConfigForm) return;
+            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus) return; // Ensure elements exist
+            // Use already fetched config if available, otherwise fetch again? (Assuming config loaded initially)
             if (!siteConfig) {
-                console.warn("Site config not loaded yet for admin form.");
+                console.warn("Site config not loaded yet for admin form. Attempting fetch.");
+                // Potentially re-fetch config here if needed, or rely on initial load
                 configSaveStatus.textContent = "Error: Config not loaded.";
-                configSaveStatus.classList.add('text-red-400');
+                configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
                 return;
             }
             configSiteTitleInput.value = siteConfig.siteTitle || '';
-            configHeaderLinksContainer.innerHTML = '';
+            configHeaderLinksContainer.innerHTML = ''; // Clear existing links
             (siteConfig.headerLinks || []).forEach((link) => {
                 addHeaderLinkInput(link.name, link.href, link.target);
             });
+            configSaveStatus.textContent = ''; // Clear status on load
+            configSaveStatus.className = 'text-sm text-center h-5 mt-2';
         }
 
+        /** Adds a row of inputs for a header link to the config form. */
         function addHeaderLinkInput(name = '', href = '', target = '') {
              const linkGroup = document.createElement('div');
-             linkGroup.className = 'link-group';
+             linkGroup.className = 'link-group'; // Style with: @apply flex items-center space-x-2 mb-2;
+             // Apply input styles directly and use flex classes for sizing
              linkGroup.innerHTML = `
-                 <input type="text" placeholder="Link Name" value="${name}" class="link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500" required>
-                 <input type="text" placeholder="Link Href" value="${href}" class="link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500" required>
-                 <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
+                 <input type="text" placeholder="Link Name" value="${name}" class="link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+                 <input type="text" placeholder="Link Href" value="${href}" class="link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+                 <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
                  <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
              `;
+             // Add event listener to the remove button
              linkGroup.querySelector('.remove-link-button').addEventListener('click', () => linkGroup.remove());
              configHeaderLinksContainer.appendChild(linkGroup);
         }
 
+        /** Handles saving the site configuration. */
         async function handleSaveSiteConfig(event) {
             event.preventDefault();
-            if (!siteConfigForm) return;
+            if (!siteConfigForm || !saveConfigButton) return;
             saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
-            configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2';
+            configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
 
+            // Collect data from the form
             const updatedConfig = { siteTitle: configSiteTitleInput.value.trim(), headerLinks: [] };
             configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
                 const nameInput = group.querySelector('.link-name');
                 const hrefInput = group.querySelector('.link-href');
                 const targetInput = group.querySelector('.link-target');
+                // Only add if name and href are provided
                 if (nameInput.value.trim() && hrefInput.value.trim()) {
                     updatedConfig.headerLinks.push({
-                        name: nameInput.value.trim(), href: hrefInput.value.trim(),
-                        target: targetInput.value.trim() || null
+                        name: nameInput.value.trim(),
+                        href: hrefInput.value.trim(),
+                        target: targetInput.value.trim() || null // Store null if empty
                     });
                 }
             });
 
             try {
+                // Send PUT request to the backend
                 const response = await fetch(`${API_BASE_URL}/api/config`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedConfig), credentials: 'include'
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedConfig),
+                    credentials: 'include' // Important for session cookies
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
-                siteConfig = result; applySiteConfig(siteConfig);
+
+                // Update local config and UI
+                siteConfig = result;
+                applySiteConfig(siteConfig); // Re-apply the updated config to header/footer etc.
                 configSaveStatus.textContent = 'Configuration saved successfully!';
                 configSaveStatus.classList.add('text-green-400');
                 showPopupMessage(configMessagePopup, 'Configuration saved!');
@@ -1392,26 +1586,30 @@
                 configSaveStatus.classList.add('text-red-400');
                 showPopupMessage(errorMessagePopup, `Failed to save config: ${error.message}`, true);
             } finally {
+                // Re-enable button
                 saveConfigButton.disabled = false; saveConfigButton.textContent = 'Save Configuration';
             }
         }
 
+        /** Fetches products and populates the management table. */
         async function loadProductManagementTable() {
              if (!productListTableBody || !productListStatus) return;
              productListTableBody.innerHTML = ''; productListStatus.textContent = 'Loading products...';
              productListStatus.classList.remove('hidden');
 
              try {
-                 const response = await fetch(`${API_BASE_URL}/api/products`);
+                 const response = await fetch(`${API_BASE_URL}/api/products`); // No credentials needed if public endpoint
                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
                  const products = await response.json();
-                 productListStatus.classList.add('hidden');
+                 productListStatus.classList.add('hidden'); // Hide loading text
 
                  if (!products || products.length === 0) {
                      productListStatus.textContent = 'No products found.';
-                     productListStatus.classList.remove('hidden'); return;
+                     productListStatus.classList.remove('hidden'); // Show "No products" text
+                     return;
                  }
 
+                 // Populate table rows
                  products.forEach(product => {
                      const row = productListTableBody.insertRow();
                      row.innerHTML = `
@@ -1423,83 +1621,110 @@
                              <button class="delete-btn" data-product-id="${product._id}">Delete</button>
                          </td>
                      `;
+                     // Add event listeners to buttons
                      row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product));
                      row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name));
                  });
              } catch (error) {
                  console.error("Error loading products for admin table:", error);
                  productListStatus.textContent = 'Failed to load products.';
-                 productListStatus.classList.remove('hidden');
+                 productListStatus.classList.remove('hidden'); // Show error text
                  showPopupMessage(errorMessagePopup, `Error loading products: ${error.message}`, true);
              }
         }
 
+        /** Opens the Add/Edit Product modal. */
         function openProductEditModal(product = null) {
-             if (!productEditModal || !productEditForm) return;
-             productEditForm.reset(); productEditStatus.textContent = '';
-             productEditStatus.className = 'text-sm text-center h-5 mt-2';
+             if (!productEditModal || !productEditForm || !customHexInputContainer) return; // Ensure elements exist
+             productEditForm.reset(); // Clear form fields
+             productEditStatus.textContent = ''; // Clear previous status messages
+             productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status class
 
              if (product) {
+                 // Editing existing product: Populate form
                  productModalTitle.textContent = 'Edit Product';
                  productEditIdInput.value = product._id;
                  productEditNameInput.value = product.name || '';
                  productEditThumbnailInput.value = product.thumbnailUrl || '';
                  productEditPriceInput.value = product.price || '';
                  productEditTagInput.value = product.tag || '';
-                 productEditTagColorSelect.value = (product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex)) ? 'custom' : (product.tagColor || 'gray');
-                 productEditCustomHexInput.value = (product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex)) ? product.customBorderHex : '';
+                 // Set dropdown based on whether custom hex is present and valid
+                 const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
+                 productEditTagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
+                 productEditCustomHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
                  productEditDescriptionInput.value = product.description || '';
                  productEditFeaturesInput.value = (product.features || []).join('\n');
                  productEditPaymentLinkInput.value = product.paymentLink || '';
              } else {
+                 // Adding new product: Clear fields
                  productModalTitle.textContent = 'Add Product';
-                 productEditIdInput.value = '';
+                 productEditIdInput.value = ''; // Ensure ID is empty
+                 productEditTagColorSelect.value = 'gray'; // Default color
+                 productEditCustomHexInput.value = ''; // Clear hex input
              }
-             productEditModal.classList.add('active');
+             // Update visibility of HEX input based on current dropdown value
+             toggleCustomHexInput();
+             productEditModal.classList.add('active'); // Show the modal
         }
 
+        /** Toggles the visibility of the Custom HEX input based on dropdown selection */
+        function toggleCustomHexInput() {
+            if (customHexInputContainer && productEditTagColorSelect) {
+                 const selectedColor = productEditTagColorSelect.value;
+                 customHexInputContainer.classList.toggle('hidden', selectedColor !== 'custom');
+            }
+        }
+
+        /** Closes the Add/Edit Product modal. */
         function closeProductEditModal() { if (productEditModal) productEditModal.classList.remove('active'); }
 
+        /** Handles saving (add/update) a product from the modal form. */
         async function handleSaveProduct(event) {
-             event.preventDefault(); if (!productEditForm) return;
+             event.preventDefault(); if (!productEditForm || !productSaveButton) return;
              productSaveButton.disabled = true; productSaveButton.textContent = 'Saving...';
-             productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2';
+             productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
 
              const productId = productEditIdInput.value; const isEditing = !!productId;
              const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
              const method = isEditing ? 'PUT' : 'POST';
 
+             // Determine final tagColor and customBorderHex
              let tagColorValue = productEditTagColorSelect.value;
              let customHexValue = productEditCustomHexInput.value.trim();
              let finalTagColor = 'gray'; // Default
              let finalCustomHex = null;
 
              if (tagColorValue === 'custom') {
+                 // Validate HEX if 'custom' is selected
                  if (customHexValue && /^#[0-9A-F]{6}$/i.test(customHexValue)) {
-                     finalTagColor = 'custom';
+                     finalTagColor = 'custom'; // Keep tagColor as 'custom' to indicate intent
                      finalCustomHex = customHexValue;
                  } else {
+                     // Invalid HEX format
                      productEditStatus.textContent = 'Invalid Custom HEX format. Please use #RRGGBB.';
                      productEditStatus.classList.add('text-red-400');
-                     productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+                     productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return; // Stop execution
                  }
              } else {
-                 finalTagColor = tagColorValue || 'gray';
+                 // Predefined color selected
+                 finalTagColor = tagColorValue || 'gray'; // Use selected color or default
+                 finalCustomHex = null; // Ensure custom hex is null
              }
 
-
+             // Construct product data object
              const productData = {
                  name: productEditNameInput.value.trim(),
                  thumbnailUrl: productEditThumbnailInput.value.trim() || null,
                  price: parseFloat(productEditPriceInput.value),
                  tag: productEditTagInput.value.trim() || null,
-                 tagColor: finalTagColor,
-                 customBorderHex: finalCustomHex,
+                 tagColor: finalTagColor, // Store 'custom' or the color name
+                 customBorderHex: finalCustomHex, // Store valid HEX or null
                  description: productEditDescriptionInput.value.trim() || null,
-                 features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
+                 features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f), // Split features by newline
                  paymentLink: productEditPaymentLinkInput.value.trim() || null
              };
 
+             // Basic validation
              if (!productData.name || isNaN(productData.price)) {
                   productEditStatus.textContent = 'Name and valid Price are required.';
                   productEditStatus.classList.add('text-red-400');
@@ -1507,125 +1732,184 @@
              }
 
              try {
+                 // Send request to backend
                  const response = await fetch(url, {
-                     method: method, headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify(productData), credentials: 'include'
+                     method: method,
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(productData),
+                     credentials: 'include' // Important for authentication
                  });
                  const result = await response.json();
                  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                 // Success: Show message, close modal, refresh relevant views
                  showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
                  closeProductEditModal();
-                 await loadProductManagementTable();
-                 if (activeSectionId === pageSections['#products']) await fetchProducts();
+                 await loadProductManagementTable(); // Refresh admin table
+                 if (activeSectionId === pageSections['#products']) await fetchProducts(); // Refresh public product grid if visible
              } catch (error) {
+                 // Error handling
                  console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
                  productEditStatus.textContent = `Error: ${error.message}`;
                  productEditStatus.classList.add('text-red-400');
                  showPopupMessage(errorMessagePopup, `Failed to save product: ${error.message}`, true);
              } finally {
+                 // Re-enable button
                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product';
              }
         }
 
+        /** Handles deleting a product after confirmation. */
         async function handleDeleteProduct(productId, productName) {
             if (!productId) return;
+            // Confirmation dialog
             if (!confirm(`Are you sure you want to delete the product "${productName || 'this product'}"? This cannot be undone.`)) return;
+
             console.log(`Attempting to delete product: ${productId}`);
             try {
-                const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, { method: 'DELETE', credentials: 'include' });
-                const result = await response.json();
+                // Send DELETE request
+                const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
+                    method: 'DELETE',
+                    credentials: 'include' // Important for authentication
+                });
+                const result = await response.json(); // Try to parse JSON even on error for potential messages
                 if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                // Success: Show message, refresh relevant views
                 showPopupMessage(productMessagePopup, 'Product deleted successfully!');
-                await loadProductManagementTable();
-                if (activeSectionId === pageSections['#products']) await fetchProducts();
+                await loadProductManagementTable(); // Refresh admin table
+                if (activeSectionId === pageSections['#products']) await fetchProducts(); // Refresh public product grid if visible
             } catch (error) {
+                // Error handling
                 console.error("Error deleting product:", error);
                 showPopupMessage(errorMessagePopup, `Failed to delete product: ${error.message}`, true);
             }
         }
 
 
+        // --- Event Listeners Setup ---
+
+        // Login/Logout
         loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
         async function handleLogout() {
             console.log('Logging out...');
             try {
+                // Attempt backend logout first
                 const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
                 if (!response.ok) {
                     let errorMsg = 'Logout request failed';
                     try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
                     console.warn(`Backend logout failed: ${errorMsg}. Proceeding with client-side cleanup.`);
                 }
-                currentUser = { logged_in: false };
-                isInitialLoginCheckComplete = false;
-                isInitialConfigLoadComplete = false;
-                localStorage.removeItem('currentPage');
-                disconnectSocket();
-                updateHeaderUI(currentUser);
-                adminDashboardSections?.classList.add('hidden');
-                console.log("Redirecting to /#home after logout cleanup.");
-                window.location.hash = '/#home';
             } catch(error) {
                 console.error("Network error during logout fetch:", error);
-                showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
-                currentUser = { logged_in: false };
-                isInitialLoginCheckComplete = false;
-                isInitialConfigLoadComplete = false;
-                localStorage.removeItem('currentPage');
-                disconnectSocket();
-                updateHeaderUI(currentUser);
-                adminDashboardSections?.classList.add('hidden');
-                window.location.hash = '/#home';
+                // Still proceed with client-side cleanup even if network fails
+            } finally {
+                 // Client-side cleanup regardless of backend response
+                 currentUser = { logged_in: false };
+                 isInitialLoginCheckComplete = false; // Force re-check on next load potentially
+                 isInitialConfigLoadComplete = false;
+                 localStorage.removeItem('currentPage'); // Clear any saved state
+                 disconnectSocket(); // Disconnect chat
+                 updateHeaderUI(currentUser); // Update UI to logged-out state
+                 adminDashboardSections?.classList.add('hidden'); // Hide admin sections
+                 console.log("Redirecting to /#home after logout cleanup.");
+                 window.location.hash = '/#home'; // Redirect to home
+                 // No need to call runNavigation here, hash change will trigger it
             }
         }
         logoutButton.addEventListener('click', handleLogout);
         dashboardLogoutButton.addEventListener('click', handleLogout);
+
+        // Navigation
         window.addEventListener('hashchange', runNavigation);
+
+        // Ticket Creation
         if(createTicketForm) createTicketForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             const subject = ticketSubjectInput.value.trim(); const message = ticketMessageInput.value.trim();
-            createTicketStatus.textContent = ''; createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
+            createTicketStatus.textContent = ''; createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center'; // Reset status
             if (!subject || !message) { createTicketStatus.textContent = 'Please fill out both subject and message.'; createTicketStatus.classList.add('error'); return; }
-            const submitButton = document.getElementById('create-ticket-button'); submitButton.disabled = true; submitButton.textContent = 'Submitting...';
+
+            const submitButton = document.getElementById('create-ticket-button');
+            submitButton.disabled = true; submitButton.textContent = 'Submitting...';
+
             try {
-                const response = await fetch(`${API_BASE_URL}/api/tickets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subject, message }), credentials: 'include' });
-                if (!response.ok) { let errorData; try { errorData = await response.json(); } catch (e) {} throw new Error(errorData?.error || `HTTP error! status: ${response.status}`); }
-                const result = await response.json(); createTicketStatus.textContent = 'Ticket submitted successfully!'; createTicketStatus.classList.add('success'); createTicketForm.reset();
-                if (activeSectionId === pageSections['#tickets']) fetchTickets();
-            } catch (error) { console.error('Error creating ticket:', error); createTicketStatus.textContent = `Error: ${error.message}`; createTicketStatus.classList.add('error');
-            } finally { submitButton.disabled = false; submitButton.textContent = 'Submit Ticket'; }
+                const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, message }),
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    let errorData;
+                    try { errorData = await response.json(); } catch (e) {} // Try to get error message from JSON
+                    throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json(); // Get result if needed (e.g., new ticket ID)
+                createTicketStatus.textContent = 'Ticket submitted successfully!';
+                createTicketStatus.classList.add('success');
+                createTicketForm.reset(); // Clear the form
+                if (activeSectionId === pageSections['#tickets']) fetchTickets(); // Refresh list if viewing
+                // Optionally redirect to the new ticket?
+                // window.location.hash = `/#ticketDetail?id=${result.ticket_id}`;
+            } catch (error) {
+                console.error('Error creating ticket:', error);
+                createTicketStatus.textContent = `Error: ${error.message}`;
+                createTicketStatus.classList.add('error');
+            } finally {
+                submitButton.disabled = false; submitButton.textContent = 'Submit Ticket';
+            }
         });
+
+        // Ticket Chat Submission
         if(chatInputForm) chatInputForm.addEventListener('submit', (event) => {
             event.preventDefault(); const messageText = chatInput.value.trim();
-            if (messageText && socket && socket.connected && currentTicketId) { socket.emit('send_message', { ticket_id: currentTicketId, text: messageText }); chatInput.value = ''; }
+            if (messageText && socket && socket.connected && currentTicketId) {
+                socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
+                chatInput.value = ''; // Clear input after sending
+            }
             else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true); }
             else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
         });
+
+        // Modals & Context Menus
         if (modalCloseButton) modalCloseButton.addEventListener('click', hideUserInfoModal);
-        if (userInfoModal) userInfoModal.addEventListener('click', (event) => { if (event.target === userInfoModal) hideUserInfoModal(); });
+        if (userInfoModal) userInfoModal.addEventListener('click', (event) => { if (event.target === userInfoModal) hideUserInfoModal(); }); // Close on backdrop click
         if (contextDeleteButton) contextDeleteButton.addEventListener('click', deleteChatMessage);
         if (contextUserInfoButton) contextUserInfoButton.addEventListener('click', () => {
             if (contextMenuData.senderId) {
+                // Try to get username from the message element itself for display
                 const messageElement = chatMessagesDiv?.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
                 const usernameElement = messageElement?.querySelector('.username');
                 const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'Unknown User';
                 showUserInfoModal(contextMenuData.senderId, username);
-            } hideContextMenu();
+            }
+            hideContextMenu(); // Hide menu after action
         });
         if (contextCloseTicketButton) contextCloseTicketButton.addEventListener('click', closeTicket);
         if (contextReopenTicketButton) contextReopenTicketButton.addEventListener('click', reopenTicket);
         if (contextDeleteTicketButton) contextDeleteTicketButton.addEventListener('click', deleteTicket);
-        if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
-        if (siteConfigForm) siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
-        if (addHeaderLinkButton) addHeaderLinkButton.addEventListener('click', () => addHeaderLinkInput());
-        if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal());
-        if (productEditModal && productModalCloseButton) productModalCloseButton.addEventListener('click', closeProductEditModal);
-        if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); });
-        if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
 
+        // Mobile Menu Toggle
+        if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
+
+        // Admin Forms
+        if (siteConfigForm) siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
+        if (addHeaderLinkButton) addHeaderLinkButton.addEventListener('click', () => addHeaderLinkInput()); // Add empty link row
+        if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal()); // Open modal for adding
+        if (productEditModal && productModalCloseButton) productModalCloseButton.addEventListener('click', closeProductEditModal);
+        if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); }); // Close on backdrop click
+        if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
+        // Add listener to the color dropdown to toggle HEX input visibility
+        if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
+
+
+        // --- Initial Page Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
-            createSnowflakes();
-            checkLoginStatus();
+            createSnowflakes(); // Initialize snow effect
+            checkLoginStatus(); // Start the check login -> load config -> navigate sequence
         });
 
     </script>
