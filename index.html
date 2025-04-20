@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style type="text/tailwindcss">
         @keyframes animateGradient {
             0% { background-position: 0% 50%; }
@@ -110,8 +111,8 @@
              overflow: hidden;
         }
 
-        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
-        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; }
+        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
+        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg; }
 
         .paypal-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full; }
 
@@ -165,10 +166,33 @@
         }
 
         .ticket-list-item {
-            @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center;
+            @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors;
         }
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
+
+        /* Chat UI Styles */
+        #chat-messages {
+             @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2;
+        }
+        .chat-message {
+             @apply text-sm;
+        }
+        .chat-message .username {
+             @apply font-semibold text-orange-400 mr-2;
+        }
+         .chat-message .timestamp {
+             @apply text-xs text-gray-500 ml-2;
+         }
+         #chat-input-form {
+             @apply flex space-x-2;
+         }
+         #chat-input {
+              @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500;
+         }
+         #send-chat-button {
+             @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
+         }
 
     </style>
 </head>
@@ -352,22 +376,9 @@
             <div class="lg:col-span-2 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
                  <div id="ticket-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
-                     <div class="ticket-list-item">
-                         <div>
-                             <p class="font-medium text-white">Ticket #1234: Login Issue</p>
-                             <p class="text-xs text-gray-400">Opened: 2 days ago</p>
-                         </div>
-                         <span class="status-open">Open</span>
-                     </div>
-                     <div class="ticket-list-item">
-                         <div>
-                             <p class="font-medium text-white">Ticket #1230: Payment Question</p>
-                             <p class="text-xs text-gray-400">Opened: 5 days ago</p>
-                         </div>
-                         <span class="status-closed">Closed</span>
-                     </div>
+                     {/* Ticket items will be loaded here by JS */}
                  </div>
-                 <p class="text-sm text-gray-500 mt-4">Loading tickets...</p>
+                 <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
             </div>
             <div class="lg:col-span-1 ticket-card">
                  <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
@@ -388,6 +399,27 @@
         </div>
      </div>
 
+     {/* Added Ticket Detail View (Initially Hidden) */}
+     <div id="ticket-detail-content" class="hidden flex-grow container mx-auto px-6 py-10">
+         <div class="flex justify-start mb-8">
+             <button id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Tickets</span>
+             </button>
+        </div>
+        <h2 id="ticket-detail-subject">Ticket Subject</h2>
+        <div class="ticket-card">
+            <div id="chat-messages">
+                {/* Chat messages will be loaded here */}
+                <p class="text-gray-500 text-center py-4">Loading chat...</p>
+            </div>
+            <form id="chat-input-form" class="mt-4">
+                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
+                 <button type="submit" id="send-chat-button">Send</button>
+            </form>
+        </div>
+     </div>
+
 
     <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
@@ -403,6 +435,7 @@
         const dashboardContent = document.getElementById('dashboard-content');
         const productsPageContent = document.getElementById('products-page-content');
         const ticketsPageContent = document.getElementById('tickets-page-content');
+        const ticketDetailContent = document.getElementById('ticket-detail-content'); // New detail view
         const userInfo = document.getElementById('user-info');
         const userNameDisplay = document.getElementById('user-name');
         const userAvatarDisplay = document.getElementById('user-avatar');
@@ -414,22 +447,31 @@
         const ticketsLink = document.getElementById('tickets-link');
         const backToHomeButtonProducts = document.getElementById('back-to-home-button-products');
         const backToHomeButtonTickets = document.getElementById('back-to-home-button-tickets');
+        const backToTicketsButton = document.getElementById('back-to-tickets-button'); // Back from detail
         const paymentMessage = document.getElementById('payment-message');
         const ticketMessage = document.getElementById('ticket-message');
         const errorMessage = document.getElementById('error-message');
         const purchaseButton = document.getElementById('purchase-button');
         const loadingOverlay = document.getElementById('loading-overlay');
-        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content, #tickets-page-content');
+        const pageContainers = document.querySelectorAll('#main-content, #products-page-content, #dashboard-content, #tickets-page-content, #ticket-detail-content');
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message');
         const ticketListDiv = document.getElementById('ticket-list');
-        const ticketListStatus = ticketListDiv ? ticketListDiv.nextElementSibling : null;
+        const ticketListStatus = document.getElementById('ticket-list-status'); // Assign ID to the p tag
+        const ticketDetailSubject = document.getElementById('ticket-detail-subject');
+        const chatMessagesDiv = document.getElementById('chat-messages');
+        const chatInputForm = document.getElementById('chat-input-form');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatButton = document.getElementById('send-chat-button');
 
-        const discordLoginUrl = 'https://api.shillette.com/login'; // Updated backend login route
-        const API_BASE_URL = 'https://api.shillette.com'; // Updated API base URL
+
+        const API_BASE_URL = 'https://api.shillette.com';
+        const SOCKET_URL = 'https://api.shillette.com'; // Assuming SocketIO runs on same server/port
 
         let currentUser = null;
+        let socket = null; // WebSocket instance
+        let currentTicketId = null; // Track viewed ticket
 
         function showMessage(element, message, isError = false) {
              if (!element) return;
@@ -452,6 +494,8 @@
              dashboardContent.classList.add('hidden');
              productsPageContent.classList.add('hidden');
              ticketsPageContent.classList.add('hidden');
+             ticketDetailContent.classList.add('hidden'); // Hide detail view
+             disconnectSocket(); // Disconnect socket when hiding sections
         }
 
         function showSectionWithLoading(showFunction) {
@@ -526,6 +570,16 @@
             fetchTickets();
         }
 
+        function showTicketDetailInternal(ticketId, ticketSubject) {
+             ticketDetailContent.classList.remove('hidden');
+             localStorage.setItem('currentPage', 'ticketDetail');
+             currentTicketId = ticketId; // Store current ticket ID
+             ticketDetailSubject.textContent = ticketSubject || `Ticket #${ticketId.slice(-6)}`;
+             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Clear old messages
+             updateHeaderUI(currentUser);
+             connectSocket(ticketId); // Connect WebSocket for this ticket
+        }
+
 
         function showDashboard() {
             if (!currentUser || !currentUser.logged_in) {
@@ -547,6 +601,14 @@
              }
              showSectionWithLoading(showTicketsPageInternal);
         }
+         function showTicketDetail(ticketId, ticketSubject) {
+             if (!currentUser || !currentUser.logged_in) {
+                 showMessage(errorMessage, "Please log in to view ticket details.", true);
+                 return;
+             }
+             // Use loading transition when showing detail view
+             showSectionWithLoading(() => showTicketDetailInternal(ticketId, ticketSubject));
+         }
 
 
         function createSnowflakes() {
@@ -578,7 +640,6 @@
              try {
                  const response = await fetch(`${API_BASE_URL}/api/user`);
                  if (!response.ok) {
-                     // If API returns 401 or similar, treat as not logged in
                      if (response.status === 401 || response.status === 403) {
                          currentUser = { logged_in: false };
                      } else {
@@ -600,7 +661,12 @@
                      showProductsPageInternal();
                  } else if (currentUser.logged_in && currentPage === 'tickets') {
                      showTicketsPageInternal();
-                 } else {
+                 } else if (currentUser.logged_in && currentPage === 'ticketDetail') {
+                      // Need to re-load the specific ticket detail if page was refreshed
+                      // For now, just go back to tickets list on refresh if detail was open
+                      showTicketsPageInternal();
+                 }
+                  else {
                      showMainContentInternal();
                  }
                  updateHeaderUI(currentUser);
@@ -637,14 +703,18 @@
                         item.classList.add('ticket-list-item');
                         const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
                         const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'N/A';
+                        const ticketId = ticket._id || 'N/A'; // Ensure ID exists
+                        const subject = ticket.subject || 'No Subject';
 
                         item.innerHTML = `
                             <div>
-                                <p class="font-medium text-white">Ticket #${(ticket._id || 'N/A').slice(-6)}: ${ticket.subject || 'No Subject'}</p>
+                                <p class="font-medium text-white">Ticket #${ticketId.slice(-6)}: ${subject}</p>
                                 <p class="text-xs text-gray-400">Opened: ${dateOpened}</p>
                             </div>
                             <span class="${statusClass}">${ticket.status || 'N/A'}</span>
                         `;
+                        // Add click listener to view ticket details
+                        item.addEventListener('click', () => showTicketDetail(ticketId, subject));
                         ticketListDiv.appendChild(item);
                     });
                 }
@@ -654,10 +724,77 @@
             }
         }
 
+        function appendChatMessage(data) {
+             if (!chatMessagesDiv) return;
+             const messageElement = document.createElement('div');
+             messageElement.classList.add('chat-message');
+             const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '';
+             messageElement.innerHTML = `<span class="username">${data.username || 'System'}:</span> ${data.text || ''} <span class="timestamp">${timestamp}</span>`;
+             chatMessagesDiv.appendChild(messageElement);
+             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+        }
+
+        function connectSocket(ticketId) {
+            if (socket && socket.connected) {
+                // If already connected, just ensure we are in the right room
+                socket.emit('join_ticket_room', { ticket_id: ticketId });
+                return;
+            }
+            // Assuming io is globally available from the script tag
+            socket = io(SOCKET_URL, {
+                reconnectionAttempts: 3, // Example: Limit reconnection attempts
+                // Add authentication if your backend expects it
+                // auth: { token: 'user-session-token' }
+            });
+
+            socket.on('connect', () => {
+                console.log('WebSocket connected:', socket.id);
+                appendChatMessage({text: 'Connected to chat.'});
+                socket.emit('join_ticket_room', { ticket_id: ticketId });
+            });
+
+            socket.on('disconnect', (reason) => {
+                console.log('WebSocket disconnected:', reason);
+                appendChatMessage({text: 'Disconnected from chat.'});
+                // Handle disconnection, maybe attempt reconnect or notify user
+            });
+
+            socket.on('connect_error', (error) => {
+                 console.error('WebSocket connection error:', error);
+                 appendChatMessage({text: `Connection error: ${error.message}`});
+            });
+
+            socket.on('new_message', (data) => {
+                console.log('New message received:', data);
+                if (data.ticket_id === currentTicketId) { // Ensure message is for the current ticket
+                     appendChatMessage(data);
+                }
+            });
+
+             socket.on('room_joined', (data) => {
+                 console.log('Joined room:', data.room);
+                 // Fetch past messages or indicate success
+                 appendChatMessage({text: `Joined ticket room.`});
+                 // Placeholder: Fetch past messages for this ticket via API or socket event
+                 // fetchPastMessages(ticketId);
+             });
+        }
+
+        function disconnectSocket() {
+            if (socket) {
+                console.log('Disconnecting socket...');
+                socket.disconnect();
+                socket = null;
+            }
+             currentTicketId = null; // Clear current ticket ID
+        }
+
+
+        // --- Event Listeners ---
 
         loginButton.addEventListener('click', (e) => {
              e.preventDefault();
-             window.location.href = loginButton.href; // Use the href set on the button
+             window.location.href = loginButton.href;
         });
 
         logoutButton.addEventListener('click', async () => {
@@ -667,7 +804,7 @@
                  if (!response.ok) { throw new Error('Logout request failed'); }
                  currentUser = { logged_in: false };
                  localStorage.removeItem('isLoggedIn');
-                 localStorage.removeItem('currentPage'); // Clear current page on logout
+                 localStorage.removeItem('currentPage');
                  showMainContent();
             } catch(error) {
                  console.error("Logout error:", error);
@@ -714,9 +851,15 @@
          if(backToHomeButtonTickets) {
             backToHomeButtonTickets.addEventListener('click', (event) => {
                 event.preventDefault();
-                showMainContent();
+                showTicketsPage(); // Go back to tickets list, not home
             });
         }
+         if(backToTicketsButton) {
+             backToTicketsButton.addEventListener('click', (event) => {
+                 event.preventDefault();
+                 showTicketsPage(); // Go back to tickets list view
+             });
+         }
 
 
         if(userInfo) {
@@ -734,6 +877,7 @@
             });
         }
 
+        // Delegated listener for payment buttons
         document.addEventListener('click', (event) => {
             const target = event.target.closest('button');
             if (!target) return;
@@ -746,6 +890,7 @@
             }
         });
 
+        // Listener for create ticket form
         if(createTicketForm) {
             createTicketForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -774,13 +919,32 @@
                     console.log('Ticket created:', result);
                     showMessage(ticketMessage, 'Ticket submitted successfully!');
                     createTicketForm.reset();
-                    fetchTickets();
+                    fetchTickets(); // Refresh ticket list
 
                 } catch (error) {
                     console.error('Error creating ticket:', error);
                     showMessage(errorMessage, `Error: ${error.message}`, true);
                 }
             });
+        }
+
+        // Listener for chat message form
+        if(chatInputForm) {
+             chatInputForm.addEventListener('submit', (event) => {
+                 event.preventDefault();
+                 const messageText = chatInput.value.trim();
+                 if (messageText && socket && socket.connected && currentTicketId) {
+                     socket.emit('send_message', {
+                         ticket_id: currentTicketId,
+                         text: messageText
+                     });
+                     // Optionally display sent message immediately (optimistic update)
+                     // appendChatMessage({ username: currentUser?.username || 'You', text: messageText, timestamp: new Date().toISOString() });
+                     chatInput.value = ''; // Clear input
+                 } else if (!socket || !socket.connected) {
+                     showMessage(errorMessage, 'Not connected to chat server.', true);
+                 }
+             });
         }
 
 
