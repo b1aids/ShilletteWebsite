@@ -630,6 +630,7 @@
         let activeSectionId = null;
         let currentContextMenu = null; // Track which context menu is active
         let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null }; // Combined context data
+        let isInitialLoginCheckComplete = false; // ** NEW ** Flag to prevent premature navigation
 
 
         // --- Utility Functions ---
@@ -745,9 +746,8 @@
          * Checks for protected routes and user login status.
          * Fetches necessary data for the target section (tickets, ticket details).
          * @param {string} hash - The URL hash (e.g., '#home', '/#tickets', '/#ticketDetail?id=123').
-         * @param {object|null} [ticketData=null] - Optional pre-fetched ticket data (id, subject) for direct navigation.
          */
-        function navigateTo(hash, ticketData = null) {
+        function navigateTo(hash) { // Removed unused ticketData param
             console.log(`[navigateTo] Received hash: ${hash}`);
             // Handle hashes starting with /# or just #
             const cleanHash = hash.startsWith('/#') ? hash.substring(1) : (hash.startsWith('#') ? hash : '#home');
@@ -757,23 +757,32 @@
             console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Target section: ${targetSectionId}`);
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
-            console.log(`[navigateTo] Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`);
+
+            // ** CRITICAL CHECK **: Only check protection *after* initial login status is known
+            if (!isInitialLoginCheckComplete && isProtected) {
+                console.log(`[navigateTo] Initial login check not complete for protected route ${targetSectionId}. Deferring action.`);
+                // Optional: Show a global loading indicator here
+                return; // Do nothing until the initial check completes and calls runNavigation again
+            }
+
+            console.log(`[navigateTo] Checking protection. Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`);
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
                 console.log(`[navigateTo] Access denied to protected route: ${targetSectionId}`);
                 showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
                 // Redirect to home only if not already there
                 if (window.location.hash !== '#home' && window.location.hash !== '/#home') {
                     console.log(`[navigateTo] Redirecting to /#home`);
-                    window.location.hash = '/#home'; // Navigate to /#home
+                    window.location.hash = '/#home'; // Navigate to /#home (will trigger hashchange again)
                 } else {
                     console.log(`[navigateTo] Already on home, showing #home section.`);
                     showSection('#home'); // Explicitly show home if already on #home but logged out
                 }
-                return;
+                return; // Stop further processing for this navigation attempt
             }
 
             // Ensure socket is connected if navigating to a protected/socket-requiring page
-            if (isProtected && currentUser && currentUser.logged_in) {
+            // Only connect if logged in (already checked above)
+            if (isProtected) {
                 console.log(`[navigateTo] Ensuring socket is connected for route: ${targetSectionId}`);
                 ensureSocketConnected();
             }
@@ -781,7 +790,6 @@
             // Handle Ticket Detail specific logic
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
-                let subject = null;
                 // Extract ID from the hash's query parameters
                 const params = new URLSearchParams(cleanHash.split('?')[1] || '');
                 id = params.get('id');
@@ -789,23 +797,31 @@
                 console.log(`[navigateTo] Ticket Detail - ID from URL: ${id}`);
 
                 if (id) {
-                    currentTicketId = id; // Set currentTicketId *before* fetching
-                    // Set initial subject - might be overwritten by fetchTicketDetails
-                    ticketDetailSubject.textContent = `Ticket #${id.slice(-6)}`;
-                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Loading state
-                    // Fetch full ticket details including messages and update subject
-                    fetchTicketDetails(id); // This fetches details AND connects socket + joins room
+                    // Only fetch details if the ticket ID has changed or wasn't set
+                    if (currentTicketId !== id) {
+                        currentTicketId = id; // Set currentTicketId *before* fetching
+                        // Set initial subject - might be overwritten by fetchTicketDetails
+                        ticketDetailSubject.textContent = `Ticket #${id.slice(-6)}`;
+                        chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Loading state
+                        // Fetch full ticket details including messages and update subject
+                        fetchTicketDetails(id); // This fetches details AND connects socket + joins room
+                    } else {
+                         console.log(`[navigateTo] Already viewing ticket ${id}, not re-fetching details.`);
+                         // Still ensure socket room is joined if connection dropped
+                         if (socket && socket.connected) {
+                             socket.emit('join_ticket_room', { ticket_id: currentTicketId });
+                         }
+                    }
                 } else {
                     console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '/#tickets'; // Navigate to /#tickets
+                    window.location.hash = '/#tickets'; // Navigate to /#tickets (will trigger hashchange)
                     return; // Stop further execution for this invalid navigation
                 }
             }
 
             // Show the correct section *after* handling potential redirects or data loading setup
             showSection(targetSectionId);
-            // **Do not store currentPage here**, rely on hashchange to drive state
 
             // Fetch data if needed for the newly shown section
             if (targetSectionId === '#tickets') {
@@ -821,16 +837,15 @@
 
         /**
          * Runs the navigation logic based on the current URL hash.
-         * Called on initial load and hash changes.
+         * Called by hashchange listener (if initial check is complete) and by checkLoginStatusAndNavigate.
          */
         function runNavigation() {
-            console.log(`[runNavigation] Hash changed to: ${window.location.hash}`);
-            // Use cleanHash logic here too for initial load / direct navigation
-            // Ensure it starts with # for navigateTo
+            // This function is now simpler, just calls navigateTo with the current hash
+            console.log(`[runNavigation] Processing hash: ${window.location.hash}`);
             const rawHash = window.location.hash;
+            // Ensure hash starts with # for navigateTo consistency
             const hashToNavigate = rawHash.startsWith('/#') ? rawHash.substring(1) : (rawHash || '#home');
-            console.log(`[runNavigation] Navigating to: ${hashToNavigate}`);
-            navigateTo(hashToNavigate); // Use the cleaned hash or default
+            navigateTo(hashToNavigate);
         }
 
         /**
@@ -863,8 +878,10 @@
         /**
          * Checks the user's login status via the API and then triggers navigation.
          * Connects the socket if the user is logged in.
+         * **MODIFIED**: Sets isInitialLoginCheckComplete flag and calls runNavigation in finally block.
          */
         async function checkLoginStatusAndNavigate() {
+             isInitialLoginCheckComplete = false; // Reset flag at start of check
              try {
                  // Use credentials: 'include' to send cookies
                  const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
@@ -893,8 +910,10 @@
                  currentUser = { logged_in: false }; // Assume logged out on error
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
-                 // Run navigation AFTER checking login status, based on the current hash
-                 runNavigation();
+                 // **MODIFIED**: Mark check complete and run navigation based on current hash
+                 isInitialLoginCheckComplete = true;
+                 console.log("[checkLoginStatusAndNavigate] Initial check complete. Running navigation for current hash:", window.location.hash);
+                 runNavigation(); // Run navigation based on the hash that might have been set while waiting
              }
         }
 
@@ -902,7 +921,7 @@
          * Fetches the list of tickets (either user's or all, based on role)
          * and populates the appropriate list(s) in the UI.
          * Adds event listeners for clicking and right-clicking ticket items.
-         * **MODIFIED**: Click listener now sets window.location.hash.
+         * Click listener now sets window.location.hash.
          */
         async function fetchTickets() {
             console.log("[fetchTickets] Starting to fetch tickets...");
@@ -1001,7 +1020,7 @@
                             const targetHash = `/#ticketDetail?id=${ticketId}`;
                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}. Setting hash to: ${targetHash}`);
                             // Set the window hash. This will trigger the 'hashchange' event,
-                            // which will then call runNavigation -> navigateTo to show the section.
+                            // which will then call runNavigation (if initial check is complete).
                             window.location.hash = targetHash;
                         });
 
@@ -1626,6 +1645,7 @@
                     throw new Error(errorMsg);
                 }
                 currentUser = { logged_in: false }; // Update state
+                isInitialLoginCheckComplete = false; // Reset flag on logout
                 localStorage.removeItem('currentPage'); // Clear saved page state if used
                 disconnectSocket(); // Disconnect socket on logout
                 window.location.hash = '/#home'; // Redirect to home using updated format
@@ -1635,6 +1655,7 @@
                 showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
                 // Still attempt to reset state even on error
                 currentUser = { logged_in: false };
+                isInitialLoginCheckComplete = false;
                 localStorage.removeItem('currentPage');
                 disconnectSocket();
                 window.location.hash = '/#home';
@@ -1646,7 +1667,16 @@
         dashboardLogoutButton.addEventListener('click', handleLogout);
 
         // Hash Change Listener for Navigation
-        window.addEventListener('hashchange', runNavigation);
+        // ** MODIFIED **: Only run navigation if initial check is complete
+        window.addEventListener('hashchange', () => {
+            if (isInitialLoginCheckComplete) {
+                // Only run navigation on hash changes *after* the initial check is done
+                runNavigation();
+            } else {
+                console.log("[hashchange] Ignoring hash change until initial login check is complete.");
+            }
+        });
+
 
         // Create Ticket Form Submission
         if(createTicketForm) {
@@ -1773,10 +1803,11 @@
 
 
         // --- Initial Page Load Logic ---
+        // ** MODIFIED **: Only call checkLoginStatusAndNavigate
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
             createSnowflakes(); // Initialize background effect
-            // Check login status first, then run navigation based on the current hash
+            // Start the login check. It will call runNavigation when done.
             checkLoginStatusAndNavigate();
         });
 
