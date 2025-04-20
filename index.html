@@ -844,27 +844,25 @@
          */
         function runNavigation() {
             console.log(`[runNavigation] Processing raw hash: ${window.location.hash}`);
-            const rawHash = window.location.hash;
-            let cleanPart = '';
+            const rawHash = window.location.hash; // Could be #, #/, #/#, #/foo, #foo, #/#foo
+            let pathPart = '';
             // Find the first '#'
             const firstHashIndex = rawHash.indexOf('#');
 
             if (firstHashIndex !== -1) {
-                // Get everything after the first '#'
-                let potentialPath = rawHash.substring(firstHashIndex + 1);
-                // Remove leading '/' or '#' if present immediately after the first '#'
-                if (potentialPath.startsWith('/') || potentialPath.startsWith('#')) {
-                    cleanPart = potentialPath.substring(1);
-                } else {
-                    cleanPart = potentialPath;
+                // Get the part after the first hash
+                pathPart = rawHash.substring(firstHashIndex + 1);
+                // Remove any leading slashes or additional hashes from this part using a loop
+                while (pathPart.startsWith('/') || pathPart.startsWith('#')) {
+                    pathPart = pathPart.substring(1);
                 }
             }
 
-            // Ensure the final hash starts with exactly one '#'
-            // Default to #home if cleanPart is empty after processing
-            const hashToNavigate = cleanPart ? `#${cleanPart}` : '#home';
+            // Construct the final hash, ensuring it starts with exactly one '#'
+            // Default to #home if pathPart is empty after cleaning
+            const hashToNavigate = `#${pathPart || 'home'}`; // Prepend a single #
 
-            console.log(`[runNavigation] Cleaned hash to navigate: ${hashToNavigate}`);
+            console.log(`[runNavigation] Cleaned hash to navigate: ${hashToNavigate}`); // Should be #home, #tickets, #ticketDetail?id=...
 
             // Call navigateTo only if initial check is complete OR target is home
             // (Prevents premature navigation to protected routes on load)
