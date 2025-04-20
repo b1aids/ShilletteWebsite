@@ -64,8 +64,8 @@
         .product-card.custom-border:hover { box-shadow: var(--custom-hover-shadow, 0 0 8px 1px rgba(255, 255, 255, 0.6), 0 0 16px 4px rgba(255, 255, 255, 0.4), 0 0 32px 8px rgba(255, 255, 255, 0.2)); }
 
         /* Product Thumbnail */
-        .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg; } /* Removed mb-4, handled by inner div */
-        .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; } /* Removed mb-4 */
+        .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg; }
+        .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; }
 
         /* --- Page Section & General Content Styles --- */
         #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
@@ -119,6 +119,7 @@
         .modal { @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
         .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; }
+        #product-edit-modal .modal-content { @apply max-w-lg; } /* Wider modal for product edit */
         .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors; }
         #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; }
 
@@ -193,7 +194,7 @@
     </div>
 
     <div id="product-edit-modal" class="modal">
-        <div class="modal-content max-w-lg">
+        <div class="modal-content max-w-lg"> {/* Adjusted max-width */}
             <button id="product-modal-close-button" class="modal-close-button">
                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
             </button>
@@ -232,7 +233,7 @@
                             <option value="custom">Custom HEX</option>
                          </select>
                      </div>
-                     <div id="custom-hex-input-container" class="hidden">
+                     <div id="custom-hex-input-container" class="hidden"> {/* Container for conditional visibility */}
                          <label for="product-edit-customHex">Custom HEX Color</label>
                          <input type="text" id="product-edit-customHex" placeholder="#RRGGBB">
                      </div>
@@ -902,6 +903,7 @@
              } catch (error) {
                  console.error("Error fetching products:", error);
                  productLoadingStatus.textContent = 'Failed to load products.';
+                 // Display the specific error message from the catch block
                  showPopupMessage(errorMessagePopup, `Error loading products: ${error.message}`, true);
              }
         }
@@ -924,9 +926,8 @@
                  // Valid Custom HEX
                  borderClasses = 'custom-border';
                  inlineStyle = `border-color: ${customHex};`;
-                 // Generate hover shadow based on hex (adjust alpha as needed)
                  hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
-                 card.style.cssText = inlineStyle + hoverStyleVar; // Apply inline style
+                 card.style.cssText = inlineStyle + hoverStyleVar;
                  card.classList.add(borderClasses);
              } else if (tagColor !== 'custom') {
                  // Predefined Gradient Color
@@ -938,23 +939,37 @@
                   card.classList.add(...borderClasses.split(' '));
              }
 
-             // Determine tag text/bg color (use the original tagColor, not 'custom')
-             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor; // Fallback if custom invalid
+             // Determine tag text/bg color
+             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
              const tagBgClass = `bg-${displayTagColor}-500/20`;
              const tagTextClass = `text-${displayTagColor}-300`;
 
-             // Thumbnail part
-             let thumbnailHTML = '';
+             // --- Thumbnail Element Creation ---
+             let thumbnailElement = null;
+             const placeholderDiv = document.createElement('div');
+             placeholderDiv.className = 'product-thumbnail-placeholder';
+             placeholderDiv.style.display = 'none'; // Hide initially
+             placeholderDiv.innerHTML = '<span>Image not found</span>';
+
              if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
-                 thumbnailHTML = `<img src="${product.thumbnailUrl}" alt="${product.name || 'Product'} thumbnail" class="product-thumbnail" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                  <div class="product-thumbnail-placeholder" style="display: none;"><span>Image not found</span></div>`;
+                 thumbnailElement = document.createElement('img');
+                 thumbnailElement.src = product.thumbnailUrl;
+                 thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
+                 thumbnailElement.className = 'product-thumbnail';
+                 // Add onerror handler to show the placeholder
+                 thumbnailElement.onerror = () => {
+                     thumbnailElement.style.display = 'none'; // Hide broken image
+                     placeholderDiv.style.display = 'flex'; // Show placeholder
+                 };
              } else {
-                 thumbnailHTML = `<div class="product-thumbnail-placeholder"><span>No Image</span></div>`;
+                 // No URL provided, use placeholder directly
+                 placeholderDiv.style.display = 'flex'; // Show placeholder
+                 thumbnailElement = null; // No img element needed
              }
 
-             // Inner content div for padding
+             // --- Inner Content Div ---
              const innerDiv = document.createElement('div');
-             innerDiv.className = 'product-card-inner'; // Apply padding here
+             innerDiv.className = 'product-card-inner';
              innerDiv.innerHTML = `
                  <div class="flex justify-between items-center mb-4">
                      <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
@@ -970,17 +985,26 @@
                  </div>
              `;
 
-             // Assemble the card
-             card.appendChild(thumbnailHTML);
+             // --- Assemble the Card ---
+             // Append the actual image element if it exists
+             if (thumbnailElement) {
+                 card.appendChild(thumbnailElement);
+             }
+             // Always append the placeholder (it's hidden by default or if the image loads)
+             card.appendChild(placeholderDiv);
+             // Append the inner content
              card.appendChild(innerDiv);
 
+             // Add event listener to purchase button
              const purchaseBtn = card.querySelector('.purchase-button');
              if (purchaseBtn && !purchaseBtn.disabled) {
                  purchaseBtn.addEventListener('click', handlePurchaseClick);
              }
 
+             // Append the fully assembled card to the grid
              productGrid.appendChild(card);
         }
+
 
         /** Placeholder for handling purchase clicks */
         function handlePurchaseClick(event) {
