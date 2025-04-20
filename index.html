@@ -283,7 +283,8 @@
     <div id="snow-container"></div>
 
     <div id="payment-message">Placeholder</div>
-    <div id="ticket-message">Placeholder</div> <div id="error-message">Placeholder</div>
+    <div id="ticket-message">Placeholder</div>
+    <div id="error-message">Placeholder</div>
 
     <div id="loading-overlay">
         <div class="loader">
@@ -323,12 +324,13 @@
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                <span class="text-2xl font-bold text-white hidden">Shillette</span> <span class="text-2xl font-bold text-white">Shillette</span> </div>
+                <span class="text-2xl font-bold text-white hidden">Shillette</span> <span class="text-2xl font-bold text-white">Shillette</span>
+            </div>
             <div class="flex items-center space-x-6">
                 <nav class="hidden md:flex space-x-6">
-                    <a href="#home" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
-                    <a href="#products" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
-                    <a href="#tickets" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200">Tickets</a>
+                    <a href="/#home" id="home-link" class="text-gray-300 hover:text-white transition duration-200">Home</a>
+                    <a href="/#products" id="products-link" class="text-gray-300 hover:text-white transition duration-200">Products</a>
+                    <a href="/#tickets" id="tickets-link" class="text-gray-300 hover:text-white transition duration-200">Tickets</a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition duration-200">Discord</a>
                 </nav>
                 <div id="user-area" class="flex items-center">
@@ -336,7 +338,7 @@
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44-4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
                         <span>Login with Discord</span>
                     </a>
-                    <a href="#dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
+                    <a href="/#dashboard" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
                         <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600" onerror="this.src='https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'">
                         <span id="user-name" class="text-white text-sm font-medium">Username</span>
                         <button id="logout-button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
@@ -350,14 +352,15 @@
             </div>
         </div>
         <div id="mobile-menu" class="hidden">
-            <a href="#home" class="mobile-menu-link">Home</a>
-            <a href="#products" class="mobile-menu-link">Products</a>
-            <a href="#tickets" class="mobile-menu-link">Tickets</a>
-            <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="mobile-menu-link">Discord</a>
-            </div>
+             <a href="/#home" class="mobile-menu-link">Home</a>
+             <a href="/#products" class="mobile-menu-link">Products</a>
+             <a href="/#tickets" class="mobile-menu-link">Tickets</a>
+             <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="mobile-menu-link">Discord</a>
+             </div>
     </header>
 
-    <main id="main-content" class="flex-grow page-section"> <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
+    <main id="main-content" class="flex-grow page-section">
+        <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
             <div class="container mx-auto px-6 relative z-10">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4">Shillette</h1>
                 <p class="text-xl md:text-2xl text-orange-400 mb-6 font-medium">Advanced DMA Firmware</p>
@@ -365,7 +368,7 @@
                     Fully undetected DMA firmware, battle-tested for reliable performance. Join thousands of satisfied users.
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16">
-                    <a href="#products" id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
+                    <a href="/#products" id="purchase-button" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto">
                         Purchase Product
                     </a>
                     <a href="https://discord.gg/shillette" target="_blank" rel="noopener noreferrer" class="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2">
@@ -397,7 +400,7 @@
 
     <div id="products-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
         <div class="flex justify-start mb-8">
-             <a href="#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
              </a>
@@ -422,26 +425,26 @@
                 </ul>
                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
                      <button class="paypal-button" data-product-id="firmware-100">Pay with PayPal</button>
-                </div>
+                     </div>
             </div>
 
             <div class="product-card card-gradient-border gray-border">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
+                 <div class="flex justify-between items-center mb-4">
+                     <span class="bg-gray-500/20 text-gray-300 text-xs font-semibold px-2.5 py-0.5 rounded">SOFTWARE</span>
                      <div class="w-12 h-12 bg-gray-700 rounded flex items-center justify-center text-gray-400">
-                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                     </div>
-                </div>
-                <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3>
-                <p class="text-3xl font-bold text-white mb-4">From $3</p>
-                <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li>
-                    <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
-                </ul>
-                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button>
-                </div>
+                          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      </div>
+                 </div>
+                 <h3 class="text-xl font-semibold text-white mb-2">Shillette Software</h3>
+                 <p class="text-3xl font-bold text-white mb-4">From $3</p>
+                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Feature Rich</li>
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Highly Compatible</li>
+                     <li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Regular Updates</li>
+                 </ul>
+                  <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
+                      <button class="paypal-button" data-product-id="software-3">Pay with PayPal</button>
+                      </div>
             </div>
         </div>
     </div>
@@ -465,36 +468,37 @@
             <div class="dashboard-card md:col-span-2">
                 <h3 class="text-lg font-semibold text-white mb-4">My Products</h3>
                 <p class="text-gray-400">Product information will appear here...</p>
-            </div>
+                </div>
 
             <div class="dashboard-card md:col-span-1">
                 <h3 class="text-lg font-semibold text-white mb-4">My Roles</h3>
                 <div id="dashboard-user-roles" class="space-y-2 flex flex-wrap gap-1">
                     <p class="text-gray-400 text-sm w-full">Loading roles...</p>
-                </div>
+                    </div>
             </div>
 
-            <div class="dashboard-card md:col-span-2"> <h3 class="text-lg font-semibold text-white mb-4">Settings</h3>
+            <div class="dashboard-card md:col-span-2">
+                 <h3 class="text-lg font-semibold text-white mb-4">Settings</h3>
                  <p class="text-gray-400">User settings will appear here...</p>
-            </div>
+                 </div>
         </div>
     </div>
 
      <div id="tickets-page-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <a href="#home" id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/#home" id="back-to-home-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Home</span>
              </a>
-        </div>
-        <h2>Support Tickets</h2>
+         </div>
+         <h2>Support Tickets</h2>
 
-        <div id="moderator-management-view" class="hidden mb-8 ticket-card">
+         <div id="moderator-management-view" class="hidden mb-8 ticket-card">
              <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
              <details class="mb-6" open> <summary>Active Tickets</summary>
-                  <div id="moderator-active-ticket-list" class="ticket-list-container mt-3">
-                      </div>
-                  <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+                 <div id="moderator-active-ticket-list" class="ticket-list-container mt-3">
+                     </div>
+                 <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
              </details>
 
              <details> <summary>Archived Tickets</summary>
@@ -502,53 +506,57 @@
                      </div>
                  <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
              </details>
-        </div>
+         </div>
 
-        <div id="user-ticket-view" class="mb-8 ticket-card">
+         <div id="user-ticket-view" class="mb-8 ticket-card">
              <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
              <div id="ticket-list" class="ticket-list-container">
                  </div>
              <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
-        </div>
+         </div>
 
-        <div class="ticket-card">
+         <div class="ticket-card">
              <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
              <form id="create-ticket-form" novalidate>
                  <div class="mb-4">
                      <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
                      <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
                  </div>
-                 <div class="mb-4"> <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label> <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
+                 <div class="mb-4">
+                     <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+                     <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
                  </div>
                  <div id="create-ticket-status" class="h-6"></div> <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">
                      Submit Ticket
                  </button>
              </form>
-        </div>
+         </div>
      </div>
 
      <div id="ticket-detail-content" class="hidden flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
-             <a href="#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+             <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                  <span>Back to Tickets</span>
              </a>
-        </div>
-        <h2 id="ticket-detail-subject">Ticket Subject</h2>
-        <div class="ticket-card">
-            <div id="chat-messages">
-                <p class="text-gray-500 text-center py-4">Loading chat...</p>
-                </div>
-            <form id="chat-input-form" class="mt-4" novalidate>
-                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full"> <button type="submit" id="send-chat-button">Send</button>
-            </form>
-        </div>
+         </div>
+         <h2 id="ticket-detail-subject">Ticket Subject</h2>
+         <div class="ticket-card">
+             <div id="chat-messages">
+                 <p class="text-gray-500 text-center py-4">Loading chat...</p>
+                 </div>
+             <form id="chat-input-form" class="mt-4" novalidate>
+                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
+                 <button type="submit" id="send-chat-button">Send</button>
+             </form>
+         </div>
      </div>
 
 
     <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
-            <p>&copy; 2025 Shillette. All rights reserved.</p> </div>
+            <p>&copy; 2025 Shillette. All rights reserved.</p>
+            </div>
     </footer>
 
     <script>
@@ -593,6 +601,7 @@
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
         const dashboardUserRolesContainer = document.getElementById('dashboard-user-roles');
+        const backToTicketsButton = document.getElementById('back-to-tickets-button'); // Added reference
         // Modal & Context Menus
         const userInfoModal = document.getElementById('user-info-modal');
         const modalCloseButton = document.getElementById('modal-close-button');
@@ -625,6 +634,12 @@
 
         // --- Utility Functions ---
 
+        /**
+         * Shows a temporary pop-up message at the bottom of the screen.
+         * @param {HTMLElement} element - The pop-up element (e.g., paymentMessage, errorMessagePopup).
+         * @param {string} message - The message to display.
+         * @param {boolean} [isError=false] - If true, styles the pop-up as an error.
+         */
         function showPopupMessage(element, message, isError = false) {
              if (!element) return;
              element.textContent = message;
@@ -638,20 +653,27 @@
              element.classList.add('show');
              setTimeout(() => {
                  element.classList.remove('show');
-             }, 3500);
-         }
+             }, 3500); // Hide after 3.5 seconds
+        }
 
+        /**
+         * Updates the header UI based on the user's login status.
+         * Shows/hides login button vs user info/logout button.
+         * Updates username and avatar.
+         * @param {object|null} user - The current user object or null if logged out.
+         */
         function updateHeaderUI(user) {
              if (user && user.logged_in) {
                  loginButton.classList.add('hidden');
                  userInfo.classList.remove('hidden');
-                 userInfo.classList.add('flex');
+                 userInfo.classList.add('flex'); // Ensure flex display
                  userNameDisplay.textContent = user.username || 'User';
                  if (user.user_id && user.avatar) {
                      userAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`;
                  } else {
-                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
+                     userAvatarDisplay.src = 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Placeholder
                  }
+                 // Update dashboard elements as well
                  dashboardUserNameDisplay.textContent = user.username || 'User';
                  if (user.user_id && user.avatar) {
                     dashboardUserAvatarDisplay.src = `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64`;
@@ -662,23 +684,29 @@
                  loginButton.classList.remove('hidden');
                  userInfo.classList.add('hidden');
                  userInfo.classList.remove('flex');
+                 // Clear dashboard user info if logged out
+                 dashboardUserNameDisplay.textContent = 'User';
+                 dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
              }
         }
 
-        // Updated showSection to hide all others first
+        /**
+         * Hides all page sections and shows the specified one.
+         * Handles socket disconnection/connection based on the target section.
+         * @param {string} sectionId - The ID of the section to show (e.g., '#home', '#tickets').
+         */
         function showSection(sectionId) {
-            console.log(`[showSection] Attempting to show: ${sectionId}`); // DEBUG
+            console.log(`[showSection] Attempting to show: ${sectionId}`);
             hideContextMenu(); // Hide context menu when changing sections
 
             // Hide all sections first
             Object.keys(pageSections).forEach(key => {
-                 const sectionElement = pageSections[key];
-                 if (sectionElement) {
-                     // console.log(`[showSection] Hiding: ${key}`); // DEBUG - Reduce noise
-                     sectionElement.classList.add('hidden');
-                 } else {
-                     console.warn(`[showSection] Element not found for key: ${key}`); // DEBUG
-                 }
+                const sectionElement = pageSections[key];
+                if (sectionElement) {
+                    sectionElement.classList.add('hidden');
+                } else {
+                    console.warn(`[showSection] Element not found for key: ${key}`);
+                }
             });
 
 
@@ -687,23 +715,23 @@
             if (sectionElement) {
                 sectionElement.classList.remove('hidden');
                 activeSectionId = sectionId; // Update the active section ID
-                console.log(`[showSection] Successfully shown: ${sectionId}`); // DEBUG
+                console.log(`[showSection] Successfully shown: ${sectionId}`);
             } else {
-                console.warn(`[showSection] Target element not found for ID: ${sectionId}. Defaulting to #home.`); // DEBUG
+                console.warn(`[showSection] Target element not found for ID: ${sectionId}. Defaulting to #home.`);
                 // Default to home if target not found
                 if (pageSections['#home']) {
                     pageSections['#home'].classList.remove('hidden');
                     activeSectionId = '#home';
-                    console.log(`[showSection] Defaulted to #home.`); // DEBUG
+                    console.log(`[showSection] Defaulted to #home.`);
                 } else {
                      activeSectionId = null; // Or handle error appropriately
-                     console.error("[showSection] Could not find #home element either!"); // DEBUG
+                     console.error("[showSection] Could not find #home element either!");
                 }
             }
 
              // Disconnect socket ONLY if navigating away from ticket detail AND tickets list
              if (sectionId !== '#ticketDetail' && sectionId !== '#tickets') {
-                 console.log(`[showSection] Navigating away from tickets/detail, disconnecting socket.`); // DEBUG
+                 console.log(`[showSection] Navigating away from tickets/detail, disconnecting socket.`);
                  disconnectSocket(); // Disconnect if not on tickets or detail page
              }
              // Clear currentTicketId if not on detail page
@@ -712,157 +740,188 @@
              }
         }
 
-
+        /**
+         * Handles navigation based on URL hash changes.
+         * Checks for protected routes and user login status.
+         * Fetches necessary data for the target section (tickets, ticket details).
+         * @param {string} hash - The URL hash (e.g., '#home', '/#tickets', '/#ticketDetail?id=123').
+         * @param {object|null} [ticketData=null] - Optional pre-fetched ticket data (id, subject) for direct navigation.
+         */
         function navigateTo(hash, ticketData = null) {
-            console.log(`[navigateTo] Received hash: ${hash}`); // DEBUG
-            // Handle hashes starting with /#
-            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : hash;
+            console.log(`[navigateTo] Received hash: ${hash}`);
+            // Handle hashes starting with /# or just #
+            const cleanHash = hash.startsWith('/#') ? hash.substring(1) : (hash.startsWith('#') ? hash : '#home');
             const baseHash = cleanHash.split('?')[0] || '#home';
-            const targetSectionId = pageSections[baseHash] ? baseHash : '#home';
+            const targetSectionId = pageSections[baseHash] ? baseHash : '#home'; // Default to #home if baseHash is invalid
 
-            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Target section: ${targetSectionId}`); // DEBUG
+            console.log(`[navigateTo] Cleaned hash: ${cleanHash}, Base hash: ${baseHash}, Target section: ${targetSectionId}`);
 
             const isProtected = ['#dashboard', '#tickets', '#ticketDetail'].includes(targetSectionId);
-            console.log(`[navigateTo] Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`); // DEBUG
+            console.log(`[navigateTo] Is protected: ${isProtected}, User logged in: ${currentUser?.logged_in}`);
             if (isProtected && (!currentUser || !currentUser.logged_in)) {
-                 console.log(`[navigateTo] Access denied to protected route: ${targetSectionId}`); // DEBUG
-                 showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-                 if (window.location.hash !== '#home' && window.location.hash !== '/#home') { // Check both formats
-                     console.log(`[navigateTo] Redirecting to /#home`); // DEBUG
-                     window.location.hash = '/#home'; // Navigate to /#home
-                 } else {
-                     console.log(`[navigateTo] Already on home, showing #home section.`); // DEBUG
-                     showSection('#home'); // Explicitly show home if already on #home but logged out
-                 }
-                 return;
+                console.log(`[navigateTo] Access denied to protected route: ${targetSectionId}`);
+                showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
+                // Redirect to home only if not already there
+                if (window.location.hash !== '#home' && window.location.hash !== '/#home') {
+                    console.log(`[navigateTo] Redirecting to /#home`);
+                    window.location.hash = '/#home'; // Navigate to /#home
+                } else {
+                    console.log(`[navigateTo] Already on home, showing #home section.`);
+                    showSection('#home'); // Explicitly show home if already on #home but logged out
+                }
+                return;
             }
 
             // Ensure socket is connected if navigating to a protected/socket-requiring page
             if (isProtected && currentUser && currentUser.logged_in) {
-                 console.log(`[navigateTo] Ensuring socket is connected for route: ${targetSectionId}`); // DEBUG
-                 ensureSocketConnected();
+                console.log(`[navigateTo] Ensuring socket is connected for route: ${targetSectionId}`);
+                ensureSocketConnected();
             }
 
+            // Handle Ticket Detail specific logic
             if (targetSectionId === '#ticketDetail') {
                 let id = null;
                 let subject = null;
-                if (ticketData) {
+                if (ticketData) { // Prioritize passed data
                     id = ticketData.id;
                     subject = ticketData.subject;
-                } else {
+                } else { // Fallback to URL params
                     const params = new URLSearchParams(cleanHash.split('?')[1] || '');
                     id = params.get('id');
+                    // Subject might not be in URL, fetchTicketDetails will get it
                 }
-                console.log(`[navigateTo] Ticket Detail - ID: ${id}, Subject: ${subject}`); // DEBUG
+                console.log(`[navigateTo] Ticket Detail - ID: ${id}, Subject (initial): ${subject}`);
 
                 if (id) {
-                    currentTicketId = id; // Set currentTicketId here
-                    ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`;
-                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                    // Fetch full ticket details including messages
-                    fetchTicketDetails(id); // Fetch details AND connect socket + join room
+                    currentTicketId = id; // Set currentTicketId *before* fetching
+                    ticketDetailSubject.textContent = subject || `Ticket #${id.slice(-6)}`; // Set initial subject
+                    chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>'; // Loading state
+                    // Fetch full ticket details including messages and update subject if needed
+                    fetchTicketDetails(id); // This fetches details AND connects socket + joins room
                 } else {
                     console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
                     showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
                     window.location.hash = '/#tickets'; // Navigate to /#tickets
-                    return;
+                    return; // Stop further execution for this invalid navigation
                 }
             }
-            // No 'else' needed here for disconnect, handled by showSection
 
-            showSection(targetSectionId); // Call the updated showSection
+            // Show the correct section *after* handling potential redirects or data loading setup
+            showSection(targetSectionId);
             localStorage.setItem('currentPage', targetSectionId); // Store the base hash
 
+            // Fetch data if needed for the newly shown section
             if (targetSectionId === '#tickets') {
-                console.log(`[navigateTo] Fetching tickets for #tickets view.`); // DEBUG
-                fetchTickets(); // This will now handle mod/user view logic
+                console.log(`[navigateTo] Fetching tickets for #tickets view.`);
+                fetchTickets(); // Handles mod/user view logic
             }
             if (targetSectionId === '#dashboard' && currentUser && currentUser.logged_in) {
-                displayUserRoles(currentUser.roles);
+                displayUserRoles(currentUser.roles); // Display roles on dashboard
             }
 
-            updateHeaderUI(currentUser);
+            updateHeaderUI(currentUser); // Update header based on login status
         }
 
+        /**
+         * Runs the navigation logic based on the current URL hash.
+         * Called on initial load and hash changes.
+         */
         function runNavigation() {
-            console.log(`[runNavigation] Hash changed to: ${window.location.hash}`); // DEBUG
+            console.log(`[runNavigation] Hash changed to: ${window.location.hash}`);
             // Use cleanHash logic here too for initial load / direct navigation
             const cleanHash = window.location.hash.startsWith('/#') ? window.location.hash.substring(1) : window.location.hash;
-            const hashToNavigate = cleanHash || '#home';
-            console.log(`[runNavigation] Navigating to: ${hashToNavigate}`); // DEBUG
+            const hashToNavigate = cleanHash || '#home'; // Default to #home if hash is empty
+            console.log(`[runNavigation] Navigating to: ${hashToNavigate}`);
             navigateTo(hashToNavigate); // Use the cleaned hash or default
         }
 
-
+        /**
+         * Creates and appends snowflake elements for the background effect.
+         */
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
             if (!snowContainer) return;
-            snowContainer.innerHTML = '';
+            snowContainer.innerHTML = ''; // Clear existing snowflakes
             for (let i = 0; i < numberOfSnowflakes; i++) {
                 const snowflake = document.createElement('div');
                 snowflake.classList.add('snowflake');
-                const size = Math.random() * 3 + 2;
-                const duration = Math.random() * 10 + 5;
-                const delay = Math.random() * 10;
-                const startLeft = Math.random() * 100;
-                const opacity = Math.random() * 0.5 + 0.5;
+                const size = Math.random() * 3 + 2; // Size between 2px and 5px
+                const duration = Math.random() * 10 + 5; // Duration between 5s and 15s
+                const delay = Math.random() * 10; // Delay up to 10s
+                const startLeft = Math.random() * 100; // Start anywhere horizontally
+                const opacity = Math.random() * 0.5 + 0.5; // Opacity between 0.5 and 1.0
+
                 snowflake.style.width = `${size}px`;
                 snowflake.style.height = `${size}px`;
                 snowflake.style.left = `${startLeft}vw`;
                 snowflake.style.opacity = opacity;
                 snowflake.style.animationDuration = `${duration}s`;
-                snowflake.style.animationDelay = `-${delay}s`;
+                snowflake.style.animationDelay = `-${delay}s`; // Negative delay starts animation partway through
+
                 snowContainer.appendChild(snowflake);
             }
         }
 
+        /**
+         * Checks the user's login status via the API and then triggers navigation.
+         * Connects the socket if the user is logged in.
+         */
         async function checkLoginStatusAndNavigate() {
              try {
+                 // Use credentials: 'include' to send cookies
                  const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
                  if (!response.ok) {
                      if (response.status === 401 || response.status === 403) {
+                         // Not logged in or unauthorized
                          currentUser = { logged_in: false };
                      } else {
+                         // Other server error
                          throw new Error(`HTTP error! status: ${response.status}`);
                      }
                  } else {
+                     // Logged in, store user data
                      currentUser = await response.json();
                  }
                  console.log("[checkLoginStatusAndNavigate] User status checked:", currentUser);
 
-                 // Connect socket if user is logged in (needed for ticket list actions)
+                 // Connect socket if user is logged in (needed for ticket list actions, etc.)
                  if (currentUser && currentUser.logged_in) {
-                    console.log("[checkLoginStatusAndNavigate] User logged in, ensuring socket connection."); // DEBUG
-                    ensureSocketConnected();
+                     console.log("[checkLoginStatusAndNavigate] User logged in, ensuring socket connection.");
+                     ensureSocketConnected();
                  }
 
              } catch (error) {
                  console.error("[checkLoginStatusAndNavigate] Error checking login status:", error);
-                 currentUser = { logged_in: false };
+                 currentUser = { logged_in: false }; // Assume logged out on error
                  showPopupMessage(errorMessagePopup, "Could not verify login status.", true);
              } finally {
-                 runNavigation(); // Run navigation regardless of login status
+                 // Run navigation AFTER checking login status
+                 runNavigation();
              }
         }
 
-        // Modified fetchTickets to handle moderator view and add context menus
+        /**
+         * Fetches the list of tickets (either user's or all, based on role)
+         * and populates the appropriate list(s) in the UI.
+         * Adds event listeners for clicking and right-clicking ticket items.
+         */
         async function fetchTickets() {
-            console.log("[fetchTickets] Starting to fetch tickets..."); // DEBUG
-            // Ensure elements exist
+            console.log("[fetchTickets] Starting to fetch tickets...");
+            // Ensure elements exist before proceeding
             if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
-                console.error("[fetchTickets] One or more ticket list elements not found."); // DEBUG
+                console.error("[fetchTickets] One or more ticket list elements not found.");
                 return;
             }
 
             if (!currentUser || !currentUser.logged_in) {
-                console.log("[fetchTickets] User not logged in."); // DEBUG
+                console.log("[fetchTickets] User not logged in.");
                 ticketListStatus.textContent = "Please log in to view tickets.";
                 moderatorActiveListStatus.textContent = "Please log in to view tickets.";
                 moderatorArchivedListStatus.textContent = "Please log in to view tickets.";
                 ticketListDiv.innerHTML = '';
                 moderatorActiveTicketListDiv.innerHTML = '';
                 moderatorArchivedTicketListDiv.innerHTML = '';
-                userTicketView.classList.remove('hidden'); // Show user view if logged out
+                userTicketView.classList.remove('hidden'); // Show user view placeholder if logged out
                 moderatorManagementView.classList.add('hidden'); // Hide mod view
                 return;
             }
@@ -877,13 +936,13 @@
 
             // Determine view based on moderator status
             const isModerator = currentUser.is_moderator;
-            console.log(`[fetchTickets] Is moderator: ${isModerator}`); // DEBUG
+            console.log(`[fetchTickets] Is moderator: ${isModerator}`);
             if (isModerator) {
                 userTicketView.classList.add('hidden'); // Hide user list container
                 moderatorManagementView.classList.remove('hidden'); // Show the dedicated mod management view
             } else {
                 userTicketView.classList.remove('hidden'); // Show user list container
-                moderatorManagementView.classList.add('hidden');
+                moderatorManagementView.classList.add('hidden'); // Hide mod view
             }
 
             try {
@@ -893,7 +952,7 @@
                      else throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const tickets = await response.json();
-                console.log(`[fetchTickets] Received ${tickets.length} tickets.`); // DEBUG
+                console.log(`[fetchTickets] Received ${tickets.length} tickets.`);
 
                 // Clear loading messages
                 ticketListStatus.textContent = "";
@@ -911,12 +970,16 @@
                         ticketListStatus.textContent = "You have no support tickets.";
                     }
                 } else {
+                    // Sort tickets by creation date, newest first
+                    tickets.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
                     tickets.forEach(ticket => {
                         const item = document.createElement('div');
                         item.classList.add('ticket-list-item');
-                        // Add data attributes for context menu
+                        // Add data attributes for context menu and navigation
                         item.dataset.ticketId = ticket._id;
                         item.dataset.ticketStatus = ticket.status;
+                        item.dataset.ticketSubject = ticket.subject || 'No Subject'; // Store subject
 
                         const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
                         const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
@@ -924,7 +987,7 @@
                         const ticketId = ticket._id || 'N/A';
                         const subject = ticket.subject || 'No Subject';
                         const shortId = ticketId !== 'N/A' ? ticketId.slice(-6) : 'N/A';
-                        const username = ticket.username || 'Unknown User'; // Added username display for mods
+                        const username = ticket.username || 'Unknown User'; // Display username for mods
 
                         item.innerHTML = `
                             <div>
@@ -933,10 +996,10 @@
                             </div>
                             <span class="${statusClass}">${statusText}</span>`;
 
-                        // Click to navigate (using updated format)
+                        // Click to navigate (using updated format and passing data)
                         item.addEventListener('click', () => {
-                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}`); // DEBUG
-                             // Use navigateTo to handle logic centrally
+                             console.log(`[fetchTickets] Ticket item clicked: ID=${ticketId}`);
+                             // Use navigateTo, passing ticket data for faster initial display
                              navigateTo(`/#ticketDetail?id=${ticketId}`, { id: ticketId, subject: subject });
                         });
 
@@ -944,7 +1007,7 @@
                         item.addEventListener('contextmenu', showTicketContextMenu);
 
 
-                        // Append to the correct list
+                        // Append to the correct list (user or moderator active/archived)
                         if (isModerator) {
                             if (ticket.status === 'open') {
                                 moderatorActiveTicketListDiv.appendChild(item);
@@ -958,7 +1021,7 @@
                         }
                     });
 
-                    // Update status messages if lists ended up empty
+                    // Update status messages if lists ended up empty after filtering
                     if (isModerator) {
                         if (!hasActive) moderatorActiveListStatus.textContent = "No active tickets found.";
                         if (!hasArchived) moderatorArchivedListStatus.textContent = "No archived tickets found.";
@@ -974,13 +1037,27 @@
             }
         }
 
-        // Fetch full ticket details including messages
+        /**
+         * Fetches the full details for a specific ticket, including its messages.
+         * Populates the chat area and joins the corresponding socket room.
+         * **Updates the "Back to Tickets" button href.**
+         * @param {string} ticketId - The ID of the ticket to fetch.
+         */
         async function fetchTicketDetails(ticketId) {
-             console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`); // DEBUG
-             if (!currentUser || !currentUser.logged_in) return;
+             console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`);
+             if (!currentUser || !currentUser.logged_in) return; // Should be caught by navigateTo, but double-check
              // Ensure socket is connected before fetching details that might need it soon
              ensureSocketConnected();
-             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
+             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>'; // Loading state
+
+             // **MODIFICATION**: Ensure the back button points to the ticket list
+             if (backToTicketsButton) {
+                backToTicketsButton.href = '/#tickets'; // Set href correctly
+             } else {
+                console.warn("[fetchTicketDetails] Back to Tickets button not found.");
+             }
+
+
              try {
                  const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
                  if (!response.ok) {
@@ -989,13 +1066,18 @@
                      throw new Error(`HTTP error! status: ${response.status}`);
                  }
                  const ticket = await response.json();
-                 console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`); // DEBUG
+                 console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`);
+
+                 // Update the page title with the fetched subject
+                 ticketDetailSubject.textContent = ticket.subject || `Ticket #${ticketId.slice(-6)}`;
 
                  // Clear loading message
                  chatMessagesDiv.innerHTML = '';
 
                  // Populate chat messages
                  if (ticket.messages && ticket.messages.length > 0) {
+                     // Sort messages by timestamp, oldest first
+                     ticket.messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
                      ticket.messages.forEach(appendChatMessage);
                  } else {
                      chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet.</p>';
@@ -1003,7 +1085,7 @@
 
                  // Join the specific ticket room now that we're viewing details
                  if (socket && socket.connected) {
-                     console.log(`[fetchTicketDetails] Emitting join_ticket_room for: ${ticketId}`); // DEBUG
+                     console.log(`[fetchTicketDetails] Emitting join_ticket_room for: ${ticketId}`);
                      socket.emit('join_ticket_room', { ticket_id: ticketId });
                  } else {
                      console.warn("[fetchTicketDetails] Socket not connected when trying to join room.");
@@ -1014,26 +1096,35 @@
                  console.error("[fetchTicketDetails] Error fetching ticket details:", error);
                  chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
                  showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
+                 // Optionally redirect back to tickets list on error
+                 // window.location.hash = '/#tickets';
              }
-         }
+        }
 
-        // Updated appendChatMessage to handle both data structures
+        /**
+         * Appends a chat message to the chat display area.
+         * Handles potential differences in data structure (DB vs. socket).
+         * Makes usernames clickable to show user info modal.
+         * @param {object} data - The message data object.
+         */
         function appendChatMessage(data) {
              if (!chatMessagesDiv) return;
-             const loadingMsg = chatMessagesDiv.querySelector('p.text-gray-500');
-             if (loadingMsg) loadingMsg.remove();
+             // Remove initial "Loading..." or "No messages..." paragraphs if present
+             const placeholderMsg = chatMessagesDiv.querySelector('p.text-gray-500, p.text-red-400');
+             if (placeholderMsg) placeholderMsg.remove();
 
              const messageElement = document.createElement('div');
              messageElement.classList.add('chat-message');
-             messageElement.dataset.timestamp = data.timestamp; // Store ISO timestamp
-             messageElement.dataset.senderId = data.sender_id;
+             messageElement.dataset.timestamp = data.timestamp; // Store ISO timestamp for deletion reference
+             messageElement.dataset.senderId = data.sender_id; // Store sender ID for user info modal
 
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-             // **FIX:** Use sender_username (from DB/HTTP) or username (from socket)
+             // Use sender_username (from DB/HTTP fetch) or username (from socket event)
              const username = data.sender_username || data.username || 'System';
-             const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-             const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Basic sanitization
+             const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Basic sanitization
 
+             // Create clickable username span
              const usernameSpan = document.createElement('span');
              usernameSpan.classList.add('username');
              usernameSpan.textContent = `${safeUsername}:`;
@@ -1041,42 +1132,54 @@
              usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
 
              messageElement.appendChild(usernameSpan);
-             messageElement.append(` ${safeText} `);
+             messageElement.append(` ${safeText} `); // Append text content after username
 
+             // Create timestamp span
              const timestampSpan = document.createElement('span');
              timestampSpan.classList.add('timestamp');
              timestampSpan.textContent = timestamp;
              messageElement.appendChild(timestampSpan);
 
+             // Add context menu listener for moderators
+             if (currentUser && currentUser.is_moderator) {
+                messageElement.addEventListener('contextmenu', showChatContextMenu);
+             }
+
+
              chatMessagesDiv.appendChild(messageElement);
+             // Scroll to the bottom to show the new message
              chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
-        // Connects socket if not already connected, optionally joins room
+        /**
+         * Establishes a WebSocket connection if not already connected.
+         * Sets up basic event listeners (connect, disconnect, error).
+         * @param {string|null} [ticketIdToJoin=null] - Optional ticket ID to join immediately upon connection.
+         */
         function connectSocket(ticketIdToJoin = null) {
             if (socket && socket.connected) {
-                // If already connected and a ticketId is provided, join that room
-                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) { // Only join if it's the current ticket view
+                // If already connected and a ticketId is provided for the *current* view, join that room
+                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) {
                     console.log(`[connectSocket] Socket already connected, joining room: ${ticketIdToJoin}`);
                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
                 } else {
-                    console.log(`[connectSocket] Socket already connected, not joining room ${ticketIdToJoin}.`);
+                    console.log(`[connectSocket] Socket already connected, not joining room ${ticketIdToJoin || 'N/A'}.`);
                 }
                 return; // Already connected
             }
 
             console.log(`[connectSocket] Attempting to connect WebSocket... (Potential room join: ${ticketIdToJoin || 'none'})`);
             socket = io(SOCKET_URL, {
-                reconnectionAttempts: 3,
-                withCredentials: true
+                reconnectionAttempts: 3, // Limit reconnection attempts
+                withCredentials: true // Send cookies with the connection request
             });
 
             socket.on('connect', () => {
                 console.log('[connectSocket] WebSocket connected:', socket.id);
-                // If a ticketId was specified during connection attempt, join its room now
-                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) { // Check again if it's still the current view
-                     console.log(`[connectSocket] Joining room post-connect: ${ticketIdToJoin}`);
-                     socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
+                // If a ticketId was specified during connection attempt and it's still the current view, join its room now
+                if (ticketIdToJoin && currentTicketId === ticketIdToJoin) {
+                    console.log(`[connectSocket] Joining room post-connect: ${ticketIdToJoin}`);
+                    socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
                 }
                 // Add other event listeners only once after connection
                 setupSocketListeners();
@@ -1085,6 +1188,8 @@
             socket.on('disconnect', (reason) => {
                 console.log('[connectSocket] WebSocket disconnected:', reason);
                 socket = null; // Clear socket object on disconnect
+                // Optionally show a message to the user
+                // showPopupMessage(errorMessagePopup, "Chat disconnected.", true);
             });
 
             socket.on('connect_error', (error) => {
@@ -1094,7 +1199,10 @@
             });
         }
 
-        // Helper to ensure socket is connected (call when needed)
+        /**
+         * Helper function to ensure the WebSocket is connected.
+         * Calls connectSocket() if needed.
+         */
         function ensureSocketConnected() {
              if (!socket || !socket.connected) {
                  console.log("[ensureSocketConnected] Socket not connected, attempting connection...");
@@ -1105,11 +1213,14 @@
         }
 
 
-        // Centralized place to set up listeners to avoid duplicates
+        /**
+         * Sets up all necessary WebSocket event listeners.
+         * Removes old listeners first to prevent duplicates if called multiple times.
+         */
         function setupSocketListeners() {
              if (!socket) return;
-             console.log("[setupSocketListeners] Setting up listeners."); // DEBUG
-             // Remove potential old listeners before adding new ones
+             console.log("[setupSocketListeners] Setting up listeners.");
+             // Remove potential old listeners before adding new ones to prevent duplicates
              socket.off('new_message');
              socket.off('room_joined');
              socket.off('error_message');
@@ -1120,77 +1231,115 @@
 
              // Add listeners
              socket.on('new_message', (data) => {
-                 console.log("[Socket Listener] Received new_message:", data); // DEBUG
+                 console.log("[Socket Listener] Received new_message:", data);
+                 // **FIX**: Ensure sender_id is populated for messages sent by the current user
+                 // Backend should ideally send sender_id, but this is a fallback
                  if (!data.sender_id && data.username === currentUser?.username) {
                      data.sender_id = currentUser.user_id;
                  }
+                 // Only append if the message belongs to the currently viewed ticket
                  if (data.ticket_id === currentTicketId) {
                      appendChatMessage(data);
                  }
              });
              socket.on('room_joined', (data) => {
                  console.log('[Socket Listener] Joined room:', data.room);
+                 // Can update UI to confirm connection if needed
              });
              socket.on('error_message', (data) => {
                  console.error('[Socket Listener] WebSocket server error:', data.message);
                  showPopupMessage(errorMessagePopup, data.message || 'Chat error.', true);
              });
              socket.on('message_deleted', (data) => {
-                 console.log("[Socket Listener] Received message_deleted:", data); // DEBUG
+                 console.log("[Socket Listener] Received message_deleted:", data);
                  if (data.ticket_id === currentTicketId) {
+                     // Find the message element using the timestamp data attribute
                      const messageToRemove = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
                      if (messageToRemove) {
                          messageToRemove.remove();
                          console.log(`[Socket Listener] Removed message with timestamp: ${data.timestamp}`);
+                         // Optionally add a placeholder like "[Message Deleted]"
                      }
                  }
              });
              socket.on('ticket_status_updated', (data) => {
-                  console.log("[Socket Listener] Received ticket_status_updated:", data); // DEBUG
+                  console.log("[Socket Listener] Received ticket_status_updated:", data);
+                  // If the user is currently viewing the tickets list, refresh it
                   if (activeSectionId === '#tickets') {
                       console.log(`[Socket Listener] Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`);
-                      fetchTickets();
+                      fetchTickets(); // Refresh the list to show the change
+                  }
+                  // If the user is viewing the specific ticket that was updated, maybe show a notification?
+                  if (data.ticket_id === currentTicketId) {
+                      showPopupMessage(ticketMessagePopup, `Ticket status updated to ${data.status}.`);
+                      // Update context menu data if the ticket item is visible (though unlikely here)
+                      const ticketItem = document.querySelector(`.ticket-list-item[data-ticket-id="${data.ticket_id}"]`);
+                      if(ticketItem) ticketItem.dataset.ticketStatus = data.status;
                   }
              });
+             // Listener for when a ticket is deleted entirely
               socket.on('ticket_list_updated', () => {
-                  console.log("[Socket Listener] Received ticket_list_updated."); // DEBUG
+                  console.log("[Socket Listener] Received ticket_list_updated (likely due to deletion).");
+                  // If the user is currently viewing the tickets list, refresh it
                   if (activeSectionId === '#tickets') {
                       console.log("[Socket Listener] Refreshing ticket list.");
                       fetchTickets();
                   }
+                  // If the user was viewing the ticket that got deleted, redirect them
+                  if (currentTicketId && !document.querySelector(`.ticket-list-item[data-ticket-id="${currentTicketId}"]`)) {
+                      // Check if the currentTicketId still exists in the DOM after refresh might be complex.
+                      // A simpler approach might be needed if the backend confirms deletion differently.
+                      // For now, we rely on the list refresh. If viewing the deleted ticket, maybe redirect?
+                      // This part needs careful handling based on backend signals.
+                  }
               });
              socket.on('action_success', (data) => {
-                  console.log("[Socket Listener] Received action_success:", data); // DEBUG
-                  showPopupMessage(paymentMessage, data.message || 'Action successful.');
-              });
+                  console.log("[Socket Listener] Received action_success:", data);
+                  showPopupMessage(paymentMessage, data.message || 'Action successful.'); // Use success popup
+             });
         }
 
 
+        /**
+         * Disconnects the WebSocket connection if it exists.
+         */
         function disconnectSocket() {
             if (socket) {
                 console.log('[disconnectSocket] Disconnecting WebSocket...');
                 socket.disconnect();
-                socket = null;
+                socket = null; // Clear the socket variable
             }
         }
 
+        /**
+         * Displays the user's Discord roles in the specified container.
+         * Styles roles based on their color.
+         * @param {Array} roles - An array of role objects (from Discord API).
+         */
         function displayUserRoles(roles) {
-            const rolesContainer = document.getElementById('dashboard-user-roles');
+            const rolesContainer = document.getElementById('dashboard-user-roles'); // Target dashboard container
             if (!rolesContainer) return;
-            rolesContainer.innerHTML = '';
+            rolesContainer.innerHTML = ''; // Clear previous roles
             if (roles && roles.length > 0) {
+                // Sort roles by position (descending, highest role first)
+                roles.sort((a, b) => b.position - a.position);
+
                 roles.forEach(role => {
                     const roleElement = document.createElement('span');
                     roleElement.classList.add('px-2', 'py-0.5', 'rounded-md', 'text-xs', 'font-medium', 'mr-1', 'mb-1', 'inline-block');
-                    let hexColor = '#9CA3AF';
+
+                    // Determine color and text contrast
+                    let hexColor = '#9CA3AF'; // Default gray
                     if (role.color && role.color !== 0) {
                         hexColor = '#' + role.color.toString(16).padStart(6, '0');
                     }
+                    // Simple luminance check for text color
                     const r = parseInt(hexColor.slice(1, 3), 16);
                     const g = parseInt(hexColor.slice(3, 5), 16);
                     const b = parseInt(hexColor.slice(5, 7), 16);
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white'; // Black text on light colors, white on dark
+
                     roleElement.textContent = role.name || `Role ${role.id}`;
                     roleElement.style.backgroundColor = hexColor;
                     roleElement.classList.add(textColorClass);
@@ -1202,6 +1351,13 @@
         }
 
         // --- Modal Functions ---
+
+        /**
+         * Shows the user info modal with details for the given sender ID.
+         * Fetches role info if available (currently only for the logged-in user).
+         * @param {string} senderId - The Discord user ID.
+         * @param {string} username - The user's username.
+         */
         function showUserInfoModal(senderId, username) {
              if (!userInfoModal || !senderId) return;
 
@@ -1209,11 +1365,12 @@
              modalUserId.textContent = senderId;
              modalUserRoles.innerHTML = ''; // Clear previous roles
 
-             // Check if the clicked user is the currently logged-in user
+             // Check if the clicked user is the currently logged-in user to display roles
              if (currentUser && currentUser.user_id === senderId && currentUser.roles) {
                  if (currentUser.roles.length > 0) {
                      // Use displayUserRoles logic but target the modal container
-                     currentUser.roles.forEach(role => {
+                     const sortedRoles = [...currentUser.roles].sort((a, b) => b.position - a.position);
+                     sortedRoles.forEach(role => {
                          const roleElement = document.createElement('span');
                          roleElement.classList.add('px-2', 'py-0.5', 'rounded-md', 'text-xs', 'font-medium', 'mr-1', 'mb-1', 'inline-block');
                          let hexColor = '#9CA3AF';
@@ -1230,101 +1387,151 @@
                       modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
                  }
              } else {
-                 // Placeholder for fetching other users' info if backend endpoint existed
+                 // Placeholder for fetching other users' info if a backend endpoint existed
                  modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information only available for yourself currently.</p>';
+                 // TODO: If an endpoint `/api/user/{user_id}/roles` existed, fetch it here.
              }
 
-             userInfoModal.classList.add('active');
-         }
+             userInfoModal.classList.add('active'); // Show the modal
+        }
 
+        /**
+         * Hides the user info modal.
+         */
         function hideUserInfoModal() {
              if (userInfoModal) userInfoModal.classList.remove('active');
         }
 
         // --- Context Menu Functions ---
+
+        /**
+         * Positions a context menu element near the mouse event coordinates.
+         * Adjusts position to stay within viewport boundaries.
+         * @param {HTMLElement} menuElement - The context menu element.
+         * @param {MouseEvent} event - The triggering mouse event (e.g., contextmenu).
+         */
         function positionContextMenu(menuElement, event) {
-             const rect = event.target.getBoundingClientRect();
+             const rect = event.target.getBoundingClientRect(); // Get target element bounds
+             // Initial position relative to viewport + scroll offset
              let top = event.clientY + window.scrollY + 5;
              let left = event.clientX + window.scrollX + 5;
-             const menuHeight = menuElement.offsetHeight || 150;
-             const menuWidth = menuElement.offsetWidth || 150;
+             // Get menu dimensions (use offsetHeight/Width for rendered size)
+             const menuHeight = menuElement.offsetHeight || 150; // Fallback height
+             const menuWidth = menuElement.offsetWidth || 150; // Fallback width
+             const windowHeight = window.innerHeight + window.scrollY;
+             const windowWidth = window.innerWidth + window.scrollX;
 
-             if (top + menuHeight > window.innerHeight + window.scrollY) {
-                 top = event.clientY + window.scrollY - menuHeight - 5;
+             // Adjust if menu goes off bottom edge
+             if (top + menuHeight > windowHeight) {
+                 top = event.clientY + window.scrollY - menuHeight - 5; // Position above cursor
              }
-             if (left + menuWidth > window.innerWidth + window.scrollX) {
-                 left = event.clientX + window.scrollX - menuWidth - 5;
+             // Adjust if menu goes off right edge
+             if (left + menuWidth > windowWidth) {
+                 left = event.clientX + window.scrollX - menuWidth - 5; // Position left of cursor
              }
+             // Ensure menu doesn't go off top/left (less common)
+             if (top < window.scrollY) top = window.scrollY;
+             if (left < window.scrollX) left = window.scrollX;
+
+
              menuElement.style.top = `${top}px`;
              menuElement.style.left = `${left}px`;
-             menuElement.style.display = 'block';
+             menuElement.style.display = 'block'; // Make it visible
         }
 
+        /**
+         * Hides any currently visible context menu.
+         * Removes associated event listeners.
+         */
         function hideContextMenu() {
             if (chatContextMenu) chatContextMenu.style.display = 'none';
             if (ticketContextMenu) ticketContextMenu.style.display = 'none';
+             // Remove global listeners when hiding
              document.removeEventListener('click', hideContextMenu);
              window.removeEventListener('scroll', hideContextMenu);
              currentContextMenu = null; // Reset active menu tracker
         }
 
-        // Context Menu for Chat Messages
+        /**
+         * Shows the context menu for chat messages (moderator only).
+         * @param {MouseEvent} event - The contextmenu event.
+         */
         function showChatContextMenu(event) {
             event.preventDefault();
-            hideContextMenu(); // Hide any other menus
+            hideContextMenu(); // Hide any other menus first
 
+            // Only moderators can use the chat context menu
             if (!currentUser || !currentUser.is_moderator || !chatContextMenu) return;
 
             const messageElement = event.target.closest('.chat-message');
-            if (!messageElement) return;
+            if (!messageElement) return; // Clicked outside a message
 
-            contextMenuData.ticketId = currentTicketId;
+            // Store relevant data from the message element
+            contextMenuData.ticketId = currentTicketId; // Assumes this is called on the ticket detail page
             contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
             contextMenuData.senderId = messageElement.dataset.senderId;
+            contextMenuData.ticketStatus = null; // Not relevant for chat message actions
 
+            // Position and show the menu
             positionContextMenu(chatContextMenu, event);
-            currentContextMenu = chatContextMenu;
+            currentContextMenu = chatContextMenu; // Track the active menu
+
+            // Add listeners to hide the menu on click outside or scroll
+            // Use { once: true } so they automatically remove themselves after firing
             document.addEventListener('click', hideContextMenu, { once: true });
             window.addEventListener('scroll', hideContextMenu, { once: true });
         }
 
-        // Context Menu for Ticket List Items
+        /**
+         * Shows the context menu for ticket list items.
+         * Shows/hides options based on ticket status and user role.
+         * @param {MouseEvent} event - The contextmenu event.
+         */
         function showTicketContextMenu(event) {
              event.preventDefault();
              hideContextMenu(); // Hide any other menus
 
-             if (!currentUser || !ticketContextMenu) return; // Check if user exists
+             if (!currentUser || !ticketContextMenu) return; // Check if user exists and menu exists
 
              const ticketElement = event.target.closest('.ticket-list-item');
-             if (!ticketElement) return;
+             if (!ticketElement) return; // Clicked outside a ticket item
 
+             // Store relevant data from the ticket element
              contextMenuData.ticketId = ticketElement.dataset.ticketId;
              contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
              contextMenuData.senderId = null; // Not relevant for ticket actions
-             contextMenuData.messageTimestamp = null; // Not relevant
-             console.log("[showTicketContextMenu] Data:", contextMenuData); // DEBUG
+             contextMenuData.messageTimestamp = null; // Not relevant for ticket actions
+             console.log("[showTicketContextMenu] Data:", contextMenuData);
 
-             // Show/Hide options based on status and user role
+             // Determine which actions are available based on status and role
              const isModerator = currentUser.is_moderator;
-             const canClose = contextMenuData.ticketStatus === 'open'; // Owner or Mod can close (Backend enforces ownership if not mod)
+             // User can close their own open ticket (backend enforces ownership)
+             // Moderator can close any open ticket
+             const canClose = contextMenuData.ticketStatus === 'open';
+             // Only moderators can reopen closed tickets
              const canReopen = contextMenuData.ticketStatus === 'closed' && isModerator;
-             const canDelete = isModerator; // Only mods can delete
+             // Only moderators can delete tickets
+             const canDelete = isModerator;
 
+             // Toggle visibility of menu items based on permissions
              contextCloseTicketButton.classList.toggle('hidden', !canClose);
              contextReopenTicketButton.classList.toggle('hidden', !canReopen);
              contextDeleteTicketButton.classList.toggle('hidden', !canDelete);
 
 
-             // Only show menu if there's at least one action available
+             // Only show the menu if there's at least one action available
              if (canClose || canReopen || canDelete) {
                  positionContextMenu(ticketContextMenu, event);
-                 currentContextMenu = ticketContextMenu;
+                 currentContextMenu = ticketContextMenu; // Track active menu
+                 // Add listeners to hide menu
                  document.addEventListener('click', hideContextMenu, { once: true });
                  window.addEventListener('scroll', hideContextMenu, { once: true });
              }
         }
 
-
+        /**
+         * Emits a socket event to delete a chat message.
+         */
         function deleteChatMessage() {
              if (!contextMenuData.ticketId || !contextMenuData.messageTimestamp || !socket || !socket.connected) {
                  showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true);
@@ -1333,12 +1540,14 @@
              console.log(`[deleteChatMessage] Attempting to delete message: T:${contextMenuData.ticketId} TS:${contextMenuData.messageTimestamp}`);
              socket.emit('delete_message', {
                  ticket_id: contextMenuData.ticketId,
-                 message_timestamp: contextMenuData.messageTimestamp
+                 message_timestamp: contextMenuData.messageTimestamp // Send the ISO timestamp
              });
-             hideContextMenu();
-         }
+             hideContextMenu(); // Hide menu after action
+        }
 
-        // Functions for Ticket Context Menu Actions
+        // --- Ticket Context Menu Action Functions ---
+
+        /** Emits socket event to close the selected ticket. */
          function closeTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) {
                  showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true);
@@ -1352,9 +1561,16 @@
              hideContextMenu();
          }
 
+         /** Emits socket event to reopen the selected ticket (moderator only). */
          function reopenTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) {
                  showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true);
+                 return;
+             }
+             // Add extra check for moderator role (though backend should enforce)
+             if (!currentUser?.is_moderator) {
+                 showPopupMessage(errorMessagePopup, 'You do not have permission to reopen tickets.', true);
+                 hideContextMenu();
                  return;
              }
              console.log(`[reopenTicket] Attempting to reopen ticket: ${contextMenuData.ticketId}`);
@@ -1365,130 +1581,148 @@
              hideContextMenu();
          }
 
+         /** Emits socket event to delete the selected ticket (moderator only). Includes confirmation. */
          function deleteTicket() {
              if (!contextMenuData.ticketId || !socket || !socket.connected) {
                  showPopupMessage(errorMessagePopup, 'Cannot delete ticket: Invalid state or not connected.', true);
                  return;
              }
-             // Confirmation dialog
-             if (confirm(`Are you sure you want to permanently delete ticket #${contextMenuData.ticketId.slice(-6)}? This cannot be undone.`)) {
+              // Add extra check for moderator role
+             if (!currentUser?.is_moderator) {
+                 showPopupMessage(errorMessagePopup, 'You do not have permission to delete tickets.', true);
+                 hideContextMenu();
+                 return;
+             }
+             // Confirmation dialog before deleting
+             if (confirm(`Are you sure you want to permanently delete ticket #${contextMenuData.ticketId.slice(-6)}? This action cannot be undone.`)) {
                  console.log(`[deleteTicket] Attempting to delete ticket: ${contextMenuData.ticketId}`);
                  socket.emit('delete_ticket', {
                      ticket_id: contextMenuData.ticketId
                  });
              }
-             hideContextMenu();
+             hideContextMenu(); // Hide menu regardless of confirmation outcome
          }
 
 
         // --- Event Listeners Setup ---
 
+        // Login Button
         loginButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = loginButton.href;
+            e.preventDefault(); // Prevent default link behavior if needed
+            window.location.href = loginButton.href; // Redirect to Discord login
         });
 
+        /** Handles the logout process by calling the backend endpoint. */
         async function handleLogout() {
             console.log('Logging out...');
             try {
-                 const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
-                 if (!response.ok) {
-                     let errorMsg = 'Logout request failed';
-                     try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
-                     throw new Error(errorMsg);
-                 }
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('currentPage');
-                 disconnectSocket(); // Disconnect socket on logout
-                 window.location.hash = '/#home'; // Use updated hash format
-                 updateHeaderUI(currentUser);
-                 showPopupMessage(paymentMessage, "Logged out successfully.");
+                const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+                if (!response.ok) {
+                    let errorMsg = 'Logout request failed';
+                    try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
+                    throw new Error(errorMsg);
+                }
+                currentUser = { logged_in: false }; // Update state
+                localStorage.removeItem('currentPage'); // Clear saved page
+                disconnectSocket(); // Disconnect socket on logout
+                window.location.hash = '/#home'; // Redirect to home using updated format
+                updateHeaderUI(currentUser); // Update header immediately
+                showPopupMessage(paymentMessage, "Logged out successfully."); // Use success popup
             } catch(error) {
-                 console.error("Logout error:", error);
-                 showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
-                 currentUser = { logged_in: false };
-                 localStorage.removeItem('currentPage');
-                 disconnectSocket(); // Still try to disconnect on error
-                 window.location.hash = '/#home'; // Use updated hash format
-                 updateHeaderUI(currentUser);
+                console.error("Logout error:", error);
+                showPopupMessage(errorMessagePopup, `Logout failed: ${error.message}`, true);
+                // Still attempt to reset state even on error
+                currentUser = { logged_in: false };
+                localStorage.removeItem('currentPage');
+                disconnectSocket();
+                window.location.hash = '/#home';
+                updateHeaderUI(currentUser);
             }
         }
+        // Attach logout handler to both buttons
         logoutButton.addEventListener('click', handleLogout);
         dashboardLogoutButton.addEventListener('click', handleLogout);
 
+        // Hash Change Listener for Navigation
         window.addEventListener('hashchange', runNavigation);
 
+        // Create Ticket Form Submission
         if(createTicketForm) {
             createTicketForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
+                event.preventDefault(); // Prevent default form submission
                 const subject = ticketSubjectInput.value.trim();
                 const message = ticketMessageInput.value.trim();
-                createTicketStatus.textContent = '';
-                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
+                createTicketStatus.textContent = ''; // Clear previous status
+                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center'; // Reset classes
+
                 if (!subject || !message) {
                     createTicketStatus.textContent = 'Please fill out both subject and message.';
-                    createTicketStatus.classList.add('error');
+                    createTicketStatus.classList.add('error'); // Add error class for styling
                     return;
                 }
+
                 const submitButton = document.getElementById('create-ticket-button');
-                submitButton.disabled = true;
+                submitButton.disabled = true; // Disable button during submission
                 submitButton.textContent = 'Submitting...';
+
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/tickets`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ subject, message }),
-                        credentials: 'include'
+                        credentials: 'include' // Send cookies
                     });
                     if (!response.ok) {
                         let errorData; try { errorData = await response.json(); } catch (e) {}
                         throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
                     }
-                    const result = await response.json();
+                    const result = await response.json(); // Get the created ticket ID/details if needed
                     createTicketStatus.textContent = 'Ticket submitted successfully!';
-                    createTicketStatus.classList.add('success');
-                    createTicketForm.reset();
-                    fetchTickets(); // Refresh list
+                    createTicketStatus.classList.add('success'); // Add success class
+                    createTicketForm.reset(); // Clear the form
+                    fetchTickets(); // Refresh the ticket list to show the new ticket
                 } catch (error) {
                     console.error('Error creating ticket:', error);
                     createTicketStatus.textContent = `Error: ${error.message}`;
                     createTicketStatus.classList.add('error');
                 } finally {
-                    submitButton.disabled = false;
+                    submitButton.disabled = false; // Re-enable button
                     submitButton.textContent = 'Submit Ticket';
                 }
             });
         } else { console.warn("Create ticket form not found."); }
 
+        // Chat Input Form Submission
         if(chatInputForm) {
              chatInputForm.addEventListener('submit', (event) => {
                  event.preventDefault();
                  const messageText = chatInput.value.trim();
                  if (messageText && socket && socket.connected && currentTicketId) {
+                     // Emit the message to the server
                      socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                     chatInput.value = '';
-                 } else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true);
-                 } else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
+                     chatInput.value = ''; // Clear the input field
+                 } else if (!socket || !socket.connected) {
+                     showPopupMessage(errorMessagePopup, 'Not connected to chat.', true);
+                 } else if (!currentTicketId) {
+                     showPopupMessage(errorMessagePopup, 'No active ticket selected.', true);
+                 } // Don't send empty messages
              });
         } else { console.warn("Chat input form not found."); }
 
-        // Modal Close Button
+        // Modal Close Button Listener
         if (modalCloseButton) {
              modalCloseButton.addEventListener('click', hideUserInfoModal);
         }
-        // Close modal if clicking outside the content
+        // Close modal if clicking on the backdrop (outside the content)
         if (userInfoModal) {
              userInfoModal.addEventListener('click', (event) => {
-                 if (event.target === userInfoModal) { // Check if click is on the backdrop
+                 if (event.target === userInfoModal) { // Check if the click is directly on the modal backdrop
                      hideUserInfoModal();
                  }
              });
         }
 
-        // Chat Context Menu Listener
-         if (chatMessagesDiv) {
-             chatMessagesDiv.addEventListener('contextmenu', showChatContextMenu);
-         } else { console.warn("Chat messages container not found for context menu."); }
+        // Chat Context Menu Listener (attached in appendChatMessage for moderators)
 
         // Chat Context Menu Action Listeners
          if (contextDeleteButton) {
@@ -1497,12 +1731,13 @@
          if (contextUserInfoButton) {
              contextUserInfoButton.addEventListener('click', () => {
                  if (contextMenuData.senderId) {
-                     const messageElement = chatMessagesDiv.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
+                     // Try to get username from the message element for better UX
+                     const messageElement = chatMessagesDiv?.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
                      const usernameElement = messageElement?.querySelector('.username');
                      const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'Unknown User';
                      showUserInfoModal(contextMenuData.senderId, username);
                  }
-                 hideContextMenu();
+                 hideContextMenu(); // Hide menu after action
              });
          }
 
@@ -1520,12 +1755,12 @@
          // Mobile Menu Toggle
          if (mobileMenuButton && mobileMenu) {
              mobileMenuButton.addEventListener('click', () => {
-                 mobileMenu.classList.toggle('hidden');
+                 mobileMenu.classList.toggle('hidden'); // Toggle visibility
              });
-             // Add listeners to mobile menu links to close menu on click
+             // Add listeners to mobile menu links to close the menu on click
              mobileMenu.querySelectorAll('a').forEach(link => {
                  link.addEventListener('click', () => {
-                     mobileMenu.classList.add('hidden');
+                     mobileMenu.classList.add('hidden'); // Hide menu when a link is clicked
                      // Let the default link behavior (hash change) handle navigation
                  });
              });
@@ -1535,8 +1770,8 @@
         // --- Initial Page Load Logic ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
-            createSnowflakes();
-            checkLoginStatusAndNavigate(); // This now also handles initial socket connection if logged in
+            createSnowflakes(); // Initialize background effect
+            checkLoginStatusAndNavigate(); // Check login and navigate to initial/saved section
         });
 
     </script>
