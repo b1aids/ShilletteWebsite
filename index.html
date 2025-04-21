@@ -849,63 +849,135 @@
             }
         }
 
-
-        /**
-         * Displays the user's registered products in the dashboard.
-         * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
-         */
-         function displayRegisteredProducts(productsToDisplay) { // Changed signature
-            const container = document.getElementById('dashboard-my-products-list');
-            if (!container) return;
-            container.innerHTML = ''; // Clear loading/previous
-
-            // Handle error case or empty list
-            if (productsToDisplay === null) {
-                 container.innerHTML = '<p class="text-red-400 text-sm">Could not load product details.</p>';
-                 return;
+        /** Prompts for DNA ID and triggers the backend generation API call. */
+        async function promptAndStartFirmwareGeneration(productId, productName, deviceType) {
+            if (!productId || !productName) {
+                 showPopupMessage(errorMessagePopup, "Missing product information.", true); return;
             }
-            if (productsToDisplay.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
-                return;
+            // --- Check if deviceType is known ---
+            if (!deviceType) {
+                 showPopupMessage(errorMessagePopup, `Device type for '${productName}' is unknown. Cannot generate firmware.`, true); return;
             }
 
-            // Display each product
+            const dnaId = prompt(`Enter the 16-character hexadecimal DNA ID for firmware generation for "${productName}":`);
+
+            if (!dnaId) { // User cancelled
+                showPopupMessage(productMessagePopup, "Firmware generation cancelled."); return;
+            }
+
+            const validatedDna = dnaId.trim().toUpperCase();
+            if (!/^[0-9A-F]{16}$/.test(validatedDna)) {
+                showPopupMessage(errorMessagePopup, "Invalid DNA ID format. Must be 16 hex characters (0-9, A-F).", true); return;
+            }
+
+            // Show immediate feedback
+            showPopupMessage(productMessagePopup, `Queueing firmware generation for ${productName}...`);
+            // Optionally add a dedicated status area for build progress
+
+            // Call the backend API
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/generate_firmware`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        dna_id: validatedDna,
+                        device_type: deviceType // Send the device type
+                    }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                // Backend confirms queuing
+                showPopupMessage(productMessagePopup, result.message || "Generation queued. Check status area or DMs for updates.");
+                 // You'll need to listen to SocketIO events for actual progress/completion
+                 console.log("Build queued, Build ID:", result.build_id);
+                 // Store build_id if you want to track specific builds client-side
+            } catch (error) {
+                console.error("Error starting firmware generation:", error);
+                showPopupMessage(errorMessagePopup, `Error: ${error.message}`, true);
+            }
+        }
+
+
+        // --- Modify displayRegisteredProducts ---
+        function displayRegisteredProducts(productsToDisplay) {
+            // ... (existing code for container, error/empty checks) ...
+
             productsToDisplay.forEach(product => {
                 const productElement = document.createElement('div');
-                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center space-x-2 hover:bg-slate-600/50 transition-colors';
-                // --- ADD/MODIFY data attributes ---
-                productElement.dataset.productId = product._id; // Already there
-                productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product'; // Use name from registration or product
-                productElement.dataset.orderId = product.order_id || ''; // Store order_id (or empty string if missing)
-                // --- END ADD/MODIFY ---
+                // Added 'relative' for button positioning
+                productElement.className = 'p-2 pr-4 bg-slate-700/50 rounded-md text-sm flex items-center space-x-2 hover:bg-slate-600/50 transition-colors relative';
+                productElement.dataset.productId = product._id;
+                productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
+                productElement.dataset.orderId = product.order_id || '';
+                // --- Store tags and device type (assuming they exist on product object) ---
+                const tags = product.tags || []; // Assuming tags is an array
+                const deviceType = product.device_type || ''; // Assuming device_type exists
+                productElement.dataset.tags = JSON.stringify(tags); // Store tags as JSON string
+                productElement.dataset.deviceType = deviceType;
+                // --- End Store ---
 
-                // Thumbnail logic (remains the same)
-                let thumbnailHtml = '';
-                if (product.thumbnailUrl) {
-                   thumbnailHtml = `<img src="${product.thumbnailUrl}" alt="${product.dataset.productName}" class="w-8 h-8 rounded object-cover flex-shrink-0 pointer-events-none" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 items-center justify-center text-xs text-gray-400 pointer-events-none" style="display: none;">N/A</div>`;
-                } else {
-                    thumbnailHtml = '<div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">N/A</div>';
+                let thumbnailHtml = ''; // (Thumbnail logic remains the same)
+                // ...
+
+                // Check if firmware product
+                const isFirmware = tags.some(tag => tag.trim().toUpperCase() === 'FIRMWARE');
+
+                // --- Add Generate Button conditionally ---
+                let generateButtonHtml = '';
+                if (isFirmware) {
+                    // Position button absolutely to the right
+                    generateButtonHtml = `
+                        <button class="generate-fw-button absolute top-1/2 right-2 transform -translate-y-1/2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded"
+                                title="Generate Firmware">
+                            Generate
+                        </button>`;
                 }
+                // --- End Add ---
 
-                // Use the name stored in dataset for display
                 productElement.innerHTML = `
-                    ${thumbnailHtml}
-                    <span class="text-white font-medium pointer-events-none">${productElement.dataset.productName}</span>
+                    <div class="flex items-center space-x-2 flex-grow"> ${/* Wrap existing content */''}
+                        ${thumbnailHtml}
+                        <span class="text-white font-medium pointer-events-none">${productElement.dataset.productName}</span>
+                    </div>
+                    ${generateButtonHtml} ${/* Insert the button */''}
                     `;
 
                  productElement.style.cursor = 'pointer';
+                 // Click listener for navigation (exclude button clicks)
                  productElement.addEventListener('click', (e) => {
-                     if (e.button !== 2) {
+                     if (!e.target.closest('.generate-fw-button') && e.button !== 2) { // Don't navigate if clicking button or right-clicking
                          window.location.hash = `/#productDetail?id=${product._id}`;
                      }
                  });
-                 // Add Context Menu Listener (already there)
+                 // Context Menu Listener (already there)
                  productElement.addEventListener('contextmenu', showMyProductContextMenu);
+
+                 // --- Add listener for the inline button ---
+                 const genButton = productElement.querySelector('.generate-fw-button');
+                 if (genButton) {
+                     genButton.addEventListener('click', (e) => {
+                         e.stopPropagation(); // Prevent card navigation
+                         promptAndStartFirmwareGeneration(product._id, productElement.dataset.productName, productElement.dataset.deviceType);
+                     });
+                 }
+                 // --- End Add ---
 
                 container.appendChild(productElement);
             });
         }
+
+        // --- Add button to #my-product-context-menu HTML ---
+        /*
+        <div id="my-product-context-menu" ...>
+            <button class="context-menu-item" id="context-goto-product">Go to Product Page</button>
+            <button class="context-menu-item" id="context-view-order-id">View Order ID</button>
+            <button class="context-menu-item" id="context-generate-firmware">Generate Firmware</button> <-- ADD
+            <button class="context-menu-item delete" id="context-unregister-my-product">Unregister Product</button>
+        </div>
+        */
 
         /**
          * Shows the context menu for the user's "My Products" list.
@@ -919,20 +991,39 @@
             const productElement = event.target.closest('[data-product-id]');
             if (!productElement || !productElement.dataset.productId) return;
 
-            // Store product data AND orderId
             contextMenuData.productId = productElement.dataset.productId;
             contextMenuData.productName = productElement.dataset.productName;
-            contextMenuData.orderId = productElement.dataset.orderId; // <-- ADD THIS LINE
+            contextMenuData.orderId = productElement.dataset.orderId;
+            contextMenuData.deviceType = productElement.dataset.deviceType; // Store device type
 
-            // Position and show
+            // --- Check tags for FIRMWARE ---
+            let isFirmware = false;
+            try {
+                const tags = JSON.parse(productElement.dataset.tags || '[]');
+                isFirmware = tags.some(tag => tag.trim().toUpperCase() === 'FIRMWARE');
+            } catch (e) { console.error("Error parsing tags from dataset", e); }
+
+            // --- Toggle Generate Firmware menu item visibility ---
+            const generateFwButton = document.getElementById('context-generate-firmware');
+            if (generateFwButton) {
+                generateFwButton.classList.toggle('hidden', !isFirmware || !contextMenuData.deviceType); // Hide if not firmware or no device type known
+            }
+            // --- End Toggle ---
+
             positionContextMenu(menuElement, event);
             currentContextMenu = menuElement;
+            setTimeout(() => { /* ... listeners ... */ }, 0);
+        }
 
-            // Add listeners to close
-            setTimeout(() => {
-                 document.addEventListener('click', hideContextMenuOnClickOutside);
-                 window.addEventListener('scroll', hideContextMenu, { once: true });
-            }, 0);
+        // --- Context Menu Button Listeners ---
+        // ... (existing listeners) ...
+        const generateFirmwareButton = document.getElementById('context-generate-firmware');
+
+        if (generateFirmwareButton) {
+            generateFirmwareButton.addEventListener('click', () => {
+                 promptAndStartFirmwareGeneration(contextMenuData.productId, contextMenuData.productName, contextMenuData.deviceType);
+                 hideContextMenu(); // Hide menu after initiating
+            });
         }
 
         /** Handles the user request to unregister a product from their account. */
@@ -1653,7 +1744,45 @@
                 return 'a while ago';
             }
         }
+        
+        // --- Inside setupSocketListeners function ---
+        function setupSocketListeners() {
+            // ... (existing listeners for connect, disconnect, new_message etc.) ...
 
+            // --- ADD Listener for Firmware Progress ---
+            socket.on('firmware_progress', (data) => {
+                console.log("Firmware Progress Update:", data);
+                // Display the update (e.g., in a dedicated status div or using popups)
+                const message = data.message || 'Processing...';
+                const step = data.step || 'unknown';
+
+                // Simple example using the product message popup
+                let messageType = 'info'; // Use 'info' for general progress
+                let isError = false;
+                 if (step === 'complete') {
+                     messageType = 'success';
+                 } else if (step === 'failed' || step === 'cancelled') {
+                     messageType = 'error';
+                     isError = true;
+                 }
+
+                 // Use a specific popup or update a status div
+                 // Using existing popup for simplicity:
+                 showPopupMessage(
+                     isError ? errorMessagePopup : productMessagePopup,
+                     `[${step.toUpperCase()}] ${message}`,
+                     isError,
+                     step === 'complete' || step === 'failed' ? 6000 : 4000 // Longer duration for final status
+                 );
+
+                 // More advanced: update a specific div for the build log
+                 // const buildLogArea = document.getElementById('build-log-area');
+                 // if (buildLogArea && data.log) {
+                 //    buildLogArea.textContent = data.log.join('\n');
+                 // }
+            });
+            // --- END ADD ---
+        }
 
         // --- Ticket and Chat Functions ---
 
