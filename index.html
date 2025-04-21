@@ -364,6 +364,7 @@
         
             <div id="my-product-context-menu" class="absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden">
                 <button class="context-menu-item" id="context-goto-product">Go to Product Page</button>
+                <button class="context-menu-item" id="context-view-order-id">View Order ID</button> {/* <-- ADD THIS */}
                 <button class="context-menu-item delete" id="context-unregister-my-product">Unregister Product</button>
             </div>
             
@@ -769,9 +770,10 @@
         let currentTicketId = null;
         let activeSectionId = null;
         let currentContextMenu = null;
+        // Add orderId field
         let contextMenuData = {
             ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null,
-            productId: null, productName: null // Add product fields
+            productId: null, productName: null, orderId: null // Add orderId
         };
         let isInitialLoginCheckComplete = false;
         let isInitialConfigLoadComplete = false;
@@ -1129,26 +1131,49 @@
                  console.log(`[navigateTo] Fetching products for #products view.`);
                  fetchProducts();
             // Inside navigateTo function...
-        } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
+            } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
                  console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
                  displayUserRoles(currentUser.roles); // Display roles
 
-                 // --- ADD THIS BLOCK ---
-                 // Fetch all products and then display the registered ones
-                 const myProductIds = currentUser.registered_products || [];
+                 // --- MODIFY THIS BLOCK ---
+                 // Get detailed registration info from user object
+                 const myRegisteredDetails = currentUser.registered_product_details || [];
+
+                 // Fetch all products to get full details like name, thumbnail
                  fetchAllProducts().then(allProducts => {
-                     // Pass the IDs from the user object and the fetched full list
-                     displayRegisteredProducts(myProductIds, allProducts);
+                     if (allProducts) {
+                         // Map through all products and add order_id if the user is registered
+                         const productsToDisplay = allProducts
+                             .map(p => {
+                                 // Find the corresponding registration detail for this product
+                                 const registration = myRegisteredDetails.find(reg => reg.product_id === p._id);
+                                 // If found, return the product object merged with the order_id
+                                 // Use the product name from the registration if needed, or from the product itself
+                                 return registration ? {
+                                     ...p, // Spread existing product details (name, price, thumbnail etc.)
+                                     order_id: registration.order_id, // Add the order_id from the registration
+                                     product_name: registration.product_name || p.name // Optionally use name from registration
+                                     } : null; // Return null if user hasn't registered this product
+                             })
+                             .filter(p => p !== null); // Remove null entries (non-registered products)
+
+                         // Pass the combined & filtered data to the display function
+                         displayRegisteredProducts(productsToDisplay);
+                     } else {
+                         // Handle case where fetching all products failed
+                         displayRegisteredProducts(null); // Pass null to indicate error
+                     }
                  });
-                 // --- END ADDED BLOCK ---
+                 // --- END MODIFIED BLOCK ---
 
                  if (currentUser.is_moderator === true) {
                      console.log(`[navigateTo] User is moderator, loading admin data.`);
-                     loadAdminDashboardData(); // Load admin sections if applicable
+                     loadAdminDashboardData();
                  } else {
                      console.log(`[navigateTo] User is NOT moderator, skipping admin data load.`);
                  }
             }
+            // ... rest of navigateTo function
             // ... rest of navigateTo function
 
             // Ensure header UI is up-to-date
