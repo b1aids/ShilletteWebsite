@@ -2900,7 +2900,7 @@
                  if(deviceTypeInput) deviceTypeInput.value = product.device_type || '';
                  // --- Populate firmware directory name ---
                  // Use specific field, fallback to product name if field doesn't exist yet
-                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || '';
+                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || '';
                  // --- End Populate ---
                  if(descriptionInput) descriptionInput.value = product.description || '';
                  if(featuresInput) featuresInput.value = (product.features || []).join('\n');
