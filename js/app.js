@@ -626,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  // Navigate to product detail page
                  const productId = detailsButton.dataset.productId;
                  if (productId) {
-                     window.location.hash = `/#productDetail?id=${productId}`;
+                     window.location.hash = `productDetail?id=${productId}`;
                  }
              } else {
                  // Click on card area *not* buttons - could also navigate to detail
