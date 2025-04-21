@@ -1066,6 +1066,7 @@
          * Displays the user's registered products in the dashboard.
          * Reads product.tag (singular string) instead of product.tags (array).
          * Ensures genButton is scoped correctly.
+         * Shows Generate button if tag is FIRMWARE, regardless of deviceType presence.
          * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
          */
          function displayRegisteredProducts(productsToDisplay) {
@@ -1094,9 +1095,9 @@
                 productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
                 productElement.dataset.orderId = product.order_id || '';
                 const tagString = product.tag || ''; // Read product.tag (string)
-                const deviceType = product.device_type || '';
+                const deviceType = product.device_type || ''; // Still read deviceType, might be useful later
                 productElement.dataset.tag = tagString;
-                productElement.dataset.deviceType = deviceType;
+                productElement.dataset.deviceType = deviceType; // Store it even if empty
 
                 const infoContainer = document.createElement('div');
                 infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0'; // Allow shrinking
@@ -1118,7 +1119,8 @@
                 console.log(`Product: ${productElement.dataset.productName}, Tag: ${tagString}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
 
                 // --- Button Creation and Listener are INSIDE this IF block ---
-                if (isFirmware && deviceType) {
+                // --- MODIFIED Condition: Only check isFirmware ---
+                if (isFirmware) {
                     // Define genButton *only* if needed
                     const genButton = document.createElement('button');
                     genButton.className = "generate-fw-button flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded";
@@ -1126,14 +1128,15 @@
                     genButton.textContent = "Generate";
                     // Add listener *directly* to the button we just created
                     genButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        // Call the function to open the modal
-                        openFirmwareGenerateModal(product._id, productElement.dataset.productName);
-                    });
-                    // Append the button <<<< **** MAKE SURE THIS LINE IS PRESENT ****
+                         e.stopPropagation();
+                         // Call the function to open the modal
+                         // Pass the potentially empty deviceType, modal handles selection
+                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
+                     });
+                    // Append the button
                     productElement.appendChild(genButton);
                 }
-                // --- genButton variable does not exist outside the IF block ---
+                // --- End MODIFIED Condition ---
 
                  productElement.style.cursor = 'pointer';
                  infoContainer.addEventListener('click', (e) => {
@@ -1148,10 +1151,10 @@
             }); // End of forEach loop
         }
 
-
         /**
          * Shows the context menu for the user's "My Products" list.
          * Reads productElement.dataset.tag (singular string).
+         * Shows Generate option if tag is FIRMWARE, regardless of deviceType.
          * @param {MouseEvent} event - The contextmenu event object.
          */
         function showMyProductContextMenu(event) {
@@ -1165,20 +1168,17 @@
             contextMenuData.productId = productElement.dataset.productId;
             contextMenuData.productName = productElement.dataset.productName;
             contextMenuData.orderId = productElement.dataset.orderId;
-            contextMenuData.deviceType = productElement.dataset.deviceType;
+            contextMenuData.deviceType = productElement.dataset.deviceType; // Store device type (might be empty)
 
-            // --- Check singular tag from dataset ---
             const tagString = productElement.dataset.tag || '';
             const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
-            // --- End Check singular tag ---
 
             const generateFwButton = document.getElementById('context-generate-firmware');
             if (generateFwButton) {
-                // Hide if not firmware OR if deviceType is missing
-                generateFwButton.classList.toggle('hidden', !isFirmware || !contextMenuData.deviceType);
+                // --- MODIFIED Condition: Only check isFirmware ---
+                generateFwButton.classList.toggle('hidden', !isFirmware);
+                // --- End MODIFIED Condition ---
             }
-            
-            
 
             positionContextMenu(menuElement, event);
             currentContextMenu = menuElement;
@@ -1187,6 +1187,7 @@
                  window.addEventListener('scroll', hideContextMenu, { once: true });
             }, 0);
         }
+
 
 
 
