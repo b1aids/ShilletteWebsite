@@ -1064,9 +1064,7 @@
 
                 /**
          * Displays the user's registered products in the dashboard.
-         * Reads product.tag (singular string) instead of product.tags (array).
-         * Ensures genButton is scoped correctly.
-         * Shows Generate button if tag is FIRMWARE, regardless of deviceType presence.
+         * Reads product.tag (singular string). Shows Generate button and Firmware Settings if tag is FIRMWARE.
          * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
          */
          function displayRegisteredProducts(productsToDisplay) {
@@ -1087,20 +1085,22 @@
             }
 
             productsToDisplay.forEach(product => {
-                console.log(`Displaying product: ${product.name}`, product); // Log the whole product object
+                console.log(`Displaying product: ${product.name}`, product);
 
                 const productElement = document.createElement('div');
-                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center justify-between space-x-2 hover:bg-slate-600/50 transition-colors';
+                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center justify-between space-x-2 hover:bg-slate-600/50 transition-colors'; // Removed relative as button is now flex item
                 productElement.dataset.productId = product._id;
                 productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
                 productElement.dataset.orderId = product.order_id || '';
-                const tagString = product.tag || ''; // Read product.tag (string)
-                const deviceType = product.device_type || ''; // Still read deviceType, might be useful later
+                const tagString = product.tag || '';
+                const deviceType = product.device_type || '';
                 productElement.dataset.tag = tagString;
-                productElement.dataset.deviceType = deviceType; // Store it even if empty
+                productElement.dataset.deviceType = deviceType;
 
+                // Container for Thumbnail, Name, and Settings
                 const infoContainer = document.createElement('div');
-                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0'; // Allow shrinking
+                // Allow vertical stacking of name and settings
+                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0';
 
                 let thumbnailHtml = '';
                 if (product.thumbnailUrl) {
@@ -1109,48 +1109,69 @@
                 } else {
                     thumbnailHtml = '<div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">N/A</div>';
                 }
-                infoContainer.innerHTML = `
-                    ${thumbnailHtml}
-                    <span class="text-white font-medium pointer-events-none truncate">${productElement.dataset.productName}</span>
-                `;
-                productElement.appendChild(infoContainer);
+
+                // Container for Name and Settings Text (allows vertical stacking)
+                const textContainer = document.createElement('div');
+                textContainer.className = 'flex flex-col'; // Stack name and settings vertically
+
+                // Product Name Span
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'text-white font-medium pointer-events-none truncate';
+                nameSpan.textContent = productElement.dataset.productName;
+                textContainer.appendChild(nameSpan); // Add name to text container
+
 
                 const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
                 console.log(`Product: ${productElement.dataset.productName}, Tag: ${tagString}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
 
-                // --- Button Creation and Listener are INSIDE this IF block ---
-                // --- MODIFIED Condition: Only check isFirmware ---
+                // --- Add Firmware Settings Info ---
                 if (isFirmware) {
-                    // Define genButton *only* if needed
+                    const settingsDiv = document.createElement('div');
+                    settingsDiv.className = 'text-xs text-gray-400 mt-0.5'; // Styling for settings info
+                    // Display product name as the directory name, based on backend logic
+                    settingsDiv.textContent = `Firmware Settings: Directory = ${productElement.dataset.productName}`;
+                    textContainer.appendChild(settingsDiv); // Add settings under name
+                }
+                // --- End Add Firmware Settings ---
+
+                // Construct the info container with thumbnail and text container
+                infoContainer.innerHTML = thumbnailHtml; // Add thumbnail first
+                infoContainer.appendChild(textContainer); // Add text container (name + settings)
+
+                // Add the info container to the main product element
+                productElement.appendChild(infoContainer);
+
+
+                // --- Button Creation and Listener ---
+                if (isFirmware) {
                     const genButton = document.createElement('button');
                     genButton.className = "generate-fw-button flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded";
                     genButton.title = "Generate Firmware";
                     genButton.textContent = "Generate";
-                    // Add listener *directly* to the button we just created
                     genButton.addEventListener('click', (e) => {
                          e.stopPropagation();
-                         // Call the function to open the modal
-                         // Pass the potentially empty deviceType, modal handles selection
                          openFirmwareGenerateModal(product._id, productElement.dataset.productName);
                      });
-                    // Append the button
+                    // Append button directly (flex handles alignment)
                     productElement.appendChild(genButton);
                 }
-                // --- End MODIFIED Condition ---
 
                  productElement.style.cursor = 'pointer';
+                 // Make the whole info container clickable for navigation
                  infoContainer.addEventListener('click', (e) => {
+                    // Prevent navigation if click is on the button itself (though button stops propagation)
                     if (!e.target.closest('.generate-fw-button')) {
                        window.location.hash = `/#productDetail?id=${product._id}`;
                     }
                  });
                  productElement.addEventListener('contextmenu', showMyProductContextMenu);
 
-                // Append the whole product element to the container
                 container.appendChild(productElement);
             }); // End of forEach loop
         }
 
+        // --- showMyProductContextMenu remains unchanged from the previous version ---
+        // It already correctly shows the "Generate Firmware" option based only on the tag.
         /**
          * Shows the context menu for the user's "My Products" list.
          * Reads productElement.dataset.tag (singular string).
@@ -1187,6 +1208,7 @@
                  window.addEventListener('scroll', hideContextMenu, { once: true });
             }, 0);
         }
+
 
 
 
