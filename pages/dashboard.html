@@ -7,8 +7,7 @@
                  <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
                  <div>
                      <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
-                     <p class="text-sm text-gray-400">Status: Active</p>
-                 </div>
+                     <p class="text-sm text-gray-400">Status: Active</p> </div>
             </div>
             <button id="dashboard-logout-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300">
                 Logout
@@ -36,8 +35,7 @@
 
             <div class="admin-section lg:col-span-1">
                 <h3>Site Configuration</h3>
-                <form id="site-config-form" class="admin-form">
-                    <div>
+                <form id="site-config-form" class="admin-form space-y-4"> <div>
                         <label for="config-site-title">Site Title</label>
                         <input type="text" id="config-site-title" required>
                     </div>
@@ -49,8 +47,7 @@
                         <label>Header Links</label>
                         <div id="config-header-links-container" class="space-y-2 mb-2">
                             </div>
-                        <button type="button" id="add-header-link-button" class="text-sm">Add Link</button>
-                    </div>
+                        <button type="button" id="add-header-link-button" class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md transition duration-300">Add Link</button> </div>
                     <button type="submit" id="save-config-button">Save Configuration</button>
                     <div id="config-save-status" class="text-sm text-center h-5 mt-2"></div>
                 </form>
@@ -60,17 +57,13 @@
                 <h3>Product Management</h3>
                 <button id="add-product-button" class="mb-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">Add New Product</button>
                 <div class="overflow-x-auto">
-                    <table id="product-list-table">
-                        <thead>
+                    <table id="product-list-table" class="w-full"> <thead>
                             <tr><th>Name</th><th>Price</th><th>Tag</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="product-list-tbody">
                             </tbody>
                     </table>
                 </div>
-                <p id="product-list-status">Loading products...</p>
-            </div>
+                <p id="product-list-status" class="text-sm text-gray-500 mt-4 text-center">Loading products...</p> </div>
 
-        </div>
-        </div>
-</div>
+        </div> </div> </div>

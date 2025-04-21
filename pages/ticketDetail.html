@@ -1,16 +1,14 @@
 <div id="ticket-detail-content" class="flex-grow container mx-auto px-6 py-10 page-section">
     <div class="flex justify-start mb-8">
-        <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+        <a href="/#/tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200 spa-link">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             <span>Back to Tickets</span>
         </a>
     </div>
-    <h2 id="ticket-detail-subject">Ticket Subject</h2>
-    <div class="ticket-card">
+    <h2 id="ticket-detail-subject">Loading Ticket...</h2> <div class="ticket-card">
         <div id="chat-messages"><p class="text-gray-500 text-center py-4">Loading chat...</p></div>
         <form id="chat-input-form" class="mt-4" novalidate>
-            <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
-            <button type="submit" id="send-chat-button">Send</button>
+            <div class="flex space-x-2"> <input type="text" id="chat-input" placeholder="Type your message..." required class="flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500" disabled> <button type="submit" id="send-chat-button" class="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50" disabled>Send</button> </div>
         </form>
     </div>
 </div>

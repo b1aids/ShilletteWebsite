@@ -1,12 +1,12 @@
 <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
     <div class="flex justify-start mb-8">
-        <a href="products" id="back-to-products-button-detail" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+        <a href="/#/products" id="back-to-products-button-detail" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200 spa-link">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             <span>Back to Products</span>
         </a>
     </div>
 
-    <div id="product-detail-loading" class="text-center text-gray-400">Loading product details...</div>
+    <div id="product-detail-loading" class="text-center text-gray-400 py-10">Loading product details...</div>
 
     <div id="product-detail-container" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">
@@ -14,17 +14,17 @@
             <h1 id="product-detail-name" class="text-3xl md:text-4xl font-bold text-white">Product Name</h1>
             <p id="product-detail-price" class="text-4xl font-extrabold text-white">$0.00</p>
             <div class="flex items-center space-x-4 text-sm text-gray-400">
-                <span id="product-detail-rating" class="star-rating">
-                    </span>
-                <span id="product-detail-stock">X in stock</span>
+                <span id="product-detail-rating" class="star-rating" title="Loading rating...">
+                    ☆☆☆☆☆
+                </span>
+                <span id="product-detail-stock">Loading stock...</span>
             </div>
             <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
                 <button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto">Buy Now</button>
                 <button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>
-                <div class="flex items-center quantity-selector ml-auto">
-                    <button id="quantity-decrease">-</button>
-                    <input type="text" id="quantity-input" value="1" readonly>
-                    <button id="quantity-increase">+</button>
+                <div class="flex items-center quantity-selector ml-auto"> <button id="quantity-decrease" aria-label="Decrease quantity">-</button>
+                    <input type="text" id="quantity-input" value="1" readonly aria-label="Quantity" class="w-12 text-center">
+                    <button id="quantity-increase" aria-label="Increase quantity">+</button>
                 </div>
             </div>
             <div id="product-detail-description-container" class="pt-4 border-t border-slate-700/50">
@@ -40,13 +40,14 @@
                     <img id="seller-avatar" src="https://placehold.co/40x40/7f8c8d/ecf0f1?text=S" alt="Seller Avatar" class="w-10 h-10 rounded-full bg-slate-600">
                     <div>
                         <p id="seller-name" class="font-medium text-white">Seller Name</p>
-                        <p id="seller-established" class="text-xs text-gray-400">Established X months ago</p>
+                        <p id="seller-established" class="text-xs text-gray-400">Established...</p>
                     </div>
                 </div>
+                <p id="seller-review-score" class="text-xs text-gray-400 mt-2">Loading seller rating...</p>
             </div>
             <div class="product-detail-card">
                <h3 class="text-lg font-semibold text-white mb-3">Need help?</h3>
-               <a href="/tickets" id="product-detail-open-ticket" class="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1.5">
+               <a href="/#/tickets" id="product-detail-open-ticket" class="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1.5 spa-link">
                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                    <span>Open a ticket</span>
                </a>
@@ -71,7 +72,7 @@
                    <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                    <div>
                        <p class="text-sm font-medium text-white">Good average review score</p>
-                       <p id="seller-review-score" class="text-xs text-gray-400">The seller has an average review score of X stars out of 5</p>
+                       <p id="seller-review-score-text" class="text-xs text-gray-400">Loading seller rating...</p>
                    </div>
                </div>
             </div>
@@ -81,7 +82,6 @@
             <h2 class="text-2xl font-bold text-white mb-6 text-left">Reviews</h2>
             <div id="product-reviews-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <p class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
-                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </div> </div>
