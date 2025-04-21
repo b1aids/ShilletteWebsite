@@ -1,11 +1,11 @@
 /**
  * Shillette Frontend Application Logic
  *
- * Handles routing, API calls, WebSocket communication,
+ * Handles routing (using History API), API calls, WebSocket communication,
  * dynamic content loading, and UI interactions for the MPF structure.
  */
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOM fully loaded. Initializing Shillette MPF...");
+    console.log("DOM fully loaded. Initializing Shillette MPF with History API...");
 
     // --- Constants and DOM Element References (Global/Shell Elements) ---
     const pageContentContainer = document.getElementById('page-content-container');
@@ -73,22 +73,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null };
     let isInitialLoginCheckComplete = false;
     let isInitialConfigLoadComplete = false;
-    let currentPage = null; // Track the currently loaded page name (e.g., 'home', 'products')
+    let currentPageKey = null; // Track the currently loaded page key (e.g., 'home', 'products')
 
-    // --- Page Mapping (Map hash names to content file paths) ---
-    // Keys should be lowercase for case-insensitive matching
+    // --- Page Mapping (Map path segments to content file paths) ---
+    // Keys should be lowercase for case-insensitive matching based on the first path segment
     const pageRoutes = {
-        'home': 'pages/home.html',
-        'products': 'pages/products.html',
-        'tickets': 'pages/tickets.html',
-        'dashboard': 'pages/dashboard.html',
-        'ticketdetail': 'pages/ticketDetail.html', // Use lowercase key
-        'productdetail': 'pages/productDetail.html' // Use lowercase key
+        'home': 'pages/home.html', // Maps to '/' or '/home'
+        'products': 'pages/products.html', // Maps to '/products'
+        'tickets': 'pages/tickets.html', // Maps to '/tickets'
+        'dashboard': 'pages/dashboard.html', // Maps to '/dashboard'
+        'ticketdetail': 'pages/ticketDetail.html', // Maps to '/ticketdetail/:id'
+        'productdetail': 'pages/productDetail.html' // Maps to '/productdetail/:id'
     };
 
     // --- Utility Functions ---
-
-    /**
+    // ... (showPopupMessage, createSnowflakes, formatTimeAgo remain the same) ...
+        /**
      * Shows a popup message at the bottom center of the screen.
      * @param {HTMLElement} element - The message element (e.g., paymentMessage).
      * @param {string} message - The text to display.
@@ -157,13 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
          }
     }
 
+
     // --- Core Application Logic ---
 
     /**
-     * Fetches HTML content for a given page name and injects it into the main container.
+     * Fetches HTML content for a given page key and injects it into the main container.
      * Also triggers page-specific initialization logic.
      * @param {string} pageKey - The lowercase key from pageRoutes (e.g., 'home', 'productdetail').
-     * @param {object} [params={}] - Parameters extracted from the URL hash query string.
+     * @param {object} [params={}] - Parameters extracted from the URL path (e.g., { id: '123' }).
      */
     async function loadPageContent(pageKey, params = {}) {
         console.log(`[loadPageContent] Attempting to load page for key: ${pageKey} with params:`, params);
@@ -176,21 +177,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!filePath) {
             console.error(`No route found for page key: ${pageKey}`);
             // Display error message using the key that failed the lookup
-            pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Page not found (${pageKey}). Please check the URL.</div>`;
-            currentPage = null; // Reset current page state
+            pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Page not found (${pageKey}). Please check the URL or server configuration.</div>`;
+            currentPageKey = null; // Reset current page state
             return;
         }
 
         // Show loading indicator
         pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-gray-400">Loading ${pageKey}...</div>`;
-        currentPage = pageKey; // Update current page state using the key
+        currentPageKey = pageKey; // Update current page state using the key
 
         try {
             // Fetch the HTML content from the corresponding file
-            const response = await fetch(filePath);
+            const response = await fetch(filePath); // Fetch relative to index.html
             if (!response.ok) {
-                // Handle common errors like 404 Not Found
-                throw new Error(`Failed to fetch ${filePath}: ${response.status} ${response.statusText}`);
+                // Handle common errors like 404 Not Found for the HTML snippet
+                throw new Error(`Failed to fetch page content ${filePath}: ${response.status} ${response.statusText}`);
             }
             const html = await response.text();
 
@@ -203,16 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             switch (pageKey) { // Use the lowercase pageKey for the switch
                 case 'home':
-                    // No specific JS needed for static home page elements currently
+                    // Update header links if needed (e.g., add 'active' class)
+                    updateActiveNavLink(pageKey);
                     break;
                 case 'products':
+                    updateActiveNavLink(pageKey);
                     await fetchProducts(); // Fetch and render product cards
                     break;
                 case 'tickets':
+                    updateActiveNavLink(pageKey);
                     await fetchTickets(); // Fetch user/mod tickets
                     setupTicketFormListener(); // Add listener for the create ticket form
                     break;
                 case 'dashboard':
+                    updateActiveNavLink(pageKey);
                     // Dashboard requires login
                     if (currentUser?.logged_in) {
                         displayDashboardUserInfo(); // Populate user info card
@@ -231,90 +236,80 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     break;
                 case 'ticketdetail': // Use lowercase key
+                    updateActiveNavLink('tickets'); // Highlight 'Tickets' in nav
                     currentTicketId = params.id; // Get ticket ID from URL parameters
                     if (currentTicketId) {
-                         // Ensure the back button link is correct (might be redundant if static in HTML)
+                         // Ensure the back button link is correct
                          const backBtn = document.getElementById('back-to-tickets-button');
-                         if (backBtn) backBtn.href = '/#tickets';
+                         if (backBtn) backBtn.href = '/tickets'; // Link back to /tickets path
                          await fetchTicketDetails(currentTicketId); // Fetch chat messages for this ticket
                          setupTicketDetailListeners(); // Add listeners for chat form
                     } else {
                          console.error("Ticket ID missing for ticketDetail page.");
                          pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Ticket ID is missing in the URL.</div>`;
-                         currentPage = null; // Reset page state
+                         currentPageKey = null; // Reset page state
                     }
                     break;
                 case 'productdetail': // Use lowercase key
+                    updateActiveNavLink('products'); // Highlight 'Products' in nav
                     const productId = params.id; // Get product ID from URL parameters
                      if (productId) {
                          // Ensure back button link
                          const backBtn = document.getElementById('back-to-products-button-detail');
-                         if (backBtn) backBtn.href = '/#products';
+                         if (backBtn) backBtn.href = '/products'; // Link back to /products path
                          await fetchProductDetails(productId); // Fetch product data
                          setupProductDetailListeners(); // Add listeners for buy/basket/quantity buttons
                      } else {
                          console.error("Product ID missing for productDetail page.");
                          pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Product ID is missing in the URL.</div>`;
-                         currentPage = null; // Reset page state
+                         currentPageKey = null; // Reset page state
                      }
                     break;
                 default:
+                    updateActiveNavLink(null); // No matching nav link
                     console.log(`No specific initialization logic defined for page key: ${pageKey}`);
             }
 
         } catch (error) {
             console.error(`Error loading or initializing page ${pageKey}:`, error);
             pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error loading page content: ${error.message}</div>`;
-            currentPage = null; // Reset page state on error
+            currentPageKey = null; // Reset page state on error
         }
     }
 
     // --- Authentication and Configuration ---
-
-    /**
-     * Checks the user's login status via the API. Updates `currentUser` state.
-     */
+    // ... (checkLoginStatus, loadSiteConfigAndNavigate, applySiteConfig, updateHeaderUI remain the same) ...
     async function checkLoginStatus() {
          isInitialLoginCheckComplete = false;
          console.log("[checkLoginStatus] Checking user login status...");
          try {
              const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
-             // Handle logged out (401/403) or other errors
              if (!response.ok && (response.status === 401 || response.status === 403)) {
-                 currentUser = { logged_in: false }; // Explicitly set logged_in to false
+                 currentUser = { logged_in: false };
                  console.log("[checkLoginStatus] User is not logged in (401/403).");
              } else if (!response.ok) {
-                 // Handle other potential network or server errors
                  throw new Error(`HTTP error! status: ${response.status}`);
              } else {
-                 // User is likely logged in, parse the user data
                  currentUser = await response.json();
                  console.log("[checkLoginStatus] User is logged in:", currentUser);
              }
-             updateHeaderUI(currentUser); // Update header based on login status
-             // If logged in, ensure the WebSocket connection is established
+             updateHeaderUI(currentUser);
              if (currentUser?.logged_in) {
                  ensureSocketConnected();
              }
          } catch (error) {
              console.error("[checkLoginStatus] Error checking login status:", error);
-             currentUser = { logged_in: false }; // Assume logged out on error
-             updateHeaderUI(currentUser); // Update header to reflect logged-out state
+             currentUser = { logged_in: false };
+             updateHeaderUI(currentUser);
              showPopupMessage(errorMessagePopup, "Could not verify login status. Please try again later.", true);
          } finally {
              isInitialLoginCheckComplete = true;
              console.log("[checkLoginStatus] Initial login check complete.");
-             // Trigger the next step in the initialization sequence
              await loadSiteConfigAndNavigate();
          }
     }
 
-    /**
-     * Loads the site configuration (title, icon, links) from the API.
-     * Then, triggers the initial navigation based on the current URL hash.
-     */
     async function loadSiteConfigAndNavigate() {
-        // Only proceed if login check is done (avoids race conditions)
         if (!isInitialLoginCheckComplete) {
             console.log("[loadSiteConfigAndNavigate] Waiting for login check to complete.");
             return;
@@ -328,190 +323,193 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             siteConfig = await response.json();
             console.log("[loadSiteConfig] Site config loaded:", siteConfig);
-            applySiteConfig(siteConfig); // Apply title, icon, header links
+            applySiteConfig(siteConfig);
         } catch (error) {
             console.error("[loadSiteConfig] Error loading site config:", error);
             showPopupMessage(errorMessagePopup, "Failed to load site configuration. Using default settings.", true);
-            applySiteConfig(null); // Apply default config on error
+            applySiteConfig(null);
         } finally {
             isInitialConfigLoadComplete = true;
             console.log("[loadSiteConfig] Initial config load complete.");
-            // Now that both login status and config are known (or errored), run the initial navigation
-            console.log("[loadSiteConfigAndNavigate] Triggering initial navigation.");
-            runNavigation();
+            console.log("[loadSiteConfigAndNavigate] Triggering initial navigation based on pathname.");
+            runNavigation(); // Trigger navigation based on the initial path
         }
     }
 
-    /**
-     * Applies site configuration to the UI (title, icon, header links, footer).
-     * @param {object | null} config - The site configuration object, or null for defaults.
-     */
     function applySiteConfig(config) {
-        // Use config values or provide defaults
         const title = config?.siteTitle || "Shillette";
-        const iconUrl = config?.siteIconUrl || "/images/icon.png"; // Default icon path
-        const links = config?.headerLinks || [ // Default header links
-            {name: "Home", href: "/#home"},
-            {name: "Products", href: "/#products"},
-            {name: "Tickets", href: "/#tickets"},
+        const iconUrl = config?.siteIconUrl || "/images/icon.png";
+        // IMPORTANT: Update default links to use paths instead of hashes
+        const links = config?.headerLinks || [
+            {name: "Home", href: "/"}, // Use root path for home
+            {name: "Products", href: "/products"},
+            {name: "Tickets", href: "/tickets"},
             {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
         ];
 
-        // Update document title
         document.title = title;
-        // Update visible title in header
         if (siteTitleDisplay) siteTitleDisplay.textContent = title;
-        // Update header icon
         if (headerSiteIcon) headerSiteIcon.src = iconUrl;
-        // Update favicon
         if (faviconElement) faviconElement.href = iconUrl;
 
-        // Populate main navigation (desktop)
         if (mainNavigation) {
-            mainNavigation.innerHTML = ''; // Clear existing links
+            mainNavigation.innerHTML = '';
             links.forEach(link => {
                 const a = document.createElement('a');
-                a.href = link.href;
+                a.href = link.href; // Use the path directly
                 a.textContent = link.name;
-                a.classList.add('text-gray-300', 'hover:text-white', 'transition', 'duration-200');
+                // Add classes for styling and potentially identifying SPA links
+                a.classList.add('text-gray-300', 'hover:text-white', 'transition', 'duration-200', 'main-nav-link');
+                // Add dataset for easy identification of the target page key
+                if (!link.target) { // Only add dataset for internal links
+                    const pathKey = (link.href === '/' ? 'home' : link.href.split('/')[1]?.toLowerCase()) || 'home';
+                    a.dataset.pageKey = pathKey;
+                }
                 if (link.target) {
                     a.target = link.target;
-                    // Add rel="noopener noreferrer" for security and performance with target="_blank"
                     if (link.target === '_blank') a.rel = 'noopener noreferrer';
                 }
                 mainNavigation.appendChild(a);
             });
         }
 
-        // Populate mobile navigation
         if (mobileMenuNav) {
-            mobileMenuNav.innerHTML = ''; // Clear existing links
+            mobileMenuNav.innerHTML = '';
             links.forEach(link => {
                 const mob_a = document.createElement('a');
                 mob_a.href = link.href;
                 mob_a.textContent = link.name;
-                mob_a.classList.add('mobile-menu-link'); // Use mobile-specific class
+                mob_a.classList.add('mobile-menu-link');
+                if (!link.target) {
+                    const pathKey = (link.href === '/' ? 'home' : link.href.split('/')[1]?.toLowerCase()) || 'home';
+                    mob_a.dataset.pageKey = pathKey;
+                }
                 if (link.target) {
                     mob_a.target = link.target;
                     if (link.target === '_blank') mob_a.rel = 'noopener noreferrer';
                 }
-                // Add event listener to close the mobile menu when a link is clicked
                 mob_a.addEventListener('click', () => mobileMenuNav.classList.add('hidden'));
                 mobileMenuNav.appendChild(mob_a);
             });
         }
 
-        // Update footer year
         if (footerYear) footerYear.textContent = new Date().getFullYear();
+        // After applying config, update nav link styles based on current page
+        updateActiveNavLink(currentPageKey);
     }
 
-    /**
-     * Updates the header UI elements (login button vs. user info) based on login state.
-     * @param {object | null} user - The current user object or null if logged out.
-     */
     function updateHeaderUI(user) {
          const isLoggedIn = user?.logged_in;
-         // Toggle visibility of login button and user info section
          if (loginButton) loginButton.classList.toggle('hidden', isLoggedIn);
          if (userInfo) {
              userInfo.classList.toggle('hidden', !isLoggedIn);
-             userInfo.classList.toggle('flex', isLoggedIn); // Use flex to display items correctly
+             userInfo.classList.toggle('flex', isLoggedIn);
+             // Update user-info link href to point to /dashboard path
+             userInfo.href = '/dashboard';
          }
 
-         // If logged in, update username and avatar
          if (isLoggedIn) {
              if (userNameDisplay) userNameDisplay.textContent = user.username || 'User';
              if (userAvatarDisplay) {
-                // Construct Discord avatar URL or use placeholder
                 userAvatarDisplay.src = user.user_id && user.avatar
                     ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32`
-                    : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?'; // Placeholder
+                    : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
              }
          }
-         // Note: Admin-specific UI elements (like admin dashboard links) are handled
-         // when the respective page content (e.g., dashboard) is loaded.
     }
 
-    // --- Navigation (Routing based on URL Hash) ---
+    /**
+     * Updates the active state styling for navigation links.
+     * @param {string | null} activePageKey - The key of the currently active page.
+     */
+    function updateActiveNavLink(activePageKey) {
+        const navLinks = document.querySelectorAll('#main-navigation .main-nav-link, #mobile-menu .mobile-menu-link');
+        navLinks.forEach(link => {
+            if (link.dataset.pageKey === activePageKey) {
+                link.classList.add('text-orange-400', 'font-semibold'); // Add active styles
+                link.classList.remove('text-gray-300');
+            } else {
+                link.classList.remove('text-orange-400', 'font-semibold'); // Remove active styles
+                link.classList.add('text-gray-300');
+            }
+        });
+    }
+
+
+    // --- Navigation (Routing based on URL Pathname and History API) ---
 
     /**
-     * Parses the URL hash, determines the target page and parameters,
+     * Parses the URL pathname, determines the target page and parameters,
      * checks access control, and triggers loading of the page content.
      */
     function runNavigation() {
-        console.log(`[runNavigation] Processing hash: ${window.location.hash}`);
+        console.log(`[runNavigation] Pathname changed to: ${window.location.pathname}`);
 
-        // Ensure initial checks (login, config) are complete before navigating
+        // Ensure initial checks are complete
         if (!isInitialLoginCheckComplete || !isInitialConfigLoadComplete) {
-            console.log("[runNavigation] Initial checks not complete. Deferring navigation until ready.");
+            console.log("[runNavigation] Initial checks not complete. Deferring navigation.");
             return;
         }
 
-        const hash = window.location.hash || '#home'; // Default to #home if hash is empty
-        const hashParts = hash.split('?'); // Separate path from query string
+        const pathname = window.location.pathname; // e.g., '/', '/products', '/productdetail/123'
+        // Split path into segments, removing empty strings from leading/trailing slashes
+        const pathSegments = pathname.split('/').filter(segment => segment);
 
-        // Extract page name from the hash path part (remove # and potential leading /)
-        let rawPageName = hashParts[0].substring(1); // Remove '#'
-        if (rawPageName.startsWith('/')) rawPageName = rawPageName.substring(1);
-        if (!rawPageName) rawPageName = 'home'; // Default to 'home' if path is empty
+        // Determine page key and parameters
+        let rawPageName = pathSegments[0] || 'home'; // Default to 'home' for '/'
+        const pageKey = rawPageName.toLowerCase(); // Use lowercase key for matching pageRoutes
 
-        // *** FIX: Convert to lowercase for case-insensitive routing ***
-        const pageKey = rawPageName.toLowerCase();
-
-        // Parse query parameters
-        const params = new URLSearchParams(hashParts[1] || '');
         const routeParams = {};
-        params.forEach((value, key) => { routeParams[key] = value; });
+        // Extract ID parameter for detail pages (assuming format /pagekey/id)
+        if ((pageKey === 'productdetail' || pageKey === 'ticketdetail') && pathSegments[1]) {
+            routeParams.id = pathSegments[1];
+            console.log(`[runNavigation] Extracted ID: ${routeParams.id} for page ${pageKey}`);
+        }
+        // Add more parameter extraction logic here if needed for other routes
 
-        console.log(`[runNavigation] Raw page: '${rawPageName}', Parsed key: '${pageKey}', Params:`, routeParams);
+        console.log(`[runNavigation] Path: '${pathname}', Parsed key: '${pageKey}', Params:`, routeParams);
 
         // --- Access Control ---
         const protectedRoutes = ['dashboard', 'tickets', 'ticketdetail']; // Use lowercase keys
         if (protectedRoutes.includes(pageKey) && !currentUser?.logged_in) {
             console.warn(`[runNavigation] Access denied to protected route '${pageKey}'. User not logged in.`);
             showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-            // Redirect to home page, but avoid infinite loops if already trying to access home
+            // Redirect to home page using pushState to avoid full reload if possible
             if (pageKey !== 'home') {
-                console.log("[runNavigation] Redirecting to /#home.");
-                window.location.hash = '/#home';
+                console.log("[runNavigation] Redirecting to /");
+                history.pushState({ path: '/' }, '', '/'); // Update URL
+                runNavigation(); // Trigger navigation to home
             } else {
-                // If they were already trying to access #home, load it directly
-                console.log("[runNavigation] Already on #home, loading content.");
-                loadPageContent('home', {}); // Load home page content
+                // If already trying to access home, load it (should already be handled by initial call)
+                loadPageContent('home', {});
             }
-            return; // Stop further processing for this navigation attempt
+            return; // Stop further processing
         }
 
         // --- Load Page Content ---
         console.log(`[runNavigation] Proceeding to load content for page key: '${pageKey}'`);
 
         // Handle WebSocket connection based on page context
-        const isTicketRelated = ['tickets', 'ticketdetail'].includes(pageKey); // Use lowercase key
+        const isTicketRelated = ['tickets', 'ticketdetail'].includes(pageKey);
         if (!isTicketRelated && socket) {
              console.log(`[runNavigation] Navigating away from ticket-related page, disconnecting socket.`);
              disconnectSocket();
         }
         if (isTicketRelated) {
              console.log(`[runNavigation] Navigating to ticket-related page, ensuring socket is connected.`);
-             ensureSocketConnected(); // Connect or ensure connection for ticket pages
+             ensureSocketConnected();
         }
 
-        // Load the actual page content and run its specific logic using the lowercase key
+        // Load the page content using the determined lowercase key and parameters
         loadPageContent(pageKey, routeParams);
     }
 
-    // --- Page-Specific Functions (Fetching data, Rendering UI, Setting up Listeners) ---
-    // ... (fetchProducts, renderProductCard, handlePurchaseClick) ...
-    // ... (fetchTickets, createTicketListItem, setupTicketFormListener) ...
-    // ... (fetchTicketDetails, appendChatMessage, setupTicketDetailListeners) ...
-    // ... (displayDashboardUserInfo, displayUserRoles, loadAdminDashboardData, loadSiteConfigForm, addHeaderLinkInput, loadProductManagementTable, setupDashboardListeners, setupAdminDashboardListeners, handleSaveSiteConfig) ...
-    // ... (fetchProductDetails, renderProductDetails, setupProductDetailListeners) ...
-    // NOTE: Ensure all internal logic within these functions that might reference page names
-    //       also uses the lowercase keys ('home', 'products', 'tickets', 'dashboard', 'ticketdetail', 'productdetail')
-    //       if necessary for comparisons or state tracking. For example, in handleSaveProduct:
-    //       if (currentPage === 'dashboard') await loadProductManagementTable();
-    //       if (currentPage === 'products') await fetchProducts();
-    //       (currentPage is already set to the lowercase key in loadPageContent)
+    // --- Page-Specific Functions ---
+    // ... (fetchProducts, renderProductCard, handlePurchaseClick as before) ...
+    // ... (fetchTickets, setupTicketFormListener as before, BUT UPDATE createTicketListItem) ...
+    // ... (fetchTicketDetails, appendChatMessage, setupTicketDetailListeners as before) ...
+    // ... (Dashboard functions as before) ...
+    // ... (Product Detail functions as before) ...
 
         // Products Page Logic
         async function fetchProducts() {
@@ -562,33 +560,27 @@ document.addEventListener('DOMContentLoaded', () => {
              let hoverStyleVar = '';
 
              if (tagColor === 'custom' && customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
-                 // Valid custom hex color
                  borderClasses = 'custom-border';
                  inlineStyle = `border-color: ${customHex};`;
-                 // Generate hover shadow CSS variable based on hex
                  hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
                  card.style.cssText = inlineStyle + hoverStyleVar;
                  card.classList.add(borderClasses);
              } else if (tagColor !== 'custom' && ['gray', 'orange', 'blue', 'green', 'red', 'purple', 'yellow', 'pink', 'teal'].includes(tagColor)) {
-                 // Standard predefined color
                  borderClasses = `card-gradient-border ${tagColor}-border`;
                  card.classList.add(...borderClasses.split(' '));
              } else {
-                 // Fallback to gray border if color is invalid or 'custom' without valid hex
                   borderClasses = `card-gradient-border gray-border`;
                   card.classList.add(...borderClasses.split(' '));
              }
 
-             // Determine tag background/text color (use gray if custom hex is invalid)
              const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
-             const tagBgClass = `bg-${displayTagColor}-500/20`; // Use Tailwind opacity format
-             const tagTextClass = `text-${displayTagColor}-300`; // Adjust text color shade if needed
+             const tagBgClass = `bg-${displayTagColor}-500/20`;
+             const tagTextClass = `text-${displayTagColor}-300`;
 
-             // Thumbnail Image Handling
              let thumbnailElement = null;
              const placeholderDiv = document.createElement('div');
              placeholderDiv.className = 'product-thumbnail-placeholder';
-             placeholderDiv.style.display = 'none'; // Hide placeholder initially
+             placeholderDiv.style.display = 'none';
              placeholderDiv.innerHTML = '<span>Image not found</span>';
 
              if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
@@ -596,21 +588,18 @@ document.addEventListener('DOMContentLoaded', () => {
                  thumbnailElement.src = product.thumbnailUrl;
                  thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
                  thumbnailElement.className = 'product-thumbnail';
-                 // Fallback to placeholder if image fails to load
                  thumbnailElement.onerror = () => {
                      console.warn(`Failed to load image: ${product.thumbnailUrl}`);
-                     if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
-                     placeholderDiv.style.display = 'flex'; // Show placeholder
+                     if (thumbnailElement) thumbnailElement.style.display = 'none';
+                     placeholderDiv.style.display = 'flex';
                  };
              } else {
-                 // No thumbnail URL provided, show placeholder immediately
                  placeholderDiv.style.display = 'flex';
                  thumbnailElement = null;
              }
 
-             // Card Inner Content
              const innerDiv = document.createElement('div');
-             innerDiv.className = 'product-card-inner'; // Includes padding and flex grow
+             innerDiv.className = 'product-card-inner';
              innerDiv.innerHTML = `
                  <div class="flex justify-between items-center mb-4">
                      <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
@@ -623,55 +612,37 @@ document.addEventListener('DOMContentLoaded', () => {
                  </ul>
                  <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
                      ${product.paymentLink ? `<button class="purchase-button w-full" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button w-full" disabled>Purchase Unavailable</button>'}
-                     <button class="view-details-button w-full bg-gray-600 hover:bg-gray-500 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300" data-product-id="${product._id}">View Details</button>
+                     <a href="/productdetail/${product._id}" class="view-details-button spa-link block w-full bg-gray-600 hover:bg-gray-500 text-white text-center text-sm font-medium py-2 px-4 rounded-md transition duration-300" data-product-id="${product._id}">View Details</a>
                  </div>
-             `;
+             `; // Changed button to link
 
-             // Append thumbnail/placeholder and inner content
              if (thumbnailElement) card.appendChild(thumbnailElement);
-             card.appendChild(placeholderDiv); // Always append placeholder in case image fails
+             card.appendChild(placeholderDiv);
              card.appendChild(innerDiv);
 
-             // Add event listener to the card itself (delegation could also work)
+             // Click listener now primarily handles purchase, navigation handled by link interception
              card.addEventListener('click', (event) => {
                  const purchaseButton = event.target.closest('.purchase-button');
-                 const detailsButton = event.target.closest('.view-details-button');
-
                  if (purchaseButton) {
-                     handlePurchaseClick(event); // Handle purchase action
-                 } else if (detailsButton) {
-                     // Navigate to product detail page
-                     const productId = detailsButton.dataset.productId;
-                     if (productId) {
-                         window.location.hash = `productDetail?id=${productId}`; // Use productDetail (lowercase p intentional)
-                     }
-                 } else {
-                     // Click on card area *not* buttons - could also navigate to detail
-                     // const productId = card.dataset.productId;
-                     // if (productId) {
-                     //     window.location.hash = `productDetail?id=${productId}`;
-                     // }
-                     console.log("Card area clicked (not a button)");
+                     handlePurchaseClick(event);
                  }
+                 // No navigation needed here anymore, the link handles it
              });
 
              productGridElement.appendChild(card);
         }
 
         function handlePurchaseClick(event) {
-             event.stopPropagation(); // Prevent card click listener if button is clicked
+             event.stopPropagation();
              const button = event.target.closest('.purchase-button');
-             if (!button || button.disabled) return; // Ignore if not button or disabled
+             if (!button || button.disabled) return;
 
              const productId = button.dataset.productId;
-             const paymentLink = button.dataset.paymentLink; // Could be a PayPal ID or a full URL
+             const paymentLink = button.dataset.paymentLink;
              console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
 
              if (paymentLink) {
-                  // Basic placeholder - Replace with actual payment integration
                   showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration Required)`);
-                  // Example: If paymentLink is a PayPal Button ID, you'd use the PayPal SDK here.
-                  // Example: If paymentLink is a URL, you might redirect: window.location.href = paymentLink;
              } else {
                   showPopupMessage(errorMessagePopup, 'Payment link is missing or invalid for this product.', true);
              }
@@ -680,7 +651,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Tickets Page Logic
         async function fetchTickets() {
             console.log("[fetchTickets] Fetching tickets...");
-            // Get references to elements within the currently loaded 'tickets' page content
             const userTicketView = document.getElementById('user-ticket-view');
             const moderatorManagementView = document.getElementById('moderator-management-view');
             const ticketListDiv = document.getElementById('ticket-list');
@@ -690,40 +660,34 @@ document.addEventListener('DOMContentLoaded', () => {
             const moderatorArchivedTicketListDiv = document.getElementById('moderator-archived-ticket-list');
             const moderatorArchivedListStatus = document.getElementById('moderator-archived-list-status');
 
-            // Check if all required elements exist in the loaded HTML
             if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
                 console.error("[fetchTickets] One or more ticket list elements not found in loaded content. Aborting fetch.");
-                // Optionally display an error in the main container
                 if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: UI elements missing for ticket display.</div>`;
                 return;
             }
 
-            // Check login status (should be redundant due to router, but good practice)
              if (!currentUser?.logged_in) {
                  console.log("[fetchTickets] User not logged in. Displaying login prompt.");
                  ticketListStatus.textContent = "Please log in to view tickets.";
-                 moderatorActiveListStatus.textContent = ""; // Clear mod statuses
+                 moderatorActiveListStatus.textContent = "";
                  moderatorArchivedListStatus.textContent = "";
                  ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = '';
-                 userTicketView.classList.remove('hidden'); // Show user view (which will contain the message)
-                 moderatorManagementView.classList.add('hidden'); // Hide mod view
+                 userTicketView.classList.remove('hidden');
+                 moderatorManagementView.classList.add('hidden');
                  return;
              }
 
-             // Set loading states
              ticketListStatus.textContent = "Loading tickets...";
              moderatorActiveListStatus.textContent = "Loading active tickets...";
              moderatorArchivedListStatus.textContent = "Loading archived tickets...";
-             ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = ''; // Clear previous lists
+             ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = '';
 
-             // Toggle visibility based on moderator status
              const isMod = currentUser.is_moderator === true;
              console.log(`[fetchTickets] User moderator status: ${isMod}`);
              userTicketView.classList.toggle('hidden', isMod);
              moderatorManagementView.classList.toggle('hidden', !isMod);
 
              try {
-                 // Fetch tickets from the API
                  const response = await fetch(`${API_BASE_URL}/api/tickets`, { credentials: 'include' });
                  if (!response.ok) {
                       if (response.status === 401 || response.status === 403) throw new Error("Authentication required to view tickets.");
@@ -732,12 +696,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  const tickets = await response.json();
                  console.log(`[fetchTickets] Received ${tickets.length} tickets.`);
 
-                 // Clear loading messages
                  ticketListStatus.textContent = ""; moderatorActiveListStatus.textContent = ""; moderatorArchivedListStatus.textContent = "";
                  let hasUserTickets = false; let hasActiveModTickets = false; let hasArchivedModTickets = false;
 
                  if (tickets.length === 0) {
-                     // Display 'no tickets' messages
                      if (isMod) {
                          moderatorActiveListStatus.textContent = "No active tickets found.";
                          moderatorArchivedListStatus.textContent = "No archived tickets found.";
@@ -745,9 +707,8 @@ document.addEventListener('DOMContentLoaded', () => {
                          ticketListStatus.textContent = "You have no support tickets.";
                      }
                  } else {
-                     // Populate ticket lists
                      tickets.forEach(ticket => {
-                         const item = createTicketListItem(ticket); // Use helper function to create element
+                         const item = createTicketListItem(ticket); // Use updated helper
                          if (isMod) {
                              if (ticket.status === 'open') {
                                  moderatorActiveTicketListDiv.appendChild(item); hasActiveModTickets = true;
@@ -759,7 +720,6 @@ document.addEventListener('DOMContentLoaded', () => {
                          }
                      });
 
-                     // Update status messages if lists ended up empty after filtering
                      if (isMod) {
                          if (!hasActiveModTickets) moderatorActiveListStatus.textContent = "No active tickets found.";
                          if (!hasArchivedModTickets) moderatorArchivedListStatus.textContent = "No archived tickets found.";
@@ -770,53 +730,42 @@ document.addEventListener('DOMContentLoaded', () => {
              } catch (error) {
                  console.error("[fetchTickets] Error fetching or processing tickets:", error);
                  const errorMsg = `Failed to load tickets: ${error.message}`;
-                 // Display error in all relevant status areas
                  ticketListStatus.textContent = errorMsg; moderatorActiveListStatus.textContent = errorMsg; moderatorArchivedListStatus.textContent = errorMsg;
                  showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
              }
         }
 
+        // UPDATED to create an <a> tag for navigation
         function createTicketListItem(ticket) {
-            const item = document.createElement('div');
-            item.classList.add('ticket-list-item'); // Use global style
-            // Store essential data on the element for event handlers and context menus
-            item.dataset.ticketId = ticket._id;
-            item.dataset.ticketStatus = ticket.status;
-            item.dataset.ticketSubject = ticket.subject || 'No Subject';
+            const link = document.createElement('a'); // Use link for navigation
+            link.href = `/ticketdetail/${ticket._id}`; // Path-based URL
+            link.classList.add('ticket-list-item', 'spa-link'); // Add base style and SPA identifier
+            link.dataset.ticketId = ticket._id;
+            link.dataset.ticketStatus = ticket.status;
+            link.dataset.ticketSubject = ticket.subject || 'No Subject';
 
-            // Determine status style and text
             const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
             const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
-            // Format date or use fallback
             const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'Date N/A';
-            // Use last 6 chars for a shorter ID display
             const shortId = ticket._id ? ticket._id.slice(-6) : 'ID N/A';
             const subject = ticket.subject || 'No Subject';
-            const username = ticket.username || 'Unknown User'; // Display username if available
+            const username = ticket.username || 'Unknown User';
 
-            item.innerHTML = `
+            link.innerHTML = `
                 <div>
                     <p class="font-medium text-white">#${shortId}: ${subject}</p>
                     <p class="text-xs text-gray-400">User: ${username} | Opened: ${dateOpened}</p>
                 </div>
                 <span class="${statusClass}">${statusText}</span>`;
 
-            // Add click listener to navigate to the ticket detail page
-            item.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent default link behavior if wrapped in <a>
-                const targetHash = `/#ticketDetail?id=${ticket._id}`; // Use ticketDetail (lowercase t intentional)
-                console.log(`[Ticket Item Click] Navigating to: ${targetHash}`);
-                window.location.hash = targetHash;
-            });
+            // Click listener is now handled globally by the link interceptor
+            // Context menu listener remains
+            link.addEventListener('contextmenu', showTicketContextMenu);
 
-            // Add context menu listener (handler function defined globally)
-            item.addEventListener('contextmenu', showTicketContextMenu);
-
-            return item;
+            return link;
         }
 
         function setupTicketFormListener() {
-            // Find form elements within the loaded 'tickets' page content
             const createTicketForm = document.getElementById('create-ticket-form');
             const ticketSubjectInput = document.getElementById('ticket-subject');
             const ticketMessageInput = document.getElementById('ticket-message-input');
@@ -828,60 +777,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Add the submit event listener
             createTicketForm.addEventListener('submit', async (event) => {
-                event.preventDefault(); // Prevent default form submission
+                event.preventDefault();
                 const subject = ticketSubjectInput.value.trim();
                 const message = ticketMessageInput.value.trim();
-
-                // Clear previous status and reset style
                 createTicketStatus.textContent = '';
                 createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
 
-                // Basic validation
                 if (!subject || !message) {
                     createTicketStatus.textContent = 'Please fill out both subject and message.';
                     createTicketStatus.classList.add('error', 'text-red-400');
                     return;
                 }
 
-                // Disable button and show loading state
                 createTicketButton.disabled = true;
                 createTicketButton.textContent = 'Submitting...';
 
                 try {
-                    // Send POST request to create ticket API endpoint
                     const response = await fetch(`${API_BASE_URL}/api/tickets`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ subject, message }),
-                        credentials: 'include' // Send cookies for authentication
+                        credentials: 'include'
                     });
-
-                    // Check for errors
                     if (!response.ok) {
                         let errorData = { error: `HTTP error! status: ${response.status}` };
-                        try { errorData = await response.json(); } catch (e) {} // Try to parse error response
+                        try { errorData = await response.json(); } catch (e) {}
                         throw new Error(errorData.error || `Failed to create ticket.`);
                     }
-
-                    // const result = await response.json(); // Process result if needed
                     createTicketStatus.textContent = 'Ticket submitted successfully!';
                     createTicketStatus.classList.add('success', 'text-green-400');
-                    createTicketForm.reset(); // Clear the form fields
-
-                    // Refresh the ticket list immediately if still on the tickets page
-                    if (currentPage === 'tickets') {
+                    createTicketForm.reset();
+                    if (currentPageKey === 'tickets') {
                        console.log("Ticket created, refreshing ticket list.");
                        await fetchTickets();
                     }
-
                 } catch (error) {
                     console.error('Error creating ticket:', error);
                     createTicketStatus.textContent = `Error: ${error.message}`;
                     createTicketStatus.classList.add('error', 'text-red-400');
                 } finally {
-                    // Re-enable button and restore text
                     createTicketButton.disabled = false;
                     createTicketButton.textContent = 'Submit Ticket';
                 }
@@ -891,7 +826,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ticket Detail Page Logic
         async function fetchTicketDetails(ticketId) {
              console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`);
-             // Find elements within the currently loaded 'ticketDetail' page content
              const chatMessagesDiv = document.getElementById('chat-messages');
              const ticketDetailSubject = document.getElementById('ticket-detail-subject');
 
@@ -900,20 +834,17 @@ document.addEventListener('DOMContentLoaded', () => {
                  if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Could not display ticket details. UI elements missing.</div>`;
                  return;
              }
-             // Ensure user is logged in (redundant check)
              if (!currentUser?.logged_in) {
                  console.warn("[fetchTicketDetails] User not logged in, cannot fetch details.");
-                 window.location.hash = '/#tickets'; // Redirect if somehow accessed while logged out
+                 history.pushState({ path: '/tickets' }, '', '/tickets'); runNavigation(); // Redirect
                  return;
              }
-             ensureSocketConnected(); // Make sure socket is ready for chat
+             ensureSocketConnected();
 
-             // Set loading state
              chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
-             ticketDetailSubject.textContent = `Loading Ticket #${ticketId.slice(-6)}...`; // Show partial ID while loading
+             ticketDetailSubject.textContent = `Loading Ticket #${ticketId.slice(-6)}...`;
 
              try {
-                 // Fetch ticket details and messages from API
                  const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
                  if (!response.ok) {
                      if (response.status === 401 || response.status === 403) throw new Error("Access Denied: You may not have permission to view this ticket.");
@@ -923,35 +854,29 @@ document.addEventListener('DOMContentLoaded', () => {
                  const ticket = await response.json();
                  console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`, ticket);
 
-                 // Update ticket subject header
                  ticketDetailSubject.textContent = ticket.subject || `Ticket #${ticketId.slice(-6)}`;
-                 chatMessagesDiv.innerHTML = ''; // Clear loading message
+                 chatMessagesDiv.innerHTML = '';
 
-                 // Render existing messages
                  if (ticket.messages && ticket.messages.length > 0) {
                      ticket.messages.forEach(msg => appendChatMessage(msg, chatMessagesDiv));
                  } else {
                      chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet. Type below to start the conversation.</p>';
                  }
 
-                 // Join the corresponding socket room *after* successfully fetching details
                  if (socket?.connected) {
                      console.log(`[fetchTicketDetails] Emitting join_ticket_room for ticket: ${ticketId}`);
                      socket.emit('join_ticket_room', { ticket_id: ticketId });
                  } else {
                      console.warn("[fetchTicketDetails] Socket not connected when attempting to join ticket room.");
-                     // Consider attempting connection again here if needed
                  }
 
              } catch (error) {
                  console.error("[fetchTicketDetails] Error fetching ticket details:", error);
-                 // Display error message in the chat area
                  chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
-                 ticketDetailSubject.textContent = `Error Loading Ticket`; // Update header on error
+                 ticketDetailSubject.textContent = `Error Loading Ticket`;
                  showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
-                 // Redirect back to tickets list if ticket not found or forbidden
                  if (error.message.includes("not found") || error.message.includes("Access Denied")) {
-                     setTimeout(() => { window.location.hash = '/#tickets'; }, 3000); // Redirect after a short delay
+                     setTimeout(() => { history.pushState({ path: '/tickets' }, '', '/tickets'); runNavigation(); }, 3000);
                  }
              }
         }
@@ -961,51 +886,41 @@ document.addEventListener('DOMContentLoaded', () => {
                  console.warn("Attempted to append chat message, but container element not found.");
                  return;
              }
-             // Remove placeholder messages if they exist
              const placeholderMsg = chatMessagesDivElement.querySelector('p.text-gray-500, p.text-red-400');
              if (placeholderMsg) placeholderMsg.remove();
 
              const messageElement = document.createElement('div');
              messageElement.classList.add('chat-message');
-             // Store data attributes for context menu actions
              messageElement.dataset.timestamp = data.timestamp;
-             messageElement.dataset.senderId = data.sender_id; // Crucial for user info/delete checks
+             messageElement.dataset.senderId = data.sender_id;
 
-             // Format timestamp
              const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-             // Sanitize username and text to prevent XSS
              const username = data.sender_username || data.username || 'System';
              const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
              const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-             // Create username span (clickable for user info modal)
              const usernameSpan = document.createElement('span');
              usernameSpan.classList.add('username');
              usernameSpan.textContent = `${safeUsername}:`;
-             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername)); // showUserInfoModal is global
+             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
 
-             // Assemble the message element
              messageElement.appendChild(usernameSpan);
-             messageElement.append(` ${safeText} `); // Use text node for message content
+             messageElement.append(` ${safeText} `);
 
-             // Create and append timestamp span
              const timestampSpan = document.createElement('span');
              timestampSpan.classList.add('timestamp');
              timestampSpan.textContent = timestamp;
              messageElement.appendChild(timestampSpan);
 
-             // Add context menu listener ONLY if the current user is a moderator
              if (currentUser?.is_moderator) {
-                messageElement.addEventListener('contextmenu', showChatContextMenu); // showChatContextMenu is global
+                messageElement.addEventListener('contextmenu', showChatContextMenu);
              }
 
-             // Append the new message and scroll to bottom
              chatMessagesDivElement.appendChild(messageElement);
              chatMessagesDivElement.scrollTop = chatMessagesDivElement.scrollHeight;
         }
 
         function setupTicketDetailListeners() {
-            // Find chat form elements within the loaded 'ticketDetail' content
             const chatInputForm = document.getElementById('chat-input-form');
             const chatInput = document.getElementById('chat-input');
 
@@ -1014,17 +929,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Add submit listener for sending chat messages
             chatInputForm.addEventListener('submit', (event) => {
-                event.preventDefault(); // Prevent page reload
+                event.preventDefault();
                 const messageText = chatInput.value.trim();
-
-                // Check if message is not empty, socket is connected, and we have a ticket ID
                 if (messageText && socket?.connected && currentTicketId) {
                     console.log(`[Chat Submit] Sending message to ticket ${currentTicketId}: "${messageText}"`);
-                    // Emit the message via WebSocket
                     socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                    chatInput.value = ''; // Clear the input field
+                    chatInput.value = '';
                 } else if (!socket?.connected) {
                     showPopupMessage(errorMessagePopup, 'Cannot send message: Not connected to chat server.', true);
                 } else if (!currentTicketId) {
@@ -1033,13 +944,10 @@ document.addEventListener('DOMContentLoaded', () => {
                      showPopupMessage(errorMessagePopup, 'Cannot send an empty message.', true);
                 }
             });
-
-            // Note: Context menu listeners for individual messages are added in `appendChatMessage`
         }
 
         // Dashboard Page Logic
         function displayDashboardUserInfo() {
-            // Find elements within the loaded 'dashboard' content
             const nameEl = document.getElementById('dashboard-user-name');
             const avatarEl = document.getElementById('dashboard-user-avatar');
             if (nameEl && avatarEl && currentUser?.logged_in) {
@@ -1053,69 +961,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function displayUserRoles(roles) {
-            // Find the roles container within the loaded 'dashboard' content
             const rolesContainer = document.getElementById('dashboard-user-roles');
             if (!rolesContainer) {
                 console.warn('[displayUserRoles] Container #dashboard-user-roles not found in loaded dashboard content!');
                 return;
             }
-            rolesContainer.innerHTML = ''; // Clear previous roles/loading message
+            rolesContainer.innerHTML = '';
 
             if (roles && Array.isArray(roles) && roles.length > 0) {
                 roles.forEach(role => {
                     const roleElement = document.createElement('span');
-                    roleElement.classList.add('role-span'); // Use global style
+                    roleElement.classList.add('role-span');
 
-                    // Determine background color from role data or default
-                    let hexColor = '#9CA3AF'; // Default gray
+                    let hexColor = '#9CA3AF';
                     if (role.color && role.color !== 0) {
                         hexColor = '#' + role.color.toString(16).padStart(6, '0');
                     }
-
-                    // Calculate luminance to set contrasting text color (black/white)
                     const r = parseInt(hexColor.slice(1, 3), 16);
                     const g = parseInt(hexColor.slice(3, 5), 16);
                     const b = parseInt(hexColor.slice(5, 7), 16);
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
                     const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
 
-                    roleElement.textContent = role.name || `Role ${role.id}`; // Display role name or ID
+                    roleElement.textContent = role.name || `Role ${role.id}`;
                     roleElement.style.backgroundColor = hexColor;
-                    roleElement.classList.add(textColorClass); // Apply text color class
+                    roleElement.classList.add(textColorClass);
                     rolesContainer.appendChild(roleElement);
                 });
             } else {
-                // Display message if no roles found
                 rolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">No specific roles assigned.</p>';
             }
         }
 
         async function loadAdminDashboardData() {
             console.log("[loadAdminDashboardData] Loading admin-specific sections into dashboard...");
-            // Find the container for admin sections within the loaded 'dashboard' content
             const adminSectionsContainer = document.getElementById('admin-dashboard-sections');
             if (!adminSectionsContainer) {
                 console.warn("[loadAdminDashboardData] Admin sections container not found in dashboard content.");
                 return;
             }
-            // Double-check moderator status (should be redundant)
             if (!currentUser?.is_moderator) {
                  adminSectionsContainer.classList.add('hidden');
                  return;
             }
-            // Ensure the container is visible
             adminSectionsContainer.classList.remove('hidden');
-
-            // Load data into the forms/tables within the admin container
-            await loadSiteConfigForm(); // Populate site config form
-            await loadProductManagementTable(); // Populate product management table
-
-            // Attach event listeners specific to the admin controls AFTER loading their data
+            await loadSiteConfigForm();
+            await loadProductManagementTable();
             setupAdminDashboardListeners();
         }
 
         async function loadSiteConfigForm() {
-            // Find form elements within the loaded 'dashboard' admin section
             const siteConfigForm = document.getElementById('site-config-form');
             const configSiteTitleInput = document.getElementById('config-site-title');
             const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
@@ -1125,71 +1020,60 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) {
                  console.warn("[loadSiteConfigForm] Site config form elements not found in loaded dashboard content."); return;
             }
-            // Ensure siteConfig state is loaded
             if (!siteConfig) {
                 console.warn("[loadSiteConfigForm] Global siteConfig state not available. Cannot populate form.");
                 configSaveStatus.textContent = "Error: Config data not loaded.";
                 configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
-                return; // Cannot proceed without config data
+                return;
             }
-            // Populate the form fields with current config values
             configSiteTitleInput.value = siteConfig.siteTitle || '';
             configSiteIconUrlInput.value = siteConfig.siteIconUrl || '';
-            configHeaderLinksContainer.innerHTML = ''; // Clear any existing link inputs
-            // Add input fields for each existing header link
+            configHeaderLinksContainer.innerHTML = '';
             (siteConfig.headerLinks || []).forEach((link) => {
-                addHeaderLinkInput(link.name, link.href, link.target); // addHeaderLinkInput adds to the container
+                addHeaderLinkInput(link.name, link.href, link.target);
             });
-            // Reset status message
             configSaveStatus.textContent = '';
             configSaveStatus.className = 'text-sm text-center h-5 mt-2';
         }
 
         function addHeaderLinkInput(name = '', href = '', target = '') {
-            // Find the container within the loaded 'dashboard' admin section
             const configHeaderLinksContainer = document.getElementById('config-header-links-container');
             if (!configHeaderLinksContainer) {
                  console.warn("[addHeaderLinkInput] Header links container not found."); return;
             }
 
             const linkGroup = document.createElement('div');
-            linkGroup.className = 'link-group flex items-center space-x-2 mb-2'; // Use classes for layout
-            // Use specific classes for easier selection if needed later
+            linkGroup.className = 'link-group flex items-center space-x-2 mb-2';
             linkGroup.innerHTML = `
                  <input type="text" placeholder="Link Name" value="${name}" class="link-name config-link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
-                 <input type="text" placeholder="Link Href (e.g., /#page)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+                 <input type="text" placeholder="Link Path (e.g., /products)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
                  <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target config-link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
                  <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
              `;
-             // Add event listener to the remove button for this specific link group
              linkGroup.querySelector('.remove-link-button').addEventListener('click', () => linkGroup.remove());
              configHeaderLinksContainer.appendChild(linkGroup);
         }
 
         async function loadProductManagementTable() {
-             // Find table elements within the loaded 'dashboard' admin section
              const productListTableBody = document.getElementById('product-list-tbody');
              const productListStatus = document.getElementById('product-list-status');
              if (!productListTableBody || !productListStatus) {
                  console.warn("[loadProductManagementTable] Product list table elements not found in loaded content."); return;
              }
-             // Set loading state
-             productListTableBody.innerHTML = ''; // Clear previous rows
+             productListTableBody.innerHTML = '';
              productListStatus.textContent = 'Loading products...';
              productListStatus.classList.remove('hidden');
 
              try {
-                 // Fetch all products (admin view needs all)
                  const response = await fetch(`${API_BASE_URL}/api/products`);
                  if (!response.ok) throw new Error(`HTTP error fetching products for admin: ${response.status}`);
                  const products = await response.json();
-                 productListStatus.classList.add('hidden'); // Hide loading status
+                 productListStatus.classList.add('hidden');
 
                  if (!products || products.length === 0) {
                      productListStatus.textContent = 'No products found.';
                      productListStatus.classList.remove('hidden');
                  } else {
-                     // Populate the table body with product rows
                      products.forEach(product => {
                          const row = productListTableBody.insertRow();
                          row.innerHTML = `
@@ -1201,9 +1085,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                  <button class="delete-btn bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-2 py-1 rounded transition duration-200" data-product-id="${product._id}">Delete</button>
                              </td>
                          `;
-                         // Add event listeners to the Edit/Delete buttons in this row
-                         row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product)); // openProductEditModal is global
-                         row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name)); // handleDeleteProduct is global
+                         row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product));
+                         row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name));
                      });
                  }
              } catch (error) {
@@ -1215,52 +1098,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function setupDashboardListeners() {
-            // Add listener for the dashboard-specific logout button (if it exists)
             const dbLogoutButton = document.getElementById('dashboard-logout-button');
             if (dbLogoutButton) {
-                // Ensure listener isn't added multiple times if dashboard is reloaded
-                dbLogoutButton.removeEventListener('click', handleLogout); // Remove previous if any
-                dbLogoutButton.addEventListener('click', handleLogout); // Add fresh listener
+                dbLogoutButton.removeEventListener('click', handleLogout);
+                dbLogoutButton.addEventListener('click', handleLogout);
             } else {
                 console.warn("[setupDashboardListeners] Dashboard logout button not found in loaded content.");
             }
-            // Add listeners for other dashboard-specific controls here if needed
         }
 
         function setupAdminDashboardListeners() {
             console.log("[setupAdminDashboardListeners] Setting up listeners for admin controls...");
-            // Site Config Form Listener
             const siteConfigForm = document.getElementById('site-config-form');
             if (siteConfigForm) {
-                siteConfigForm.removeEventListener('submit', handleSaveSiteConfig); // Prevent duplicates
+                siteConfigForm.removeEventListener('submit', handleSaveSiteConfig);
                 siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
             } else { console.warn("Site config form not found for listener setup."); }
 
-            // Add Header Link Button Listener
             const addLinkBtn = document.getElementById('add-header-link-button');
             if (addLinkBtn) {
-                addLinkBtn.removeEventListener('click', handleAddHeaderLinkButtonClick); // Prevent duplicates
+                addLinkBtn.removeEventListener('click', handleAddHeaderLinkButtonClick);
                 addLinkBtn.addEventListener('click', handleAddHeaderLinkButtonClick);
             } else { console.warn("Add header link button not found for listener setup."); }
 
-            // Add New Product Button Listener
             const addProductBtn = document.getElementById('add-product-button');
             if (addProductBtn) {
-                addProductBtn.removeEventListener('click', handleAddProductButtonClick); // Prevent duplicates
+                addProductBtn.removeEventListener('click', handleAddProductButtonClick);
                 addProductBtn.addEventListener('click', handleAddProductButtonClick);
             } else { console.warn("Add product button not found for listener setup."); }
-
-            // Note: Edit/Delete listeners for product table rows are added dynamically
-            // in `loadProductManagementTable` when the rows are created.
         }
-        // Named handlers for button clicks to allow removal
         function handleAddHeaderLinkButtonClick() { addHeaderLinkInput(); }
         function handleAddProductButtonClick() { openProductEditModal(); }
 
 
         async function handleSaveSiteConfig(event) {
-             event.preventDefault(); // Prevent default form submission
-             // Find form elements again within the current context
+             event.preventDefault();
              const siteConfigForm = document.getElementById('site-config-form');
              const saveConfigButton = document.getElementById('save-config-button');
              const configSaveStatus = document.getElementById('config-save-status');
@@ -1268,34 +1140,34 @@ document.addEventListener('DOMContentLoaded', () => {
              const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
              const configHeaderLinksContainer = document.getElementById('config-header-links-container');
 
-             // Validate that all elements were found
              if (!siteConfigForm || !saveConfigButton || !configSaveStatus || !configSiteTitleInput || !configSiteIconUrlInput || !configHeaderLinksContainer) {
                   console.error("Cannot save site config, one or more form elements missing in the current DOM.");
                   showPopupMessage(errorMessagePopup, "Error saving config: UI elements missing.", true);
                   return;
              }
 
-             // Disable button and set loading state
              saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
-             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
+             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2';
 
-             // Construct the updated configuration object from form values
              const updatedConfig = {
                   siteTitle: configSiteTitleInput.value.trim(),
-                  siteIconUrl: configSiteIconUrlInput.value.trim() || null, // Use null if empty
+                  siteIconUrl: configSiteIconUrlInput.value.trim() || null,
                   headerLinks: []
               };
-             // Iterate over link groups to build the headerLinks array
              configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
                  const nameInput = group.querySelector('.link-name');
                  const hrefInput = group.querySelector('.link-href');
                  const targetInput = group.querySelector('.link-target');
-                 // Ensure inputs exist and have values before adding
                  if (nameInput?.value.trim() && hrefInput?.value.trim()) {
+                     // Ensure internal links start with '/'
+                     let hrefVal = hrefInput.value.trim();
+                     if (!hrefVal.startsWith('http') && !hrefVal.startsWith('/')) {
+                         hrefVal = '/' + hrefVal;
+                     }
                      updatedConfig.headerLinks.push({
                          name: nameInput.value.trim(),
-                         href: hrefInput.value.trim(),
-                         target: targetInput?.value.trim() || null // Use null if target is empty
+                         href: hrefVal,
+                         target: targetInput?.value.trim() || null
                      });
                  }
              });
@@ -1303,35 +1175,29 @@ document.addEventListener('DOMContentLoaded', () => {
              console.log("Saving site config:", updatedConfig);
 
              try {
-                 // Send PUT request to the API
                  const response = await fetch(`${API_BASE_URL}/api/config`, {
                      method: 'PUT',
                      headers: { 'Content-Type': 'application/json' },
                      body: JSON.stringify(updatedConfig),
-                     credentials: 'include' // Important for authentication cookies
+                     credentials: 'include'
                  });
-                 const result = await response.json(); // Attempt to parse JSON response
+                 const result = await response.json();
                  if (!response.ok) {
-                     // Throw error with message from API response or default HTTP status
                      throw new Error(result.error || `HTTP error! status: ${response.status}`);
                  }
 
-                 // --- Success ---
-                 siteConfig = result; // Update the global config state with the saved data
-                 applySiteConfig(siteConfig); // Re-apply the config to update header, title, etc.
+                 siteConfig = result;
+                 applySiteConfig(siteConfig); // Re-apply config to update header links immediately
                  configSaveStatus.textContent = 'Configuration saved successfully!';
                  configSaveStatus.classList.add('text-green-400');
-                 showPopupMessage(configMessagePopup, 'Site configuration saved!'); // Show global success popup
+                 showPopupMessage(configMessagePopup, 'Site configuration saved!');
 
              } catch (error) {
-                 // --- Error Handling ---
                  console.error("Error saving site config:", error);
                  configSaveStatus.textContent = `Error: ${error.message}`;
                  configSaveStatus.classList.add('text-red-400');
-                 showPopupMessage(errorMessagePopup, `Failed to save config: ${error.message}`, true); // Show global error popup
+                 showPopupMessage(errorMessagePopup, `Failed to save config: ${error.message}`, true);
              } finally {
-                 // --- Cleanup ---
-                 // Re-enable the save button regardless of success or failure
                  saveConfigButton.disabled = false;
                  saveConfigButton.textContent = 'Save Configuration';
              }
@@ -1340,7 +1206,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Product Detail Page Logic
         async function fetchProductDetails(productId) {
             console.log(`[fetchProductDetails] Fetching details for product ID: ${productId}`);
-            // Find elements within the loaded 'productDetail' content
             const productDetailLoading = document.getElementById('product-detail-loading');
             const productDetailContainer = document.getElementById('product-detail-container');
 
@@ -1350,12 +1215,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  return;
             }
 
-            // Show loading state
             productDetailLoading.classList.remove('hidden');
-            productDetailContainer.classList.add('hidden'); // Hide main content area
+            productDetailContainer.classList.add('hidden');
 
             try {
-                // Fetch specific product data from API
                 const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
                 if (!response.ok) {
                     if (response.status === 404) throw new Error("Product not found.");
@@ -1363,24 +1226,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const productData = await response.json();
                 console.log("[fetchProductDetails] Received product data:", productData);
-
-                // Render the fetched data into the UI elements
                 renderProductDetails(productData);
-
-                // Hide loading, show content
                 productDetailLoading.classList.add('hidden');
                 productDetailContainer.classList.remove('hidden');
 
             } catch (error) {
                 console.error("Error fetching product details:", error);
-                // Display error message in the loading area
                 productDetailLoading.textContent = `Error loading product: ${error.message}`;
-                productDetailLoading.classList.remove('hidden'); // Ensure error is visible
-                productDetailContainer.classList.add('hidden'); // Keep content hidden
+                productDetailLoading.classList.remove('hidden');
+                productDetailContainer.classList.add('hidden');
                 showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
-                // Optionally redirect if product not found
                 if (error.message.includes("not found")) {
-                     setTimeout(() => { window.location.hash = '/#products'; }, 3000);
+                     setTimeout(() => { history.pushState({ path: '/products' }, '', '/products'); runNavigation(); }, 3000);
                 }
             }
         }
@@ -1390,7 +1247,6 @@ document.addEventListener('DOMContentLoaded', () => {
                  console.warn("renderProductDetails called with null product data.");
                  return;
              }
-             // Find all necessary elements within the loaded 'productDetail' content
              const elements = {
                  image: document.getElementById('product-detail-image'),
                  name: document.getElementById('product-detail-name'),
@@ -1403,10 +1259,10 @@ document.addEventListener('DOMContentLoaded', () => {
                  sellerName: document.getElementById('seller-name'),
                  sellerEstablished: document.getElementById('seller-established'),
                  sellerReviewScore: document.getElementById('seller-review-score'),
-                 reviewsList: document.getElementById('product-reviews-list')
+                 reviewsList: document.getElementById('product-reviews-list'),
+                 openTicketLink: document.getElementById('product-detail-open-ticket') // Get ticket link
              };
 
-             // Check if all elements were found
              const missingElements = Object.entries(elements).filter(([key, el]) => !el);
              if (missingElements.length > 0) {
                  console.error(`Error rendering product details: Missing elements - ${missingElements.map(([key]) => key).join(', ')}`);
@@ -1414,45 +1270,41 @@ document.addEventListener('DOMContentLoaded', () => {
                  return;
              }
 
-             // Populate elements with product data (provide defaults)
              elements.image.src = product.thumbnailUrl || 'https://placehold.co/600x400/374151/9ca3af?text=No+Image';
              elements.image.alt = product.name ? `${product.name} Image` : 'Product Image';
              elements.name.textContent = product.name || 'Product Name Unavailable';
              elements.price.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Price unavailable';
 
-             // Rating and Stock (with defaults)
-             const ratingValue = product.averageRating ?? 5; // Default to 5 stars if null/undefined
-             const stockValue = product.stock ?? 6; // Default to 6 if null/undefined
+             const ratingValue = product.averageRating ?? 5;
+             const stockValue = product.stock ?? 6;
              elements.rating.innerHTML = `${'★'.repeat(ratingValue)}${'☆'.repeat(5 - ratingValue)}`;
              elements.stock.textContent = `${stockValue} in stock`;
 
-             // Description
              if (product.description) {
                 elements.description.textContent = product.description;
                 elements.descContainer.classList.remove('hidden');
              } else {
                 elements.description.textContent = 'No description provided.';
-                // Optionally hide the container if you prefer: elements.descContainer.classList.add('hidden');
              }
 
-             // Seller Info (with defaults)
-             elements.sellerName.textContent = product.sellerName || 'ShilletteFN'; // Default seller name
+             elements.sellerName.textContent = product.sellerName || 'ShilletteFN';
              elements.sellerEstablished.textContent = product.sellerEstablishedDate
                  ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}`
-                 : 'Established several months ago'; // Default established text
+                 : 'Established several months ago';
              elements.sellerReviewScore.textContent = `The seller has an average review score of ${ratingValue} stars out of 5`;
-             // elements.sellerAvatar.src = product.sellerAvatarUrl || 'https://placehold.co/40x40/7f8c8d/ecf0f1?text=S'; // Default avatar
 
-             // Reviews (with defaults)
-             elements.reviewsList.innerHTML = ''; // Clear loading/previous reviews
+             // Update the "Open a ticket" link href
+             elements.openTicketLink.href = '/tickets'; // Point to the tickets page path
+
+             elements.reviewsList.innerHTML = '';
              const reviews = product.reviews || [];
              if (reviews.length > 0) {
                  reviews.forEach(review => {
                      const reviewCard = document.createElement('div');
-                     reviewCard.className = 'review-card'; // Use global style
-                     const reviewRating = review.rating ?? 5; // Default review rating
+                     reviewCard.className = 'review-card';
+                     const reviewRating = review.rating ?? 5;
                      const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'recently';
-                     const reviewerName = review.reviewerName || 'Verified customer'; // Default reviewer name
+                     const reviewerName = review.reviewerName || 'Verified customer';
 
                      reviewCard.innerHTML = `
                          <div class="flex justify-between items-center mb-2">
@@ -1470,19 +1322,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function setupProductDetailListeners() {
-            // Find buttons within the loaded 'productDetail' content
             const buyNowButton = document.getElementById('product-detail-buy-now');
             const addBasketButton = document.getElementById('product-detail-add-basket');
             const quantityDecrease = document.getElementById('quantity-decrease');
             const quantityIncrease = document.getElementById('quantity-increase');
             const quantityInput = document.getElementById('quantity-input');
+            const openTicketLink = document.getElementById('product-detail-open-ticket'); // Get ticket link again
 
-            // Add listeners if elements exist
             if (buyNowButton) {
                 buyNowButton.addEventListener('click', () => {
                     console.log("Buy Now clicked");
                     showPopupMessage(paymentMessage, "Buy Now functionality not yet implemented.");
-                    // TODO: Implement Buy Now logic (e.g., redirect to checkout, PayPal SDK)
                 });
             } else { console.warn("Buy Now button not found."); }
 
@@ -1491,14 +1341,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Add to Basket clicked");
                     const qty = parseInt(quantityInput?.value) || 1;
                     showPopupMessage(paymentMessage, `Added ${qty} item(s) to basket (feature not fully implemented).`);
-                    // TODO: Implement Add to Basket logic (e.g., update cart state, API call)
                 });
             } else { console.warn("Add Basket button not found."); }
 
             if (quantityDecrease && quantityInput) {
                 quantityDecrease.addEventListener('click', () => {
                     let currentQuantity = parseInt(quantityInput.value) || 1;
-                    if (currentQuantity > 1) { // Prevent quantity from going below 1
+                    if (currentQuantity > 1) {
                         quantityInput.value = currentQuantity - 1;
                     }
                 });
@@ -1507,107 +1356,78 @@ document.addEventListener('DOMContentLoaded', () => {
             if (quantityIncrease && quantityInput) {
                  quantityIncrease.addEventListener('click', () => {
                      let currentQuantity = parseInt(quantityInput.value) || 0;
-                     // TODO: Add check against available stock if needed
-                     // const maxStock = parseInt(document.getElementById('product-detail-stock')?.textContent) || Infinity;
-                     // if (currentQuantity < maxStock) {
-                         quantityInput.value = currentQuantity + 1;
-                     // }
+                     quantityInput.value = currentQuantity + 1;
                  });
             } else { console.warn("Quantity increase button or input not found."); }
 
-            // Add listener for the "Open a ticket" link if needed
-            const openTicketLink = document.getElementById('product-detail-open-ticket');
-            if (openTicketLink) {
-                openTicketLink.addEventListener('click', (e) => {
-                    // Could pre-fill ticket subject based on product
-                    console.log("Open ticket link clicked from product detail.");
-                    // Navigation will be handled by the href="/#tickets"
-                });
-            }
+            // Click listener for open ticket link is handled globally now
+            // if (openTicketLink) {
+            //     openTicketLink.addEventListener('click', (e) => {
+            //         console.log("Open ticket link clicked from product detail.");
+            //     });
+            // }
         }
 
 
     // --- Socket.IO Logic ---
-
-    /**
-     * Establishes or ensures a WebSocket connection.
-     * Optionally joins a specific ticket room upon connection.
-     * @param {string | null} [ticketIdToJoin=null] - The ticket ID to join after connecting.
-     */
+    // ... (connectSocket, ensureSocketConnected, setupSocketListeners, disconnectSocket remain the same) ...
     function connectSocket(ticketIdToJoin = null) {
-         // If already connected, potentially just rejoin the room if needed
          if (socket?.connected) {
-             if (ticketIdToJoin && currentPage === 'ticketdetail' && currentTicketId === ticketIdToJoin) { // Use lowercase key
+             if (ticketIdToJoin && currentPageKey === 'ticketdetail' && currentTicketId === ticketIdToJoin) {
                  console.log(`[connectSocket] Socket already connected, re-joining room: ${ticketIdToJoin}`);
                  socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
              } else {
-                 console.log(`[connectSocket] Socket already connected. Current page: ${currentPage}, Ticket ID: ${currentTicketId}. Not joining room ${ticketIdToJoin || 'N/A'}.`);
+                 console.log(`[connectSocket] Socket already connected. Current page: ${currentPageKey}, Ticket ID: ${currentTicketId}. Not joining room ${ticketIdToJoin || 'N/A'}.`);
              }
              return;
          }
 
          console.log(`[connectSocket] Attempting to connect WebSocket to ${SOCKET_URL}... (Potential room join: ${ticketIdToJoin || 'none'})`);
-         // Clean up any existing disconnected socket instance
          if (socket) { socket.disconnect(); socket = null; }
 
-         // Establish new connection
          socket = io(SOCKET_URL, {
-             reconnectionAttempts: 3, // Limit reconnection attempts
-             withCredentials: true // Send cookies for authentication
+             reconnectionAttempts: 3,
+             withCredentials: true
          });
 
-         // --- Socket Event Handlers ---
          socket.on('connect', () => {
              console.log('[Socket Connect] WebSocket connected successfully. Socket ID:', socket.id);
-             // Join the ticket room *only* if connection is successful AND we are on the detail page for that ticket
-             if (ticketIdToJoin && currentPage === 'ticketdetail' && currentTicketId === ticketIdToJoin) { // Use lowercase key
+             if (ticketIdToJoin && currentPageKey === 'ticketdetail' && currentTicketId === ticketIdToJoin) {
                  console.log(`[Socket Connect] Joining room post-connect: ${ticketIdToJoin}`);
                  socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
              }
-             // Setup listeners for messages, errors, etc. *after* connection
              setupSocketListeners();
          });
 
          socket.on('disconnect', (reason) => {
              console.warn('[Socket Disconnect] WebSocket disconnected. Reason:', reason);
-             // Optionally show a message to the user
-             // showPopupMessage(errorMessagePopup, "Chat connection lost. Attempting to reconnect...", true, 5000);
-             socket = null; // Clear the socket variable
+             socket = null;
          });
 
          socket.on('connect_error', (error) => {
              console.error('[Socket Connect Error] WebSocket connection error:', error);
              showPopupMessage(errorMessagePopup, `Chat connection failed: ${error.message}. Please check your connection.`, true);
-             socket = null; // Clear the socket variable on error
+             socket = null;
          });
     }
 
-    /**
-     * Checks if the socket is connected, and attempts to connect if not.
-     */
     function ensureSocketConnected() {
          if (!socket || !socket.connected) {
              console.log("[ensureSocketConnected] Socket not connected or instance is null. Attempting connection...");
-             connectSocket(currentTicketId); // Attempt connection, passing current ticket ID if relevant
+             connectSocket(currentTicketId);
          } else {
              console.log("[ensureSocketConnected] Socket is already connected.");
-             // If already connected, ensure we are in the correct room if on ticket detail page
-             if (currentPage === 'ticketdetail' && currentTicketId) { // Use lowercase key
+             if (currentPageKey === 'ticketdetail' && currentTicketId) {
                  console.log(`[ensureSocketConnected] Re-joining room: ${currentTicketId}`);
                  socket.emit('join_ticket_room', { ticket_id: currentTicketId });
              }
          }
     }
 
-    /**
-     * Sets up listeners for various WebSocket events from the server.
-     * Should be called after a successful connection.
-     */
     function setupSocketListeners() {
-         if (!socket) return; // Should not happen if called correctly, but safety check
+         if (!socket) return;
          console.log("[setupSocketListeners] Setting up WebSocket event listeners.");
 
-         // --- Clear existing listeners to prevent duplicates on reconnect ---
          socket.off('new_message');
          socket.off('room_joined');
          socket.off('error_message');
@@ -1615,48 +1435,37 @@ document.addEventListener('DOMContentLoaded', () => {
          socket.off('ticket_status_updated');
          socket.off('ticket_list_updated');
          socket.off('action_success');
-         // --- End Clear Listeners ---
 
-         // Listener for new chat messages
          socket.on('new_message', (data) => {
              console.log("[Socket Event] Received 'new_message':", data);
-             // Ensure sender_id is present (useful for context menu)
              if (!data.sender_id && data.username === currentUser?.username) {
                  data.sender_id = currentUser.user_id;
              }
-             // Only append the message if the user is currently viewing the correct ticket detail page
-             if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
-                 const chatMessagesDiv = document.getElementById('chat-messages'); // Find div in current content
+             if (currentPageKey === 'ticketdetail' && data.ticket_id === currentTicketId) {
+                 const chatMessagesDiv = document.getElementById('chat-messages');
                  if (chatMessagesDiv) {
-                     appendChatMessage(data, chatMessagesDiv); // Append the message UI
+                     appendChatMessage(data, chatMessagesDiv);
                  } else {
                      console.warn("Chat messages container not found when receiving 'new_message'.");
                  }
              } else {
-                 // Optionally show a notification for messages in other tickets
                  console.log(`Received message for ticket ${data.ticket_id}, but not currently viewing it.`);
-                 // showPopupMessage(ticketMessagePopup, `New message in ticket #${data.ticket_id.slice(-6)}`);
              }
          });
 
-         // Confirmation that the user joined a room
          socket.on('room_joined', (data) => {
              console.log(`[Socket Event] Successfully joined room: ${data.room}`);
          });
 
-         // Handle generic error messages from the socket server
          socket.on('error_message', (data) => {
              console.error('[Socket Event] Received server error:', data.message);
              showPopupMessage(errorMessagePopup, data.message || 'An unexpected chat error occurred.', true);
          });
 
-         // Handle message deletion events
          socket.on('message_deleted', (data) => {
              console.log("[Socket Event] Received 'message_deleted':", data);
-             // If viewing the correct ticket, remove the message element
-             if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
+             if (currentPageKey === 'ticketdetail' && data.ticket_id === currentTicketId) {
                  const chatMessagesDiv = document.getElementById('chat-messages');
-                 // Find the specific message element using its timestamp data attribute
                  const messageToRemove = chatMessagesDiv?.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
                  if (messageToRemove) {
                      messageToRemove.remove();
@@ -1667,222 +1476,149 @@ document.addEventListener('DOMContentLoaded', () => {
              }
          });
 
-         // Handle ticket status updates (open/closed)
          socket.on('ticket_status_updated', (data) => {
               console.log("[Socket Event] Received 'ticket_status_updated':", data);
-              // If on the main tickets list page, refresh the entire list to reflect the change
-              if (currentPage === 'tickets') {
+              if (currentPageKey === 'tickets') {
                   console.log(`[Socket Event] Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing ticket list.`);
-                  fetchTickets(); // Re-fetch the list
+                  fetchTickets();
               }
-              // If viewing the specific ticket that was updated, show a notification
-              if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
+              if (currentPageKey === 'ticketdetail' && data.ticket_id === currentTicketId) {
                   showPopupMessage(ticketMessagePopup, `Ticket status successfully updated to ${data.status}.`);
-                  // Optionally, update any status indicator directly on the detail page UI
-                  // const statusIndicator = document.getElementById('ticket-detail-status');
-                  // if (statusIndicator) statusIndicator.textContent = `Status: ${data.status}`;
               }
-              // Update the status stored in the context menu data if it matches the updated ticket
               if (contextMenuData.ticketId === data.ticket_id) {
                   contextMenuData.ticketStatus = data.status;
               }
          });
 
-          // Handle events indicating the overall ticket list needs refreshing (e.g., a ticket was deleted)
           socket.on('ticket_list_updated', () => {
               console.log("[Socket Event] Received 'ticket_list_updated' (likely due to deletion/creation).");
-              // If currently on the tickets page, refresh the list
-              if (currentPage === 'tickets') {
+              if (currentPageKey === 'tickets') {
                   console.log("[Socket Event] Refreshing ticket list.");
                   fetchTickets();
               }
-              // If viewing a ticket detail that might have just been deleted, consider redirecting
-              if (currentPage === 'ticketdetail' && currentTicketId) { // Use lowercase key
-                  // A simple approach is to just redirect, as the current ticket might be gone.
-                  // A more robust approach would be to try fetching the current ticket again
-                  // and redirecting only if it fails with a 404.
+              if (currentPageKey === 'ticketdetail' && currentTicketId) {
                   console.warn(`[Socket Event] Ticket list updated while viewing ticket ${currentTicketId}. The ticket might have been deleted.`);
                   showPopupMessage(errorMessagePopup, "The ticket list has changed. You may need to navigate back.", true, 5000);
-                  // Optional: Force redirect after a delay
-                  // setTimeout(() => { window.location.hash = '/#tickets'; }, 4000);
               }
           });
 
-         // Handle generic success messages (e.g., after an action via context menu)
          socket.on('action_success', (data) => {
              console.log("[Socket Event] Received 'action_success':", data);
-             showPopupMessage(paymentMessage, data.message || 'Action completed successfully.'); // Use green popup
+             showPopupMessage(paymentMessage, data.message || 'Action completed successfully.');
          });
     }
 
-    /**
-     * Disconnects the WebSocket if it's currently connected.
-     */
     function disconnectSocket() {
-        if (socket?.connected) { // Check if socket exists and is connected
+        if (socket?.connected) {
             console.log('[disconnectSocket] Disconnecting WebSocket...');
             socket.disconnect();
         }
-        socket = null; // Clear the socket variable
+        socket = null;
     }
 
+
     // --- Modal and Context Menu Logic ---
+    // ... (showUserInfoModal, hideUserInfoModal, positionContextMenu, hideContextMenu, hideContextMenuOnClickOutside, showChatContextMenu, showTicketContextMenu remain the same) ...
+    // ... (Context Menu Action Handlers: deleteChatMessage, closeTicket, reopenTicket, deleteTicket remain the same) ...
+    // ... (Product Edit Modal Logic: openProductEditModal, toggleCustomHexInput, closeProductEditModal, handleSaveProduct, handleDeleteProduct remain the same, but ensure internal checks use currentPageKey) ...
 
-    /**
-     * Shows the user info modal, populating it with data for the given user ID.
-     * Attempts to use locally available role data first, could be extended to fetch if needed.
-     * @param {string} senderId - The Discord User ID of the user.
-     * @param {string} username - The username to display.
-     */
-    function showUserInfoModal(senderId, username) {
-         if (!userInfoModal || !senderId) return; // Ensure modal exists and ID is provided
+        function showUserInfoModal(senderId, username) {
+         if (!userInfoModal || !senderId) return;
 
-         // Populate basic info
          if (modalUsername) modalUsername.textContent = username || 'Unknown User';
          if (modalUserId) modalUserId.textContent = senderId;
-         // Reset roles display to loading state
          if (modalUserRoles) modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Loading roles...</p>';
 
-         // Attempt to populate roles if viewing the currently logged-in user
          if (currentUser?.logged_in && currentUser.user_id === senderId && currentUser.roles) {
-             displayUserRoles(currentUser.roles); // Use the existing function to render roles
+             displayUserRoles(currentUser.roles); // Use displayUserRoles defined for dashboard
          } else {
-             // If viewing another user, or roles aren't in currentUser state
-             // For now, show unavailable. Could implement an API call here.
              if (modalUserRoles) modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information not available for this user.</p>';
-             // TODO: Optional - Fetch roles via API if needed:
-             // fetch(`${API_BASE_URL}/api/user/${senderId}/roles`)
-             //   .then(response => response.json())
-             //   .then(roles => displayUserRoles(roles)) // Assuming API returns roles in same format
-             //   .catch(error => {
-             //     console.error("Failed to fetch roles for user modal:", error);
-             //     if (modalUserRoles) modalUserRoles.innerHTML = '<p class="text-red-400 text-xs">Could not load roles.</p>';
-             //   });
          }
-         // Show the modal
          userInfoModal.classList.add('active');
     }
 
-    /** Hides the user info modal. */
     function hideUserInfoModal() {
         if (userInfoModal) userInfoModal.classList.remove('active');
     }
 
-    /**
-     * Positions a context menu element near the event target.
-     * Adjusts position to stay within viewport boundaries.
-     * @param {HTMLElement} menuElement - The context menu DOM element.
-     * @param {MouseEvent} event - The contextmenu event object.
-     */
     function positionContextMenu(menuElement, event) {
          if (!menuElement || !event) return;
-
-         const rect = event.target.getBoundingClientRect(); // Get position of the clicked element
-         // Calculate initial desired position (slightly offset from cursor)
+         const rect = event.target.getBoundingClientRect();
          let top = event.clientY + window.scrollY + 5;
          let left = event.clientX + window.scrollX + 5;
-
-         // Get menu dimensions (use estimates if not yet rendered)
          const menuHeight = menuElement.offsetHeight || 150;
          const menuWidth = menuElement.offsetWidth || 150;
-
-         // Get viewport dimensions
          const windowHeight = window.innerHeight + window.scrollY;
          const windowWidth = window.innerWidth + window.scrollX;
-
-         // Adjust position if menu would go off-screen
-         if (top + menuHeight > windowHeight) { // Off bottom edge
-             top = event.clientY + window.scrollY - menuHeight - 5; // Place above cursor
-         }
-         if (left + menuWidth > windowWidth) { // Off right edge
-             left = event.clientX + window.scrollX - menuWidth - 5; // Place left of cursor
-         }
-         // Ensure menu doesn't go off the top or left edge
+         if (top + menuHeight > windowHeight) { top = event.clientY + window.scrollY - menuHeight - 5; }
+         if (left + menuWidth > windowWidth) { left = event.clientX + window.scrollX - menuWidth - 5; }
          if (top < window.scrollY) top = window.scrollY;
          if (left < window.scrollX) left = window.scrollX;
-
-         // Apply calculated position and make visible
          menuElement.style.top = `${top}px`;
          menuElement.style.left = `${left}px`;
          menuElement.style.display = 'block';
      }
 
-    /** Hides any currently visible context menu. */
     function hideContextMenu() {
         if (chatContextMenu) chatContextMenu.style.display = 'none';
         if (ticketContextMenu) ticketContextMenu.style.display = 'none';
-        // Remove the click/scroll listeners used to close the menu
         document.removeEventListener('click', hideContextMenuOnClickOutside);
         window.removeEventListener('scroll', hideContextMenu);
-        currentContextMenu = null; // Reset the tracked menu
+        currentContextMenu = null;
     }
 
-    /** Event listener callback to hide context menu when clicking outside it. */
     function hideContextMenuOnClickOutside(event) {
-        // If a menu is open and the click was outside of it
         if (currentContextMenu && !currentContextMenu.contains(event.target)) {
             hideContextMenu();
         }
     }
 
-    /** Shows the chat context menu (delete message, user info). Requires moderator role. */
     function showChatContextMenu(event) {
-         event.preventDefault(); // Prevent default browser context menu
-         hideContextMenu(); // Hide any other menus first
-         // Check permissions and element validity
+         event.preventDefault();
+         hideContextMenu();
          if (!currentUser?.is_moderator || !chatContextMenu) return;
          const messageElement = event.target.closest('.chat-message');
-         if (!messageElement) return; // Ensure the click was on a message
+         if (!messageElement) return;
 
-         // Store relevant data from the clicked message element
-         contextMenuData.ticketId = currentTicketId; // Assumes this is set correctly for the page
+         contextMenuData.ticketId = currentTicketId;
          contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
          contextMenuData.senderId = messageElement.dataset.senderId;
-         contextMenuData.ticketStatus = null; // Not needed for chat context
+         contextMenuData.ticketStatus = null;
 
-         // Position and display the chat context menu
          positionContextMenu(chatContextMenu, event);
-         currentContextMenu = chatContextMenu; // Track this as the active menu
+         currentContextMenu = chatContextMenu;
 
-         // Add listeners to close the menu on next click or scroll (use timeout to avoid immediate self-closing)
          setTimeout(() => {
               document.addEventListener('click', hideContextMenuOnClickOutside);
-              window.addEventListener('scroll', hideContextMenu, { once: true }); // Auto-remove scroll listener after firing once
+              window.addEventListener('scroll', hideContextMenu, { once: true });
          }, 0);
      }
 
-    /** Shows the ticket context menu (close, reopen, delete). Permissions vary by action. */
     function showTicketContextMenu(event) {
-          event.preventDefault(); // Prevent default browser menu
-          hideContextMenu(); // Hide other menus
-          // Check user login and element validity
+          event.preventDefault();
+          hideContextMenu();
           if (!currentUser?.logged_in || !ticketContextMenu) return;
-          const ticketElement = event.target.closest('.ticket-list-item');
-          if (!ticketElement) return; // Ensure click was on a ticket item
+          const ticketElement = event.target.closest('.ticket-list-item'); // Should be <a> now
+          if (!ticketElement) return;
 
-          // Store relevant data from the clicked ticket element
           contextMenuData.ticketId = ticketElement.dataset.ticketId;
           contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
-          contextMenuData.senderId = null; // Not needed
-          contextMenuData.messageTimestamp = null; // Not needed
+          contextMenuData.senderId = null;
+          contextMenuData.messageTimestamp = null;
           console.log("[showTicketContextMenu] Context data:", contextMenuData);
 
-          // Determine which actions are available based on role and status
           const isMod = currentUser.is_moderator === true;
-          const canClose = contextMenuData.ticketStatus === 'open'; // Anyone can close open tickets
-          const canReopen = contextMenuData.ticketStatus === 'closed' && isMod; // Only mods can reopen closed tickets
-          const canDelete = isMod; // Only mods can delete tickets
+          const canClose = contextMenuData.ticketStatus === 'open';
+          const canReopen = contextMenuData.ticketStatus === 'closed' && isMod;
+          const canDelete = isMod;
 
-          // Show/hide the corresponding menu items
           contextCloseTicketButton.classList.toggle('hidden', !canClose);
           contextReopenTicketButton.classList.toggle('hidden', !canReopen);
           contextDeleteTicketButton.classList.toggle('hidden', !canDelete);
 
-          // Only display the menu if at least one action is available
           if (canClose || canReopen || canDelete) {
               positionContextMenu(ticketContextMenu, event);
-              currentContextMenu = ticketContextMenu; // Track active menu
-              // Add listeners to close the menu
+              currentContextMenu = ticketContextMenu;
               setTimeout(() => {
                    document.addEventListener('click', hideContextMenuOnClickOutside);
                    window.addEventListener('scroll', hideContextMenu, { once: true });
@@ -1890,118 +1626,85 @@ document.addEventListener('DOMContentLoaded', () => {
           }
      }
 
-    // --- Context Menu Action Handlers (Emit Socket Events) ---
-
     function deleteChatMessage() {
-          // Validate necessary data and connection state
           if (!contextMenuData.ticketId || !contextMenuData.messageTimestamp || !socket?.connected) {
-              showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true);
-              return;
+              showPopupMessage(errorMessagePopup, 'Cannot delete message: Invalid state or not connected.', true); return;
           }
           console.log(`[Action] Attempting to delete message: Ticket ${contextMenuData.ticketId}, Timestamp ${contextMenuData.messageTimestamp}`);
-          // Emit event to server
-          socket.emit('delete_message', {
-              ticket_id: contextMenuData.ticketId,
-              message_timestamp: contextMenuData.messageTimestamp
-          });
-          hideContextMenu(); // Close menu after action
+          socket.emit('delete_message', { ticket_id: contextMenuData.ticketId, message_timestamp: contextMenuData.messageTimestamp });
+          hideContextMenu();
       }
 
     function closeTicket() {
           if (!contextMenuData.ticketId || !socket?.connected) {
-              showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true);
-              return;
+              showPopupMessage(errorMessagePopup, 'Cannot close ticket: Invalid state or not connected.', true); return;
           }
           console.log(`[Action] Attempting to close ticket: ${contextMenuData.ticketId}`);
-          socket.emit('update_ticket_status', {
-              ticket_id: contextMenuData.ticketId,
-              new_status: 'closed'
-          });
+          socket.emit('update_ticket_status', { ticket_id: contextMenuData.ticketId, new_status: 'closed' });
           hideContextMenu();
       }
 
     function reopenTicket() {
           if (!contextMenuData.ticketId || !socket?.connected) {
-              showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true);
-              return;
+              showPopupMessage(errorMessagePopup, 'Cannot reopen ticket: Invalid state or not connected.', true); return;
           }
-          // Permission check (should be redundant as menu item is hidden, but good practice)
           if (!currentUser?.is_moderator) {
-              showPopupMessage(errorMessagePopup, 'You do not have permission to reopen tickets.', true);
-              hideContextMenu();
-              return;
+              showPopupMessage(errorMessagePopup, 'You do not have permission to reopen tickets.', true); hideContextMenu(); return;
           }
           console.log(`[Action] Attempting to reopen ticket: ${contextMenuData.ticketId}`);
-          socket.emit('update_ticket_status', {
-              ticket_id: contextMenuData.ticketId,
-              new_status: 'open'
-          });
+          socket.emit('update_ticket_status', { ticket_id: contextMenuData.ticketId, new_status: 'open' });
           hideContextMenu();
       }
 
     function deleteTicket() {
           if (!contextMenuData.ticketId || !socket?.connected) {
-              showPopupMessage(errorMessagePopup, 'Cannot delete ticket: Invalid state or not connected.', true);
-              return;
+              showPopupMessage(errorMessagePopup, 'Cannot delete ticket: Invalid state or not connected.', true); return;
           }
-          // Permission check
           if (!currentUser?.is_moderator) {
-              showPopupMessage(errorMessagePopup, 'You do not have permission to delete tickets.', true);
-              hideContextMenu();
-              return;
+              showPopupMessage(errorMessagePopup, 'You do not have permission to delete tickets.', true); hideContextMenu(); return;
           }
-          // Confirmation dialog
           const shortId = contextMenuData.ticketId.slice(-6);
           if (confirm(`Are you sure you want to permanently delete ticket #${shortId}? This action cannot be undone.`)) {
               console.log(`[Action] Attempting to delete ticket: ${contextMenuData.ticketId}`);
               socket.emit('delete_ticket', { ticket_id: contextMenuData.ticketId });
           }
-          hideContextMenu(); // Close menu regardless of confirmation
+          hideContextMenu();
       }
 
-    // --- Product Edit Modal Logic ---
-
-    /** Opens the product edit/add modal, optionally pre-filling with product data. */
     function openProductEditModal(product = null) {
-        // Ensure all modal elements exist (these are global/part of the shell)
          if (!productEditModal || !productEditForm || !customHexInputContainer || !productModalTitle || !productEditIdInput || !productEditNameInput || !productEditThumbnailInput || !productEditPriceInput || !productEditTagInput || !productEditTagColorSelect || !productEditCustomHexInput || !productEditDescriptionInput || !productEditFeaturesInput || !productEditPaymentLinkInput || !productEditStatus || !productEditThumbnailFilename) {
              console.error("Cannot open product modal: One or more elements not found.");
              showPopupMessage(errorMessagePopup, "Error opening product editor.", true);
              return;
          }
-         // Reset form fields and status message
          productEditForm.reset();
          productEditStatus.textContent = '';
-         productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset style
+         productEditStatus.className = 'text-sm text-center h-5 mt-2';
          productEditThumbnailFilename.textContent = 'No file selected';
 
-         if (product) { // Editing existing product
+         if (product) {
              productModalTitle.textContent = 'Edit Product';
-             productEditIdInput.value = product._id; // Set hidden ID field
+             productEditIdInput.value = product._id;
              productEditNameInput.value = product.name || '';
              productEditThumbnailInput.value = product.thumbnailUrl || '';
              productEditPriceInput.value = product.price || '';
              productEditTagInput.value = product.tag || '';
-             // Handle tag color selection (including custom hex)
              const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
              productEditTagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
              productEditCustomHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
              productEditDescriptionInput.value = product.description || '';
-             productEditFeaturesInput.value = (product.features || []).join('\n'); // Join features array with newlines
+             productEditFeaturesInput.value = (product.features || []).join('\n');
              productEditPaymentLinkInput.value = product.paymentLink || '';
-         } else { // Adding new product
+         } else {
              productModalTitle.textContent = 'Add New Product';
-             productEditIdInput.value = ''; // Ensure ID is empty
-             productEditTagColorSelect.value = 'gray'; // Default color
+             productEditIdInput.value = '';
+             productEditTagColorSelect.value = 'gray';
              productEditCustomHexInput.value = '';
          }
-         // Show/hide the custom hex input based on the selected color
          toggleCustomHexInput();
-         // Display the modal
          productEditModal.classList.add('active');
     }
 
-    /** Shows or hides the custom HEX color input based on the dropdown selection. */
     function toggleCustomHexInput() {
          if (customHexInputContainer && productEditTagColorSelect) {
               const selectedColor = productEditTagColorSelect.value;
@@ -2009,30 +1712,25 @@ document.addEventListener('DOMContentLoaded', () => {
          }
      }
 
-    /** Closes the product edit/add modal. */
     function closeProductEditModal() {
          if (productEditModal) productEditModal.classList.remove('active');
      }
 
-    /** Handles the submission of the product edit/add form. Sends data to API. */
     async function handleSaveProduct(event) {
-          event.preventDefault(); // Prevent default form submission
-          // Ensure form and button exist
+          event.preventDefault();
           if (!productEditForm || !productSaveButton) return;
 
-          // Disable button and set loading state
           productSaveButton.disabled = true; productSaveButton.textContent = 'Saving...';
-          productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
+          productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2';
 
           const productId = productEditIdInput.value;
-          const isEditing = !!productId; // True if productId has a value
+          const isEditing = !!productId;
           const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
           const method = isEditing ? 'PUT' : 'POST';
 
-          // --- Validate and determine tag color/hex ---
           let tagColorValue = productEditTagColorSelect.value;
           let customHexValue = productEditCustomHexInput.value.trim();
-          let finalTagColor = 'gray'; // Default
+          let finalTagColor = 'gray';
           let finalCustomHex = null;
 
           if (tagColorValue === 'custom') {
@@ -2040,147 +1738,114 @@ document.addEventListener('DOMContentLoaded', () => {
                   finalTagColor = 'custom';
                   finalCustomHex = customHexValue;
               } else {
-                  // Invalid custom hex format
                   productEditStatus.textContent = 'Invalid Custom HEX format. Use #RRGGBB (e.g., #FF5733).';
                   productEditStatus.classList.add('text-red-400');
                   productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product';
-                  return; // Stop submission
+                  return;
               }
           } else {
-              // Use the selected standard color
               finalTagColor = tagColorValue || 'gray';
-              finalCustomHex = null; // Ensure custom hex is null if not selected
+              finalCustomHex = null;
           }
-          // --- End color validation ---
 
-          // --- Construct product data object ---
           const productData = {
               name: productEditNameInput.value.trim(),
-              thumbnailUrl: productEditThumbnailInput.value.trim() || null, // Use null if empty
-              price: parseFloat(productEditPriceInput.value), // Convert to number
+              thumbnailUrl: productEditThumbnailInput.value.trim() || null,
+              price: parseFloat(productEditPriceInput.value),
               tag: productEditTagInput.value.trim() || null,
               tagColor: finalTagColor,
               customBorderHex: finalCustomHex,
               description: productEditDescriptionInput.value.trim() || null,
-              // Split features textarea by newline, trim whitespace, filter empty lines
               features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
               paymentLink: productEditPaymentLinkInput.value.trim() || null
           };
 
-          // Basic client-side validation for required fields
           if (!productData.name || isNaN(productData.price) || productData.price < 0) {
                productEditStatus.textContent = 'Product Name and a valid non-negative Price are required.';
                productEditStatus.classList.add('text-red-400');
                productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product';
-               return; // Stop submission
+               return;
           }
-
-          // TODO: Handle file upload if a file was selected
-          // This currently only saves the URL from the text input.
-          // If productEditThumbnailFileInput.files[0] exists, you'd need
-          // to upload it (likely using FormData) separately or along with this request.
 
           console.log(`[Save Product] ${isEditing ? 'Updating' : 'Adding'} product:`, productData);
 
           try {
-              // Send data to the API
               const response = await fetch(url, {
                   method: method,
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(productData),
-                  credentials: 'include' // Send auth cookies
+                  credentials: 'include'
               });
-              const result = await response.json(); // Attempt to parse response
+              const result = await response.json();
               if (!response.ok) {
-                  // Throw error using message from API or default
                   throw new Error(result.error || `HTTP error! status: ${response.status}`);
               }
 
-              // --- Success ---
               showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
-              closeProductEditModal(); // Close the modal on success
-              // Refresh relevant views if the user is currently on them
-              if (currentPage === 'dashboard') await loadProductManagementTable();
-              if (currentPage === 'products') await fetchProducts();
+              closeProductEditModal();
+              if (currentPageKey === 'dashboard') await loadProductManagementTable();
+              if (currentPageKey === 'products') await fetchProducts();
 
           } catch (error) {
-              // --- Error Handling ---
               console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
               productEditStatus.textContent = `Error: ${error.message}`;
               productEditStatus.classList.add('text-red-400');
               showPopupMessage(errorMessagePopup, `Failed to save product: ${error.message}`, true);
           } finally {
-              // --- Cleanup ---
-              // Re-enable the save button
               productSaveButton.disabled = false;
               productSaveButton.textContent = 'Save Product';
           }
      }
 
-    /** Handles the click on a delete product button (usually in the admin table). */
     async function handleDeleteProduct(productId, productName) {
-         if (!productId) return; // Need an ID to delete
-
-         // Confirmation dialog
+         if (!productId) return;
          if (!confirm(`Are you sure you want to permanently delete the product "${productName || 'this product'}"? This action cannot be undone.`)) {
-             return; // User cancelled
+             return;
          }
 
          console.log(`[Delete Product] Attempting to delete product ID: ${productId}`);
-         // Optionally show loading state on the specific row or globally
-         // loadingOverlay.classList.add('active');
 
          try {
-             // Send DELETE request to the API
              const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
                  method: 'DELETE',
-                 credentials: 'include' // Send auth cookies
+                 credentials: 'include'
              });
-
-             // Check response status (DELETE might return 200 OK or 204 No Content on success)
              if (!response.ok) {
                  let errorData = { error: `HTTP ${response.status}` };
-                 try { errorData = await response.json(); } catch(e){} // Try parsing error JSON
+                 try { errorData = await response.json(); } catch(e){}
                  throw new Error(errorData.error || `Failed to delete product.`);
              }
 
-             // --- Success ---
              showPopupMessage(productMessagePopup, 'Product deleted successfully!');
-             // Refresh relevant views
-             if (currentPage === 'dashboard') await loadProductManagementTable(); // Refresh admin table
-             if (currentPage === 'products') await fetchProducts(); // Refresh product grid
-             // If the user was viewing the detail page of the deleted product, redirect them
-             if (currentPage === 'productdetail' && window.location.hash.includes(`id=${productId}`)) { // Use lowercase key
+             if (currentPageKey === 'dashboard') await loadProductManagementTable();
+             if (currentPageKey === 'products') await fetchProducts();
+             // Use history.replaceState if deleting the currently viewed detail page
+             if (currentPageKey === 'productdetail' && window.location.pathname.includes(`/productdetail/${productId}`)) {
                  console.log("Deleted product was being viewed, redirecting to products list.");
-                 window.location.hash = '/#products';
+                 history.replaceState({ path: '/products' }, '', '/products'); // Use replaceState to avoid broken back button
+                 runNavigation(); // Trigger navigation to /products
              }
 
          } catch (error) {
-             // --- Error Handling ---
              console.error("Error deleting product:", error);
              showPopupMessage(errorMessagePopup, `Failed to delete product: ${error.message}`, true);
          } finally {
-             // --- Cleanup ---
              // loadingOverlay.classList.remove('active');
          }
      }
+
 
     // --- Logout Logic ---
 
     /** Handles the user logout process. */
     async function handleLogout() {
          console.log('[handleLogout] Initiating logout...');
-         // Optionally show loading state
-         // loadingOverlay.classList.add('active');
-
          try {
-             // Attempt to notify the backend about the logout
              const response = await fetch(`${API_BASE_URL}/logout`, {
-                 method: 'POST', // Use POST or GET as required by your backend API
+                 method: 'POST',
                  credentials: 'include'
              });
              if (!response.ok) {
-                 // Log backend logout failure but continue with client-side cleanup
                  let errorMsg = `Backend logout failed with status: ${response.status}`;
                  try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
                  console.warn(`[handleLogout] ${errorMsg}. Proceeding with client-side cleanup.`);
@@ -2188,36 +1853,64 @@ document.addEventListener('DOMContentLoaded', () => {
                  console.log("[handleLogout] Backend logout successful.");
              }
          } catch(error) {
-             // Log network errors during backend logout attempt
              console.error("[handleLogout] Network error during backend logout request:", error);
          } finally {
-              // --- Client-Side Cleanup (Always perform) ---
-              currentUser = null; // Clear user state
-              isInitialLoginCheckComplete = false; // Reset flags to force re-check on reload
+              currentUser = null;
+              isInitialLoginCheckComplete = false;
               isInitialConfigLoadComplete = false;
-              disconnectSocket(); // Disconnect WebSocket
-              updateHeaderUI(null); // Update header to show login button
-              // Clear the main content area (optional, as navigation will reload)
-              // if (pageContentContainer) pageContentContainer.innerHTML = '';
-              console.log("[handleLogout] Client-side cleanup complete. Redirecting to /#home.");
-              // loadingOverlay.classList.remove('active'); // Hide loading state
-              window.location.hash = '/#home'; // Navigate to home page
-              // Force reload if navigation doesn't trigger content update reliably
-              // window.location.reload();
+              disconnectSocket();
+              updateHeaderUI(null);
+              console.log("[handleLogout] Client-side cleanup complete. Navigating to /");
+              // Navigate to home page using History API
+              history.pushState({ path: '/' }, '', '/');
+              runNavigation(); // Trigger navigation to home
          }
      }
 
     // --- Global Event Listeners Setup ---
 
-    // Listen for URL hash changes to trigger navigation
-    window.addEventListener('hashchange', runNavigation);
+    // Listen for Browser Back/Forward
+    window.addEventListener('popstate', (event) => {
+        console.log("[Popstate] Browser navigation triggered.", event.state);
+        runNavigation(); // Re-run navigation logic based on the new URL path
+    });
+
+    // Listen for clicks to intercept internal links
+    document.addEventListener('click', (event) => {
+        // Find the closest ancestor anchor tag
+        const link = event.target.closest('a');
+
+        // Check if it's a valid internal link we should handle
+        if (link &&
+            link.target !== '_blank' && // Ignore links opening in new tabs
+            link.origin === window.location.origin && // Ignore external links
+            !link.pathname.startsWith('/api/') && // Ignore API links
+            !link.hasAttribute('data-spa-ignore') && // Ignore links explicitly marked to be ignored
+            link.href !== window.location.href // Ignore clicks on the current page link
+           )
+        {
+            // Check if it's a path link (href doesn't contain '#')
+            // Or if it's just the root path '/'
+            const isPathLink = link.getAttribute('href').startsWith('/') && !link.getAttribute('href').includes('#');
+
+            if(isPathLink) {
+                event.preventDefault(); // Prevent default browser navigation
+                const targetPath = link.pathname + link.search + link.hash; // Preserve query/hash if any (though we primarily use path now)
+
+                console.log(`[Link Intercept] Navigating to: ${targetPath}`);
+                history.pushState({ path: targetPath }, '', targetPath); // Update URL bar without reload
+                runNavigation(); // Trigger content loading for the new path
+            }
+        }
+    });
+
 
     // Initial setup on DOM ready
     createSnowflakes(); // Start snow effect
     checkLoginStatus(); // Start the initialization sequence (auth -> config -> navigation)
 
     // Listeners for static elements in the shell (header, modals, context menus)
-    if (loginButton) loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
+    if (loginButton) loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; }); // Keep external link behavior
     if (logoutButton) logoutButton.addEventListener('click', handleLogout); // Header logout button
     if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
 
@@ -2231,8 +1924,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (contextDeleteButton) contextDeleteButton.addEventListener('click', deleteChatMessage);
     if (contextUserInfoButton) contextUserInfoButton.addEventListener('click', () => {
          if (contextMenuData.senderId) {
-             // Attempt to find the username from the message element that triggered the menu
-             // This might be unreliable if the DOM changed. Consider fetching username if needed.
              const messageElement = document.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
              const usernameElement = messageElement?.querySelector('.username');
              const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'User';
@@ -2259,18 +1950,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = event.target.files[0];
             if (file) {
                 productEditThumbnailFilename.textContent = file.name; // Display filename
-                // Clear the URL input if a file is selected, assuming file upload takes precedence
                 if (productEditThumbnailInput) productEditThumbnailInput.value = '';
-                // TODO: Implement file upload preview or preparation here if needed
             } else {
                 productEditThumbnailFilename.textContent = 'No file selected';
             }
-            // Reset file input value to allow selecting the same file again
             event.target.value = null;
         });
     }
 
     // --- End of Initialization ---
-    console.log("Shillette MPF initialization complete. Waiting for navigation events.");
+    console.log("Shillette MPF initialization complete. Using History API routing.");
 
 }); // End DOMContentLoaded
