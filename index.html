@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <link id="favicon" rel="icon" type="image/png" href="/images/icon.png"> <style type="text/tailwindcss">
+    <link id="favicon" rel="icon" type="image/png" href="/images/icon.png">
+    <style type="text/tailwindcss">
         @keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
@@ -33,7 +34,7 @@
         .card-gradient-border.blue-border::before { background-image: linear-gradient(145deg, #3b82f6, #1e40af, #000000); animation-duration: 5.5s; }
         .card-gradient-border.green-border::before { background-image: linear-gradient(145deg, #22c55e, #15803d, #000000); animation-duration: 6.5s; }
         .card-gradient-border.red-border::before { background-image: linear-gradient(145deg, #ef4444, #991b1b, #000000); animation-duration: 4.5s; }
-        .card-gradient-border.purple-border::before { background-image: linear-gradient(145deg, #a855f7, #6b21a8, #000000); animation-duration: 5.8s; }
+        .card-gradient-border.purple-border::before { background-image: linear-gradient(145deg, #a855f7, #6b21a8, #000000); animation-duration: 5.8s; } /* Used for Config button */
         .card-gradient-border.yellow-border::before { background-image: linear-gradient(145deg, #eab308, #a16207, #000000); animation-duration: 5.2s; }
         .card-gradient-border.pink-border::before { background-image: linear-gradient(145deg, #ec4899, #be185d, #000000); animation-duration: 5.6s; }
         .card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; }
@@ -45,6 +46,7 @@
         .product-card-inner { @apply p-6 flex flex-col flex-grow; }
         .product-card:hover { transform: scale(1.03); }
 
+        /* Define hover glows - match border color names */
         .product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); }
         .product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175, 0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); }
         .product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); }
@@ -62,18 +64,21 @@
         #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2, #product-detail-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
         #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section, .product-detail-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
 
-        .paypal-button, .purchase-button {
-            @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
-        }
+        /* Button Styles */
+        .paypal-button, .purchase-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed; }
         .buy-now-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
         .add-basket-button { @apply bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
+        .config-button { @apply bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 w-full text-center; } /* Style for Config button */
+        .no-config-button { @apply bg-gray-600 text-white font-medium py-2 px-4 rounded-lg w-full text-center cursor-not-allowed opacity-70; } /* Style for Disabled Config */
+        .register-button { @apply w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; } /* Style for Register Button */
 
-        #payment-message, #ticket-message, #error-message, #config-message, #product-message {
+
+        #payment-message, #ticket-message, #error-message, #config-message, #product-message, #registration-message { /* <<< ADDED registration-message */
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
         }
-        #payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show { opacity: 1; }
-        #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; }
+        #payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show, #registration-message.show { opacity: 1; } /* <<< ADDED registration-message */
+        #payment-message, #ticket-message, #config-message, #product-message, #registration-message { @apply bg-green-600; } /* <<< ADDED registration-message */
         #error-message { @apply bg-red-600; }
 
         #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; }
@@ -85,6 +90,7 @@
         .page-section { display: none; }
         .page-section.active { display: block; }
 
+        /* Ticket Styles (unchanged) */
         .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors; }
         .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
         .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
@@ -95,6 +101,7 @@
         #moderator-management-view details[open] summary { @apply text-orange-400; }
         .ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2; }
 
+        /* Chat Styles (unchanged) */
         #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; }
         .chat-message { @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors; }
         .chat-message .username { @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; }
@@ -103,6 +110,7 @@
         #chat-input { @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; }
         #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; }
 
+        /* Modal Styles (unchanged) */
         .modal { @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; }
         .modal.active { @apply opacity-100 pointer-events-auto; }
         .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; }
@@ -110,14 +118,17 @@
         .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors; }
         #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; }
 
+        /* Context Menu Styles (unchanged) */
         #chat-context-menu, #ticket-context-menu { @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; }
         .context-menu-item { @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left; }
         .context-menu-item.hidden { display: none; }
         .context-menu-item.delete { @apply hover:bg-red-600 text-red-400 hover:text-white; }
 
+        /* Mobile Menu Styles (unchanged) */
         #mobile-menu { @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; }
         .mobile-menu-link { @apply block text-gray-300 hover:text-white transition duration-200 py-1; }
 
+        /* Admin Section Styles (unchanged) */
         .admin-section h3 { @apply text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2; }
         .admin-form label { @apply block text-sm font-medium text-gray-300 mb-1; }
         .admin-form > div > input[type="text"],
@@ -126,16 +137,20 @@
         .admin-form > div > textarea,
         .admin-form > div > select,
         .admin-form > .grid > div > input[type="text"],
-        .admin-form > .grid > div > select {
+        .admin-form > .grid > div > select,
+        /* <<< ADDED: Style for registration form inputs */
+        #product-registration-form input[type="text"],
+        #product-registration-form input[type="email"],
+        #product-registration-form select {
              @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4;
         }
         .admin-form .link-group { @apply flex items-center space-x-2 mb-2; }
         .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0; }
-
         .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; }
         .admin-form button[type="button"] { @apply bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300; }
 
 
+        /* Product List Table (Admin) Styles (unchanged) */
         #product-list-table { @apply w-full text-sm text-left text-gray-400 mt-4; }
         #product-list-table thead { @apply text-xs text-gray-300 uppercase bg-slate-700/50; }
         #product-list-table th, #product-list-table td { @apply px-4 py-3; }
@@ -145,6 +160,7 @@
         #product-list-table .actions .delete-btn { @apply bg-red-600 hover:bg-red-700 text-white; }
         #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; }
 
+        /* Role Span Styles (unchanged) */
         .role-span { @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block; }
 
         /* Product Detail Page Specific Styles */
@@ -154,6 +170,14 @@
         .quantity-selector button { @apply bg-slate-600 hover:bg-slate-500 text-white font-bold w-8 h-8 rounded-md transition duration-200; }
         .quantity-selector input { @apply w-12 text-center bg-slate-700 border border-slate-600 rounded-md py-1 mx-2 text-white; }
         .review-card { @apply bg-slate-700/50 p-4 rounded-md; }
+        /* <<< ADDED: Review Form Styles */
+        #review-submission-form { @apply bg-slate-700/50 p-4 rounded-md mt-6; }
+        #review-submission-form label { @apply block text-sm font-medium text-gray-300 mb-1; }
+        #review-submission-form textarea { @apply w-full bg-slate-600 border border-slate-500 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-3; }
+        #review-submission-form .star-input span { @apply text-2xl text-gray-500 cursor-pointer hover:text-yellow-400 transition-colors; }
+        #review-submission-form .star-input span.selected { @apply text-yellow-400; }
+        #review-submission-form button { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50; }
+        #review-status { @apply text-sm text-center h-5 mt-2; }
 
     </style>
 </head>
@@ -166,8 +190,7 @@
     <div id="error-message">Placeholder</div>
     <div id="config-message">Placeholder</div>
     <div id="product-message">Placeholder</div>
-
-    <div id="loading-overlay">
+    <div id="registration-message">Placeholder</div> <div id="loading-overlay">
         <div class="loader"><span class="loader-bar"></span><span class="loader-bar"></span><span class="loader-bar"></span></div>
     </div>
 
@@ -182,6 +205,7 @@
             <div id="modal-user-roles"><p class="text-gray-500 text-xs">Roles not available.</p></div>
         </div>
     </div>
+
 
     <div id="product-edit-modal" class="modal">
         <div class="modal-content max-w-lg">
@@ -245,11 +269,16 @@
                     <label for="product-edit-paymentLink">Payment Link/ID (e.g., PayPal button ID)</label>
                     <input type="text" id="product-edit-paymentLink">
                 </div>
-                <button type="submit" id="product-save-button">Save Product</button>
+                <div>
+                    <label for="product-edit-config-url">Config URL (Optional)</label>
+                    <input type="text" id="product-edit-config-url" placeholder="Enter URL for config page/download...">
+                </div>
+                 <button type="submit" id="product-save-button">Save Product</button>
                 <div id="product-edit-status" class="text-sm text-center h-5 mt-2"></div>
             </form>
         </div>
     </div>
+
 
     <div id="chat-context-menu">
         <button class="context-menu-item" id="context-delete-message">Delete Message</button>
@@ -262,10 +291,12 @@
     </div>
 
 
+
     <header class="py-4 sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img id="header-site-icon" src="/images/icon.png" alt="Site Icon" class="w-8 h-8" onerror="this.src='/images/icon.png'; this.onerror=null;"> <span id="site-title-display" class="text-2xl font-bold text-white">Shillette</span>
+                <img id="header-site-icon" src="/images/icon.png" alt="Site Icon" class="w-8 h-8" onerror="this.src='/images/icon.png'; this.onerror=null;">
+                <span id="site-title-display" class="text-2xl font-bold text-white">Shillette</span>
             </div>
             <div class="flex items-center space-x-6">
                 <nav id="main-navigation" class="hidden md:flex space-x-6">
@@ -289,8 +320,9 @@
             </div>
         </div>
         <div id="mobile-menu" class="hidden">
-            </div>
+             </div>
     </header>
+
 
     <main id="main-content" class="flex-grow page-section">
         <section class="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
@@ -319,7 +351,7 @@
         </section>
     </main>
 
-    <div id="products-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+     <div id="products-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
         <div class="flex justify-start mb-8">
              <a href="/#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
@@ -349,9 +381,12 @@
                 </button>
             </div>
 
+
             <div class="dashboard-card md:col-span-2">
                 <h3 class="text-lg font-semibold text-white mb-4">My Products</h3>
-                <p class="text-gray-400">Purchased product information will appear here (Feature not implemented).</p>
+                <div id="dashboard-my-products-list" class="space-y-3">
+                    <p id="dashboard-my-products-status" class="text-gray-400">Loading your products...</p>
+                </div>
             </div>
 
             <div class="dashboard-card md:col-span-1">
@@ -361,35 +396,41 @@
                 </div>
             </div>
 
+
             <div class="dashboard-card md:col-span-2">
                  <h3 class="text-lg font-semibold text-white mb-4">Settings</h3>
                  <p class="text-gray-400">User settings will appear here (Feature not implemented).</p>
             </div>
 
-            <div id="admin-dashboard-sections" class="hidden md:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="dashboard-card md:col-span-3 lg:col-span-1">
+                <h3 class="text-lg font-semibold text-white mb-4">Register a Product</h3>
+                <form id="product-registration-form" class="space-y-3">
+                     <div>
+                         <label for="register-product-select" class="block text-sm font-medium text-gray-300 mb-1">Select Product</label>
+                         <select id="register-product-select" required>
+                             <option value="">-- Select Product --</option>
+                             </select>
+                     </div>
+                     <div>
+                         <label for="register-order-id" class="block text-sm font-medium text-gray-300 mb-1">Order ID</label>
+                         <input type="text" id="register-order-id" required>
+                     </div>
+                     <div>
+                         <label for="register-email" class="block text-sm font-medium text-gray-300 mb-1">Email Used for Purchase</label>
+                         <input type="email" id="register-email" required>
+                     </div>
+                     <button type="submit" id="register-submit-button" class="register-button">Register Product</button>
+                     <div id="register-status" class="text-sm text-center h-5 mt-2"></div>
+                </form>
+            </div>
 
+
+            <div id="admin-dashboard-sections" class="hidden md:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="admin-section lg:col-span-1">
                     <h3>Site Configuration</h3>
                     <form id="site-config-form" class="admin-form">
-                        <div>
-                            <label for="config-site-title">Site Title</label>
-                            <input type="text" id="config-site-title" required>
-                        </div>
-                        <div>
-                             <label for="config-site-icon-url">Site Icon URL</label>
-                             <input type="text" id="config-site-icon-url" placeholder="e.g., /images/icon.png or https://...">
-                        </div>
-                        <div>
-                            <label>Header Links</label>
-                            <div id="config-header-links-container" class="space-y-2 mb-2">
-                                </div>
-                            <button type="button" id="add-header-link-button" class="text-sm">Add Link</button>
-                        </div>
-                        <button type="submit" id="save-config-button">Save Configuration</button>
-                        <div id="config-save-status" class="text-sm text-center h-5 mt-2"></div>
-                    </form>
+                        </form>
                 </div>
-
                 <div class="admin-section lg:col-span-1">
                     <h3>Product Management</h3>
                     <button id="add-product-button" class="mb-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">Add New Product</button>
@@ -404,68 +445,11 @@
                     </div>
                     <p id="product-list-status">Loading products...</p>
                 </div>
-
-            </div>
-            </div> </div> <div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-         <div class="flex justify-start mb-8">
-             <a href="/#products" id="back-to-products-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                 <span>Back to Products</span>
-             </a>
+            </div> </div> </div> <div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
          </div>
-         <h2>Support Tickets</h2>
-
-         <div id="moderator-management-view" class="hidden mb-8 ticket-card">
-             <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
-             <details class="mb-6" open> <summary>Active Tickets</summary>
-                 <div id="moderator-active-ticket-list" class="ticket-list-container mt-3"></div>
-                 <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
-             </details>
-             <details> <summary>Archived Tickets</summary>
-                 <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3"></div>
-                 <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
-             </details>
-         </div>
-
-         <div id="user-ticket-view" class="mb-8 ticket-card">
-             <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
-             <div id="ticket-list" class="ticket-list-container"></div>
-             <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
-         </div>
-
-         <div class="ticket-card">
-             <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
-             <form id="create-ticket-form" novalidate>
-                 <div class="mb-4">
-                     <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
-                     <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
-                 </div>
-                 <div class="mb-4">
-                     <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
-                     <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
-                 </div>
-                 <div id="create-ticket-status" class="h-6"></div>
-                 <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">Submit Ticket</button>
-             </form>
-         </div>
-     </div>
 
      <div id="ticket-detail-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-         <div class="flex justify-start mb-8">
-             <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                 <span>Back to Tickets</span>
-             </a>
          </div>
-         <h2 id="ticket-detail-subject">Ticket Subject</h2>
-         <div class="ticket-card">
-             <div id="chat-messages"><p class="text-gray-500 text-center py-4">Loading chat...</p></div>
-             <form id="chat-input-form" class="mt-4" novalidate>
-                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
-                 <button type="submit" id="send-chat-button">Send</button>
-             </form>
-         </div>
-     </div>
 
      <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
@@ -483,19 +467,11 @@
                  <h1 id="product-detail-name" class="text-3xl md:text-4xl font-bold text-white">Product Name</h1>
                  <p id="product-detail-price" class="text-4xl font-extrabold text-white">$0.00</p>
                  <div class="flex items-center space-x-4 text-sm text-gray-400">
-                     <span id="product-detail-rating" class="star-rating">
-                         </span>
-                     <span id="product-detail-stock">X in stock</span>
+                     <span id="product-detail-rating" class="star-rating"></span>
+                     <span id="product-detail-review-count">(0 Reviews)</span> <span id="product-detail-stock">X in stock</span>
                  </div>
-                 <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
-                     <button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto">Buy Now</button>
-                     <button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>
-                     <div class="flex items-center quantity-selector ml-auto">
-                         <button id="quantity-decrease">-</button>
-                         <input type="text" id="quantity-input" value="1" readonly>
-                         <button id="quantity-increase">+</button>
+                 <div id="product-detail-action-buttons" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
                      </div>
-                 </div>
                  <div id="product-detail-description-container" class="pt-4 border-t border-slate-700/50">
                     <h3 class="text-lg font-semibold text-white mb-2">Description</h3>
                     <p id="product-detail-description" class="text-gray-400 text-sm">Loading description...</p>
@@ -548,21 +524,39 @@
 
              <div class="lg:col-span-3 mt-8">
                  <h2 class="text-2xl font-bold text-white mb-6 text-left">Reviews</h2>
+                 <div id="review-submission-area" class="mb-6 hidden"> <form id="review-submission-form">
+                         <h3 class="text-lg font-semibold text-white mb-3">Write a Review</h3>
+                         <div class="mb-3">
+                              <label for="review-rating" class="block text-sm font-medium text-gray-300 mb-1">Rating</label>
+                              <div id="review-rating-stars" class="star-input flex space-x-1">
+                                   <span data-value="1">☆</span>
+                                   <span data-value="2">☆</span>
+                                   <span data-value="3">☆</span>
+                                   <span data-value="4">☆</span>
+                                   <span data-value="5">☆</span>
+                              </div>
+                              <input type="hidden" id="review-rating" required>
+                         </div>
+                         <div>
+                              <label for="review-text" class="block text-sm font-medium text-gray-300 mb-1">Review (Optional)</label>
+                              <textarea id="review-text" rows="3"></textarea>
+                         </div>
+                         <button type="submit" id="submit-review-button">Submit Review</button>
+                         <div id="review-status" class="text-sm text-center h-5 mt-2"></div>
+                     </form>
+                 </div>
                  <div id="product-reviews-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                     <p class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
-                     </div>
-             </div>
-         </div>
-     </div>
-
-
-    <footer class="bg-black mt-auto py-6 border-t border-gray-800">
+                     <p id="product-reviews-status" class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
+                 </div>
+             </div> </div> </div> <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
             <p>&copy; <span id="footer-year">2025</span> Shillette. All rights reserved.</p>
         </div>
     </footer>
 
+
     <script>
+        // --- Global Variables ---
         const pageSections = {
             '#home': 'main-content',
             '#products': 'products-page-content',
@@ -571,9 +565,22 @@
             '#ticketDetail': 'ticket-detail-content',
             '#productDetail': 'product-detail-page-content'
         };
+        let currentUser = null;
+        let userRegisteredProducts = []; // <<< Stores IDs of products registered by the current user
+        let siteConfig = null;
+        let socket = null;
+        let currentTicketId = null;
+        let activeSectionId = null;
+        let currentContextMenu = null;
+        let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null };
+        let isInitialLoginCheckComplete = false;
+        let isInitialConfigLoadComplete = false;
+        let currentProductDetailId = null; // <<< Stores the ID of the product being viewed on the detail page
+
+        // --- DOM Element References ---
         const siteTitleDisplay = document.getElementById('site-title-display');
-        const headerSiteIcon = document.getElementById('header-site-icon'); // <-- MODIFIED: Added ID
-        const faviconElement = document.getElementById('favicon'); // <-- ADDED: Favicon element ID
+        const headerSiteIcon = document.getElementById('header-site-icon');
+        const faviconElement = document.getElementById('favicon');
         const mainNavigation = document.getElementById('main-navigation');
         const mobileMenuNav = document.getElementById('mobile-menu');
         const loginButton = document.getElementById('login-button');
@@ -591,7 +598,9 @@
         const errorMessagePopup = document.getElementById('error-message');
         const configMessagePopup = document.getElementById('config-message');
         const productMessagePopup = document.getElementById('product-message');
+        const registrationMessagePopup = document.getElementById('registration-message'); // <<< ADDED
         const loadingOverlay = document.getElementById('loading-overlay');
+        // Ticket Elements
         const createTicketForm = document.getElementById('create-ticket-form');
         const ticketSubjectInput = document.getElementById('ticket-subject');
         const ticketMessageInput = document.getElementById('ticket-message-input');
@@ -604,17 +613,20 @@
         const moderatorActiveListStatus = document.getElementById('moderator-active-list-status');
         const moderatorArchivedTicketListDiv = document.getElementById('moderator-archived-ticket-list');
         const moderatorArchivedListStatus = document.getElementById('moderator-archived-list-status');
+        // Chat Elements
         const ticketDetailSubject = document.getElementById('ticket-detail-subject');
         const chatMessagesDiv = document.getElementById('chat-messages');
         const chatInputForm = document.getElementById('chat-input-form');
         const chatInput = document.getElementById('chat-input');
         const sendChatButton = document.getElementById('send-chat-button');
         const backToTicketsButton = document.getElementById('back-to-tickets-button');
+        // Modal Elements
         const userInfoModal = document.getElementById('user-info-modal');
         const modalCloseButton = document.getElementById('modal-close-button');
         const modalUsername = document.getElementById('modal-username');
         const modalUserId = document.getElementById('modal-user-id');
         const modalUserRoles = document.getElementById('modal-user-roles');
+        // Context Menu Elements
         const chatContextMenu = document.getElementById('chat-context-menu');
         const contextDeleteButton = document.getElementById('context-delete-message');
         const contextUserInfoButton = document.getElementById('context-user-info');
@@ -622,13 +634,16 @@
         const contextCloseTicketButton = document.getElementById('context-close-ticket');
         const contextReopenTicketButton = document.getElementById('context-reopen-ticket');
         const contextDeleteTicketButton = document.getElementById('context-delete-ticket');
+        // Mobile Menu Elements
         const mobileMenuButton = document.getElementById('mobile-menu-button');
+        // Product Grid Elements
         const productGrid = document.getElementById('product-grid');
         const productLoadingStatus = document.getElementById('product-loading-status');
+        // Admin Elements
         const adminDashboardSections = document.getElementById('admin-dashboard-sections');
         const siteConfigForm = document.getElementById('site-config-form');
         const configSiteTitleInput = document.getElementById('config-site-title');
-        const configSiteIconUrlInput = document.getElementById('config-site-icon-url'); // <-- MODIFIED: Added ID
+        const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
         const configHeaderLinksContainer = document.getElementById('config-header-links-container');
         const addHeaderLinkButton = document.getElementById('add-header-link-button');
         const saveConfigButton = document.getElementById('save-config-button');
@@ -654,9 +669,13 @@
         const productEditDescriptionInput = document.getElementById('product-edit-description');
         const productEditFeaturesInput = document.getElementById('product-edit-features');
         const productEditPaymentLinkInput = document.getElementById('product-edit-paymentLink');
+        const productEditConfigUrlInput = document.getElementById('product-edit-config-url'); // <<< ADDED
+        // const productEditHasConfigCheckbox = document.getElementById('product-edit-has-config'); // <<< Alt: Checkbox
         const productSaveButton = document.getElementById('product-save-button');
         const productEditStatus = document.getElementById('product-edit-status');
+        // Footer Elements
         const footerYear = document.getElementById('footer-year');
+        // Product Detail Page Elements
         const productDetailPage = document.getElementById('product-detail-page-content');
         const productDetailLoading = document.getElementById('product-detail-loading');
         const productDetailContainer = document.getElementById('product-detail-container');
@@ -664,9 +683,9 @@
         const productDetailName = document.getElementById('product-detail-name');
         const productDetailPrice = document.getElementById('product-detail-price');
         const productDetailRating = document.getElementById('product-detail-rating');
+        const productDetailReviewCount = document.getElementById('product-detail-review-count'); // <<< ADDED
         const productDetailStock = document.getElementById('product-detail-stock');
-        const productDetailBuyNow = document.getElementById('product-detail-buy-now');
-        const productDetailAddBasket = document.getElementById('product-detail-add-basket');
+        const productDetailActionButtons = document.getElementById('product-detail-action-buttons'); // <<< ADDED Button container
         const quantityDecrease = document.getElementById('quantity-decrease');
         const quantityIncrease = document.getElementById('quantity-increase');
         const quantityInput = document.getElementById('quantity-input');
@@ -677,20 +696,30 @@
         const sellerEstablished = document.getElementById('seller-established');
         const sellerReviewScore = document.getElementById('seller-review-score');
         const productReviewsList = document.getElementById('product-reviews-list');
+        const productReviewsStatus = document.getElementById('product-reviews-status'); // <<< ADDED status for reviews
+        // Review Form Elements <<< ADDED >>>
+        const reviewSubmissionArea = document.getElementById('review-submission-area');
+        const reviewSubmissionForm = document.getElementById('review-submission-form');
+        const reviewRatingStarsContainer = document.getElementById('review-rating-stars');
+        const reviewRatingInput = document.getElementById('review-rating');
+        const reviewTextInput = document.getElementById('review-text');
+        const submitReviewButton = document.getElementById('submit-review-button');
+        const reviewStatus = document.getElementById('review-status');
+        // Registration Form Elements <<< ADDED >>>
+        const productRegistrationForm = document.getElementById('product-registration-form');
+        const registerProductSelect = document.getElementById('register-product-select');
+        const registerOrderIdInput = document.getElementById('register-order-id');
+        const registerEmailInput = document.getElementById('register-email');
+        const registerSubmitButton = document.getElementById('register-submit-button');
+        const registerStatus = document.getElementById('register-status');
+        const dashboardMyProductsList = document.getElementById('dashboard-my-products-list');
+        const dashboardMyProductsStatus = document.getElementById('dashboard-my-products-status');
 
-        const API_BASE_URL = 'https://api.shillette.com';
-        const SOCKET_URL = 'https://api.shillette.com';
+        // --- API Base URL ---
+        const API_BASE_URL = 'https://api.shillette.com'; // Keep your actual URL
+        const SOCKET_URL = 'https://api.shillette.com'; // Keep your actual URL
 
-        let currentUser = null;
-        let siteConfig = null;
-        let socket = null;
-        let currentTicketId = null;
-        let activeSectionId = null;
-        let currentContextMenu = null;
-        let contextMenuData = { ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null };
-        let isInitialLoginCheckComplete = false;
-        let isInitialConfigLoadComplete = false;
-
+        // --- Helper Functions ---
         function showPopupMessage(element, message, isError = false, duration = 3500) {
              if (!element) return;
              element.textContent = message;
@@ -699,199 +728,6 @@
              element.classList.add('show');
              setTimeout(() => element.classList.remove('show'), duration);
         }
-
-        function updateHeaderUI(user) {
-             const isLoggedIn = user && user.logged_in;
-             loginButton.classList.toggle('hidden', isLoggedIn);
-             userInfo.classList.toggle('hidden', !isLoggedIn);
-             userInfo.classList.toggle('flex', isLoggedIn);
-
-             if (isLoggedIn) {
-                 userNameDisplay.textContent = user.username || 'User';
-                 userAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32` : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
-                 dashboardUserNameDisplay.textContent = user.username || 'User';
-                 dashboardUserAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64` : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
-
-                 const isMod = user.is_moderator === true;
-                 console.log(`[updateHeaderUI] Toggling admin sections. Moderator status: ${isMod} (Raw value: ${user.is_moderator})`);
-                 adminDashboardSections?.classList.toggle('hidden', !isMod);
-
-             } else {
-                 dashboardUserNameDisplay.textContent = 'User';
-                 dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
-                 adminDashboardSections?.classList.add('hidden');
-             }
-        }
-
-        function showSection(sectionElementId) {
-            console.log(`[showSection] Attempting to show element ID: ${sectionElementId}`);
-            hideContextMenu();
-
-            let foundSection = false;
-            Object.values(pageSections).forEach(id => {
-                const sectionElement = document.getElementById(id);
-                if (sectionElement) {
-                    sectionElement.classList.remove('active');
-                    sectionElement.classList.add('hidden');
-                } else {
-                    console.warn(`[showSection] Element not found for ID: ${id}`);
-                }
-            });
-
-            const targetElement = document.getElementById(sectionElementId);
-            if (targetElement) {
-                targetElement.classList.remove('hidden');
-                targetElement.classList.add('active');
-                activeSectionId = sectionElementId;
-                foundSection = true;
-                console.log(`[showSection] Successfully shown: ${sectionElementId}`);
-                window.scrollTo(0, 0);
-            }
-
-            if (!foundSection) {
-                console.warn(`[showSection] Target element ID not found: ${sectionElementId}. Defaulting to home.`);
-                const homeElement = document.getElementById(pageSections['#home']);
-                if (homeElement) {
-                    homeElement.classList.remove('hidden');
-                    homeElement.classList.add('active');
-                    activeSectionId = pageSections['#home'];
-                    console.log(`[showSection] Defaulted to ${activeSectionId}.`);
-                    window.scrollTo(0, 0);
-                } else {
-                     activeSectionId = null;
-                     console.error("[showSection] Could not find home element either!");
-                }
-            }
-
-            const isTicketRelated = sectionElementId === pageSections['#ticketDetail'] || sectionElementId === pageSections['#tickets'];
-            if (!isTicketRelated) {
-                 console.log(`[showSection] Navigating away from tickets/detail, disconnecting socket.`);
-                 disconnectSocket();
-             }
-            if (sectionElementId !== pageSections['#ticketDetail']) {
-                 currentTicketId = null;
-            }
-        }
-
-        function navigateTo(hash) {
-            console.log(`[navigateTo] Received hash: ${hash}`);
-            const hashParts = hash.split('?');
-            const baseHash = hashParts[0] || '#home';
-            const targetElementId = pageSections[baseHash] || pageSections['#home'];
-
-            console.log(`[navigateTo] Base hash: ${baseHash}, Target element ID: ${targetElementId}`);
-
-            const isProtected = ['#dashboard', '#tickets', '#ticketDetail', '#productDetail'].includes(baseHash);
-
-            if (isProtected && (!isInitialLoginCheckComplete || !isInitialConfigLoadComplete)) {
-                console.log(`[navigateTo] Initial checks not complete for protected route ${baseHash}. Deferring action.`);
-                return;
-            }
-
-            if (['#dashboard', '#tickets', '#ticketDetail'].includes(baseHash) && (!currentUser || !currentUser.logged_in)) {
-                console.log(`[navigateTo] Access denied to protected route: ${baseHash}`);
-                showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
-                if (window.location.hash !== '#home' && window.location.hash !== '/#home') {
-                    console.log(`[navigateTo] Redirecting to /#home`);
-                    window.location.hash = '/#home';
-                } else {
-                    console.log(`[navigateTo] Already on home, ensuring #home section is shown.`);
-                    if(activeSectionId !== pageSections['#home']) showSection(pageSections['#home']);
-                }
-                return;
-            }
-
-            if (['#tickets', '#ticketDetail'].includes(baseHash)) {
-                console.log(`[navigateTo] Ensuring socket is connected for route: ${baseHash}`);
-                ensureSocketConnected();
-            }
-
-            let idParam = null;
-            if (baseHash === '#ticketDetail' || baseHash === '#productDetail') {
-                 const params = new URLSearchParams(hashParts[1] || '');
-                 idParam = params.get('id');
-                 console.log(`[navigateTo] ID from URL: ${idParam}`);
-            }
-
-            if (baseHash === '#ticketDetail') {
-                if (idParam) {
-                    if (currentTicketId !== idParam) {
-                        currentTicketId = idParam;
-                        ticketDetailSubject.textContent = `Ticket #${idParam.slice(-6)}`;
-                        chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Connecting to chat...</p>';
-                        fetchTicketDetails(idParam);
-                    } else {
-                         console.log(`[navigateTo] Already viewing ticket ${idParam}, not re-fetching details.`);
-                         if (socket && socket.connected) socket.emit('join_ticket_room', { ticket_id: currentTicketId });
-                    }
-                } else {
-                    console.warn("[navigateTo] Ticket ID missing for detail view. Redirecting to tickets list.");
-                    showPopupMessage(errorMessagePopup, "Invalid ticket link.", true);
-                    window.location.hash = '/#tickets';
-                    return;
-                }
-            } else if (baseHash === '#productDetail') {
-                 if (idParam) {
-                      console.log(`[navigateTo] Fetching product details for ID: ${idParam}`);
-                      fetchProductDetails(idParam);
-                 } else {
-                      console.warn("[navigateTo] Product ID missing for detail view. Redirecting to products list.");
-                      showPopupMessage(errorMessagePopup, "Invalid product link.", true);
-                      window.location.hash = '/#products';
-                      return;
-                 }
-            }
-
-            showSection(targetElementId);
-
-            if (baseHash === '#tickets') {
-                console.log(`[navigateTo] Fetching tickets for #tickets view.`);
-                fetchTickets();
-            } else if (baseHash === '#products') {
-                 console.log(`[navigateTo] Fetching products for #products view.`);
-                 fetchProducts();
-            } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
-                 console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
-                 displayUserRoles(currentUser.roles);
-                 if (currentUser.is_moderator === true) {
-                     console.log(`[navigateTo] User is moderator, loading admin data.`);
-                     loadAdminDashboardData();
-                 } else {
-                     console.log(`[navigateTo] User is NOT moderator, skipping admin data load.`);
-                 }
-            }
-
-            updateHeaderUI(currentUser);
-        }
-
-        function runNavigation() {
-            console.log(`[runNavigation] Processing raw hash: ${window.location.hash}`);
-            const rawHash = window.location.hash;
-            let pathPart = '';
-            let queryPart = '';
-            const queryIndex = rawHash.indexOf('?');
-            const firstHashIndex = rawHash.indexOf('#');
-
-            if (firstHashIndex !== -1) {
-                const hashContent = queryIndex !== -1 ? rawHash.substring(firstHashIndex + 1, queryIndex) : rawHash.substring(firstHashIndex + 1);
-                pathPart = hashContent;
-                while (pathPart.startsWith('/') || pathPart.startsWith('#')) {
-                    pathPart = pathPart.substring(1);
-                }
-                if(queryIndex !== -1) {
-                    queryPart = rawHash.substring(queryIndex);
-                }
-            }
-            const hashToNavigate = `#${pathPart || 'home'}${queryPart}`;
-            console.log(`[runNavigation] Cleaned hash to navigate: ${hashToNavigate}`);
-
-            if ((isInitialLoginCheckComplete && isInitialConfigLoadComplete) || pathPart === '' || pathPart === 'home') {
-                navigateTo(hashToNavigate);
-            } else {
-                console.log(`[runNavigation] Initial checks not complete for target ${hashToNavigate}. Deferring.`);
-            }
-        }
-
         function createSnowflakes() {
             const numberOfSnowflakes = 75;
             if (!snowContainer) return;
@@ -915,9 +751,163 @@
                 snowContainer.appendChild(snowflake);
             }
         }
+        function formatTimeAgo(dateString) {
+            try {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
+                if (diffMonths < 1) return 'less than a month ago';
+                if (diffMonths === 1) return '1 month ago';
+                return `${diffMonths} months ago`;
+            } catch (e) {
+                return 'a while ago';
+            }
+        }
+        function positionContextMenu(menuElement, event) {
+             const rect = event.target.getBoundingClientRect();
+             let top = event.clientY + window.scrollY + 5;
+             let left = event.clientX + window.scrollX + 5;
+
+             const menuHeight = menuElement.offsetHeight || 150;
+             const menuWidth = menuElement.offsetWidth || 150;
+
+             const windowHeight = window.innerHeight + window.scrollY;
+             const windowWidth = window.innerWidth + window.scrollX;
+
+             if (top + menuHeight > windowHeight) {
+                 top = event.clientY + window.scrollY - menuHeight - 5;
+             }
+             if (left + menuWidth > windowWidth) {
+                 left = event.clientX + window.scrollX - menuWidth - 5;
+             }
+             if (top < window.scrollY) top = window.scrollY;
+             if (left < window.scrollX) left = window.scrollX;
+
+             menuElement.style.top = `${top}px`;
+             menuElement.style.left = `${left}px`;
+             menuElement.style.display = 'block';
+        }
+        function hideContextMenu() {
+            if (chatContextMenu) chatContextMenu.style.display = 'none';
+            if (ticketContextMenu) ticketContextMenu.style.display = 'none';
+            document.removeEventListener('click', hideContextMenuOnClickOutside);
+            window.removeEventListener('scroll', hideContextMenu);
+            currentContextMenu = null;
+        }
+        function hideContextMenuOnClickOutside(event) {
+            if (currentContextMenu && !currentContextMenu.contains(event.target)) {
+                hideContextMenu();
+            }
+        }
+        function displayUserRoles(roles) {
+            console.log('[displayUserRoles] Received roles:', roles);
+
+            const rolesContainer = document.getElementById('dashboard-user-roles');
+            if (!rolesContainer) {
+                console.error('[displayUserRoles] Container #dashboard-user-roles not found!');
+                return;
+            }
+            rolesContainer.innerHTML = '';
+
+            if (roles && Array.isArray(roles) && roles.length > 0) {
+                roles.forEach(role => {
+                    const roleElement = document.createElement('span');
+                    roleElement.classList.add('role-span');
+
+                    let hexColor = '#9CA3AF';
+                    if (role.color && role.color !== 0) {
+                        hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                    }
+                    const r = parseInt(hexColor.slice(1, 3), 16);
+                    const g = parseInt(hexColor.slice(3, 5), 16);
+                    const b = parseInt(hexColor.slice(5, 7), 16);
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+
+                    roleElement.textContent = role.name || `Role ${role.id}`;
+                    roleElement.style.backgroundColor = hexColor;
+                    roleElement.classList.add(textColorClass);
+                    rolesContainer.appendChild(roleElement);
+                });
+            } else {
+                console.log('[displayUserRoles] No roles found or roles data is invalid.');
+                rolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">No roles found.</p>';
+            }
+        }
+
+        function showUserInfoModal(senderId, username) {
+             if (!userInfoModal || !senderId) return;
+             modalUsername.textContent = username || 'Unknown User';
+             modalUserId.textContent = senderId;
+             modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Loading roles...</p>';
+
+             if (currentUser && currentUser.user_id === senderId && currentUser.roles) {
+                 const modalRolesContainer = document.getElementById('modal-user-roles');
+                 if (modalRolesContainer) {
+                     modalRolesContainer.innerHTML = '';
+                     if (currentUser.roles.length > 0) {
+                         currentUser.roles.forEach(role => {
+                             const roleElement = document.createElement('span');
+                             roleElement.classList.add('role-span');
+                             let hexColor = '#9CA3AF';
+                             if (role.color && role.color !== 0) hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                             const r = parseInt(hexColor.slice(1, 3), 16), g = parseInt(hexColor.slice(3, 5), 16), b = parseInt(hexColor.slice(5, 7), 16);
+                             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                             const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+                             roleElement.textContent = role.name || `Role ${role.id}`;
+                             roleElement.style.backgroundColor = hexColor;
+                             roleElement.classList.add(textColorClass);
+                             modalRolesContainer.appendChild(roleElement);
+                         });
+                     } else {
+                          modalRolesContainer.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
+                     }
+                 }
+             } else {
+                 // Attempt to fetch roles if not current user? For now, keep simple.
+                 modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information unavailable.</p>';
+             }
+             userInfoModal.classList.add('active');
+        }
+        function hideUserInfoModal() { if (userInfoModal) userInfoModal.classList.remove('active'); }
+        function toggleCustomHexInput() {
+            if (customHexInputContainer && productEditTagColorSelect) {
+                 const selectedColor = productEditTagColorSelect.value;
+                 customHexInputContainer.classList.toggle('hidden', selectedColor !== 'custom');
+            }
+        }
+
+
+        // --- Core Application Logic ---
+
+        function updateHeaderUI(user) {
+             const isLoggedIn = user && user.logged_in;
+             loginButton.classList.toggle('hidden', isLoggedIn); // Hide if logged in
+             userInfo.classList.toggle('hidden', !isLoggedIn); // Show if logged in
+             userInfo.classList.toggle('flex', isLoggedIn); // Use flex for display
+
+             if (isLoggedIn) {
+                 userNameDisplay.textContent = user.username || 'User';
+                 userAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32` : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
+                 dashboardUserNameDisplay.textContent = user.username || 'User';
+                 dashboardUserAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64` : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+                 displayUserRoles(user.roles || []); // <<< Pass roles here
+
+                 const isMod = user.is_moderator === true;
+                 console.log(`[updateHeaderUI] Toggling admin sections. Moderator status: ${isMod}`);
+                 adminDashboardSections?.classList.toggle('hidden', !isMod);
+
+             } else {
+                 dashboardUserNameDisplay.textContent = 'User';
+                 dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+                 adminDashboardSections?.classList.add('hidden');
+                 dashboardUserRolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">Log in to see roles.</p>'; // Clear roles on logout
+             }
+        }
 
         async function checkLoginStatus() {
              isInitialLoginCheckComplete = false;
+             userRegisteredProducts = []; // Reset on check
              try {
                  const response = await fetch(`${API_BASE_URL}/api/user`, { credentials: 'include' });
                  if (!response.ok && (response.status === 401 || response.status === 403)) {
@@ -926,8 +916,11 @@
                      throw new Error(`HTTP error! status: ${response.status}`);
                  } else {
                      currentUser = await response.json();
+                     // <<< ADDED: Store registered products >>>
+                     userRegisteredProducts = currentUser.registered_products || [];
                  }
                  console.log("[checkLoginStatus] User status checked:", currentUser);
+                 console.log("[checkLoginStatus] Registered products:", userRegisteredProducts); // Log registered products
                  if (currentUser && currentUser.logged_in) {
                      ensureSocketConnected();
                  }
@@ -938,6 +931,7 @@
              } finally {
                  isInitialLoginCheckComplete = true;
                  console.log("[checkLoginStatus] Initial login check complete.");
+                 // Now load config AND navigate (since config doesn't depend on login)
                  loadSiteConfigAndNavigate();
              }
         }
@@ -946,23 +940,25 @@
             isInitialConfigLoadComplete = false;
             try {
                 const response = await fetch(`${API_BASE_URL}/api/config`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 siteConfig = await response.json();
                 console.log("[loadSiteConfig] Site config loaded:", siteConfig);
                 applySiteConfig(siteConfig);
             } catch (error) {
                 console.error("[loadSiteConfig] Error loading site config:", error);
                 showPopupMessage(errorMessagePopup, "Failed to load site configuration. Using defaults.", true);
-                applySiteConfig(null);
+                applySiteConfig(null); // Apply defaults if load fails
             } finally {
                 isInitialConfigLoadComplete = true;
                 console.log("[loadSiteConfig] Initial config load complete.");
-                runNavigation();
+                // Navigate ONLY after both checks are complete
+                if (isInitialLoginCheckComplete) {
+                     runNavigation();
+                } else {
+                     console.log("[loadSiteConfig] Login check not complete yet, deferring navigation.");
+                }
             }
         }
-
         function applySiteConfig(config) {
             const title = config?.siteTitle || "Shillette";
             const iconUrl = config?.siteIconUrl || "/images/icon.png"; // <-- MODIFIED: Get icon URL
@@ -1017,10 +1013,10 @@
                  productLoadingStatus.classList.add('hidden');
 
                  if (!products || products.length === 0) {
-                     productGrid.innerHTML = `<p class="text-center text-gray-400 md:col-span-2 lg:col-span-3">No products available at this time.</p>`;
+                     productGrid.innerHTML = `<p class="text-center text-gray-400 md:col-span-2 lg:col-span-3">No products available.</p>`;
                      return;
                  }
-
+                 // Render each product, checking ownership
                  products.forEach(renderProductCard);
 
              } catch (error) {
@@ -1034,37 +1030,38 @@
              if (!productGrid || !product) return;
 
              const card = document.createElement('div');
-             card.className = `product-card flex flex-col`;
+             card.className = `product-card flex flex-col`; // Base classes
              card.dataset.productId = product._id;
 
-             const tagColor = product.tagColor || 'gray';
-             const customHex = product.customBorderHex;
-             let borderClasses = '';
-             let inlineStyle = '';
-             let hoverStyleVar = '';
+             // --- Check Ownership & Config ---
+             const isOwned = userRegisteredProducts.includes(product._id);
+             // Check for config_url OR has_config: true
+             const hasConfig = !!(product.config_url || product.has_config);
 
-             if (customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
-                 borderClasses = 'custom-border';
-                 inlineStyle = `border-color: ${customHex};`;
-                 hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
-                 card.style.cssText = inlineStyle + hoverStyleVar;
-                 card.classList.add(borderClasses);
-             } else if (tagColor !== 'custom') {
-                 borderClasses = `card-gradient-border ${tagColor}-border`;
-                 card.classList.add(...borderClasses.split(' '));
-             } else {
-                  borderClasses = `card-gradient-border gray-border`;
-                  card.classList.add(...borderClasses.split(' '));
+             // --- Determine Border/Glow ---
+             let borderClassSuffix = 'gray-border'; // Default: Not owned or no config = Gray
+             if (isOwned && hasConfig) {
+                 const tagColor = product.tagColor || 'orange'; // Default owned/configured color
+                 const customHex = product.customBorderHex;
+                 if (customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
+                      // Custom HEX takes priority for owned/configured
+                      borderClassSuffix = 'custom-border';
+                      card.style.borderColor = customHex;
+                      card.style.setProperty('--custom-hover-shadow', `0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33`);
+                 } else if (tagColor && tagColor !== 'custom' && tagColor !== 'gray') {
+                      borderClassSuffix = `${tagColor}-border`; // Use defined color if not gray/custom
+                 } else {
+                      borderClassSuffix = 'orange-border'; // Fallback owned/configured color
+                 }
              }
+             card.classList.add(...`card-gradient-border ${borderClassSuffix}`.split(' '));
 
-             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
-             const tagBgClass = `bg-${displayTagColor}-500/20`;
-             const tagTextClass = `text-${displayTagColor}-300`;
 
+             // --- Thumbnail ---
              let thumbnailElement = null;
              const placeholderDiv = document.createElement('div');
              placeholderDiv.className = 'product-thumbnail-placeholder';
-             placeholderDiv.style.display = 'none';
+             placeholderDiv.style.display = 'none'; // Hide initially
              placeholderDiv.innerHTML = '<span>Image not found</span>';
 
              if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
@@ -1073,20 +1070,40 @@
                  thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
                  thumbnailElement.className = 'product-thumbnail';
                  thumbnailElement.onerror = () => {
-                     if (thumbnailElement) thumbnailElement.style.display = 'none';
-                     placeholderDiv.style.display = 'flex';
+                     if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
+                     placeholderDiv.style.display = 'flex'; // Show placeholder
                  };
              } else {
-                 placeholderDiv.style.display = 'flex';
+                 placeholderDiv.style.display = 'flex'; // Show placeholder if no URL
                  thumbnailElement = null;
              }
 
+
+             // --- Inner Content ---
              const innerDiv = document.createElement('div');
              innerDiv.className = 'product-card-inner';
+
+             const displayTagColor = (product.tagColor === 'custom' && !product.customBorderHex) ? 'gray' : (product.tagColor || 'gray');
+             const tagBgClass = `bg-${displayTagColor}-500/20`;
+             const tagTextClass = `text-${displayTagColor}-300`;
+
+             // --- Add Config/Purchase Button ---
+             let buttonsHtml = '';
+             if (isOwned && hasConfig) {
+                 const configTarget = product.config_url || `/#config/${encodeURIComponent(product.name || product._id)}`; // Example target
+                 buttonsHtml = `<a href="${configTarget}" class="config-button">Configure</a>`;
+             } else if (isOwned && !hasConfig) {
+                 buttonsHtml = `<button class="no-config-button" disabled>No Config Available</button>`;
+             } else { // Not owned
+                 buttonsHtml = product.paymentLink
+                     ? `<button class="purchase-button" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>`
+                     : '<button class="purchase-button" disabled>Purchase Unavailable</button>';
+             }
+
              innerDiv.innerHTML = `
                  <div class="flex justify-between items-center mb-4">
                      <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
-                 </div>
+                     </div>
                  <h3 class="text-xl font-semibold text-white mb-2">${product.name || 'Unnamed Product'}</h3>
                  <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
                  <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
@@ -1094,25 +1111,23 @@
                      ${!(product.features && product.features.length > 0) ? '<li class="text-gray-500">No features listed.</li>' : ''}
                  </ul>
                  <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     ${product.paymentLink ? `<button class="purchase-button" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button" disabled>Purchase Unavailable</button>'}
+                     ${buttonsHtml}
                  </div>
              `;
 
-             if (thumbnailElement) {
-                 card.appendChild(thumbnailElement);
-             }
-             card.appendChild(placeholderDiv);
+             // --- Append Elements ---
+             if (thumbnailElement) card.appendChild(thumbnailElement);
+             card.appendChild(placeholderDiv); // Append placeholder (might be hidden)
              card.appendChild(innerDiv);
 
+             // --- Event Listener ---
              card.addEventListener('click', (event) => {
-                 if (event.target.closest('.purchase-button')) {
-                     handlePurchaseClick(event);
-                     return;
-                 }
+                 if (event.target.closest('.purchase-button')) { handlePurchaseClick(event); return; }
+                 if (event.target.closest('.config-button') && event.target.tagName !== 'A') { return; } // Prevent nav if clicking non-link config button
+                 if (event.target.closest('.no-config-button')) { return; } // Prevent nav if clicking disabled button
+
                  const productId = card.dataset.productId;
-                 if (productId) {
-                     window.location.hash = `/#productDetail?id=${productId}`;
-                 }
+                 if (productId) { window.location.hash = `/#productDetail?id=${productId}`; }
              });
 
              productGrid.appendChild(card);
@@ -1127,18 +1142,24 @@
             const paymentLink = button.dataset.paymentLink;
             console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
             if (paymentLink) {
+                 // Implement actual purchase logic here (e.g., redirect, PayPal SDK)
                  showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration needed)`);
+                 // Example: window.location.href = paymentLink; // If it's a direct link
+                 // Or initialize PayPal button if paymentLink is an ID
             } else {
                  showPopupMessage(errorMessagePopup, 'Payment link is missing for this product.', true);
             }
         }
 
+
+        // --- Product Detail Page Logic ---
+
         async function fetchProductDetails(productId) {
             if (!productDetailPage || !productDetailLoading || !productDetailContainer) return;
-
             productDetailLoading.classList.remove('hidden');
             productDetailContainer.classList.add('hidden');
-            productDetailPage.classList.remove('hidden');
+            reviewSubmissionArea?.classList.add('hidden'); // Hide review form initially
+            currentProductDetailId = null; // Reset current product ID
 
             try {
                 const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
@@ -1147,81 +1168,422 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const productData = await response.json();
-                renderProductDetails(productData);
+                currentProductDetailId = productData._id; // Store the fetched ID
+                renderProductDetails(productData); // Render the fetched data
                 productDetailLoading.classList.add('hidden');
                 productDetailContainer.classList.remove('hidden');
+
+                // <<< ADDED: Check ownership for review form >>>
+                if (currentUser?.logged_in && userRegisteredProducts.includes(currentProductDetailId)) {
+                     // Check if user has *already* reviewed this product
+                     const alreadyReviewed = productData.reviews?.some(r => r.user_id === currentUser.user_id);
+                     if (!alreadyReviewed) {
+                          reviewSubmissionArea?.classList.remove('hidden'); // Show form only if owned and not reviewed
+                          initializeReviewStars(); // Set up star rating interaction
+                     } else {
+                          console.log("User already reviewed this product.");
+                          reviewSubmissionArea?.classList.add('hidden');
+                     }
+                } else {
+                    reviewSubmissionArea?.classList.add('hidden'); // Hide if not logged in or not owned
+                }
 
             } catch (error) {
                 console.error("Error fetching product details:", error);
                 productDetailLoading.textContent = `Error loading product: ${error.message}`;
                 showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
+                productDetailContainer.classList.add('hidden'); // Ensure container is hidden on error
             }
         }
 
         function renderProductDetails(product) {
-            if (!product) return;
+            if (!product || !productDetailContainer) return;
 
             productDetailImage.src = product.thumbnailUrl || 'https://placehold.co/600x400/374151/9ca3af?text=No+Image';
             productDetailImage.alt = product.name || 'Product Image';
             productDetailName.textContent = product.name || 'Product Name';
             productDetailPrice.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Price unavailable';
 
-            const rating = product.averageRating || 5;
-            const stock = product.stock !== undefined ? product.stock : 6;
-            productDetailRating.innerHTML = `${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`;
-            productDetailStock.textContent = `${stock} in stock`;
+            // Rating and Review Count
+            const rating = product.averageRating || 0; // Use 0 if null/undefined
+            const reviewCount = product.reviewCount || 0;
+            productDetailRating.innerHTML = `${'★'.repeat(Math.round(rating))}${'☆'.repeat(5 - Math.round(rating))}`;
+            productDetailReviewCount.textContent = `(${reviewCount} Review${reviewCount !== 1 ? 's' : ''})`;
 
-             if (product.description) {
+            productDetailStock.textContent = `${product.stock ?? '?'} in stock`; // Use ?? for nullish coalescing
+
+            // --- Description ---
+            if (product.description) {
                 productDetailDescription.textContent = product.description;
                 productDetailDescriptionContainer.classList.remove('hidden');
              } else {
                 productDetailDescriptionContainer.classList.add('hidden');
              }
 
-            sellerName.textContent = product.sellerName || 'ShilletteFN';
-            sellerEstablished.textContent = product.sellerEstablishedDate ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}` : 'Established 7 months ago';
-            sellerReviewScore.textContent = `The seller has an average review score of ${rating} stars out of 5`;
+             // --- Seller Info ---
+            sellerName.textContent = product.sellerName || 'Shillette Store';
+            sellerEstablished.textContent = product.sellerEstablishedDate ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}` : 'Established date unavailable';
+            sellerReviewScore.textContent = `Seller has an average score of ${rating.toFixed(1)} stars from ${reviewCount} reviews`;
 
-            productReviewsList.innerHTML = '';
-            const reviews = product.reviews || [];
 
-            if (reviews.length > 0) {
-                reviews.forEach(review => {
-                    const reviewCard = document.createElement('div');
-                    reviewCard.className = 'review-card';
-                    const reviewRating = review.rating || 5;
-                    const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'recently';
-                    const reviewerName = review.reviewerName || 'Verified customer';
+            // --- Action Buttons (Buy/Config/Basket) ---
+            if (productDetailActionButtons) {
+                productDetailActionButtons.innerHTML = ''; // Clear previous buttons
+                const isOwned = userRegisteredProducts.includes(product._id);
+                const hasConfig = !!(product.config_url || product.has_config);
 
-                    reviewCard.innerHTML = `
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs text-green-400 font-medium">Verified purchase</span>
-                            <span class="star-rating text-sm">${'★'.repeat(reviewRating)}${'☆'.repeat(5 - reviewRating)}</span>
-                        </div>
-                        <p class="text-sm text-gray-300 mb-1">${review.text || 'Automatically left after 3 days of purchase'}</p>
-                        <p class="text-xs text-gray-500">Reviewed by ${reviewerName} on ${reviewDate}</p>
-                    `;
-                    productReviewsList.appendChild(reviewCard);
+                let primaryButtonHtml = '';
+                if (isOwned && hasConfig) {
+                    const configTarget = product.config_url || `/#config/${encodeURIComponent(product.name || product._id)}`;
+                    primaryButtonHtml = `<a href="${configTarget}" class="config-button w-full sm:w-auto">Configure Product</a>`;
+                } else if (isOwned && !hasConfig) {
+                     primaryButtonHtml = `<button class="no-config-button w-full sm:w-auto" disabled>No Config Available</button>`;
+                } else { // Not owned
+                     primaryButtonHtml = product.paymentLink
+                          ? `<button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Buy Now</button>`
+                          : '<button class="buy-now-button w-full sm:w-auto" disabled>Purchase Unavailable</button>';
+                }
+                // Add basket button (always shown for now, could be conditional)
+                const basketButtonHtml = `<button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>`;
+
+                // Quantity Selector
+                const quantityHtml = `
+                    <div class="flex items-center quantity-selector ml-auto">
+                         <button id="quantity-decrease">-</button>
+                         <input type="text" id="quantity-input" value="1" readonly>
+                         <button id="quantity-increase">+</button>
+                     </div>`;
+
+                productDetailActionButtons.innerHTML = primaryButtonHtml + basketButtonHtml + quantityHtml;
+
+                // --- Re-add event listeners for dynamically added buttons ---
+                 const buyNowBtn = productDetailActionButtons.querySelector('#product-detail-buy-now');
+                 if (buyNowBtn) buyNowBtn.addEventListener('click', handlePurchaseClick);
+
+                 const addBasketBtn = productDetailActionButtons.querySelector('#product-detail-add-basket');
+                 if (addBasketBtn) addBasketBtn.addEventListener('click', () => { /* Implement basket logic */ showPopupMessage(paymentMessage, 'Added to basket (not implemented).'); });
+
+                 const qtyDec = productDetailActionButtons.querySelector('#quantity-decrease');
+                 const qtyInc = productDetailActionButtons.querySelector('#quantity-increase');
+                 const qtyInput = productDetailActionButtons.querySelector('#quantity-input');
+                 if(qtyDec && qtyInc && qtyInput) {
+                    qtyDec.addEventListener('click', () => { let v=parseInt(qtyInput.value); if(v>1) qtyInput.value=v-1; });
+                    qtyInc.addEventListener('click', () => { let v=parseInt(qtyInput.value); qtyInput.value=v+1; });
+                 }
+            }
+
+            // --- Reviews List ---
+            renderReviews(product.reviews);
+        }
+
+
+        function renderReviews(reviews) {
+             if (!productReviewsList || !productReviewsStatus) return;
+             productReviewsList.innerHTML = ''; // Clear previous reviews
+
+             if (reviews && reviews.length > 0) {
+                 productReviewsStatus.classList.add('hidden');
+                 reviews.forEach(review => {
+                     const reviewCard = document.createElement('div');
+                     reviewCard.className = 'review-card';
+                     const reviewRating = review.rating || 0;
+                     const reviewDate = review.created_at ? new Date(review.created_at).toLocaleDateString() : 'recently';
+                     const reviewerName = review.username || (review.is_verified_purchase ? 'Verified Customer' : 'Customer');
+                     const verifiedBadge = review.is_verified_purchase ? '<span class="text-xs text-green-400 font-medium">Verified purchase</span>' : '';
+
+                     reviewCard.innerHTML = `
+                         <div class="flex justify-between items-center mb-2">
+                             ${verifiedBadge}
+                             <span class="star-rating text-sm">${'★'.repeat(reviewRating)}${'☆'.repeat(5 - reviewRating)}</span>
+                         </div>
+                         <p class="text-sm text-gray-300 mb-1">${review.text || '<em>No comment left.</em>'}</p>
+                         <p class="text-xs text-gray-500">Reviewed by ${reviewerName} on ${reviewDate}</p>
+                     `;
+                     productReviewsList.appendChild(reviewCard);
+                 });
+             } else {
+                 productReviewsStatus.textContent = 'No reviews yet.';
+                 productReviewsStatus.classList.remove('hidden');
+             }
+        }
+
+
+        // --- Review Submission Logic --- <<< NEW SECTION >>>
+        function initializeReviewStars() {
+            if (!reviewRatingStarsContainer) return;
+            const stars = reviewRatingStarsContainer.querySelectorAll('span');
+            stars.forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.dataset.value);
+                    reviewRatingInput.value = value; // Set hidden input value
+                    stars.forEach((s, i) => {
+                        s.classList.toggle('selected', i < value);
+                        s.textContent = i < value ? '★' : '☆';
+                    });
                 });
-            } else {
-                productReviewsList.innerHTML = '<p class="text-gray-400 md:col-span-2 lg:col-span-3">No reviews yet.</p>';
-            }
+                 star.addEventListener('mouseover', () => { // Preview rating on hover
+                      const value = parseInt(star.dataset.value);
+                       stars.forEach((s, i) => {
+                           s.textContent = i < value ? '★' : '☆';
+                           // Keep selected class based on actual input value, not hover preview
+                           const currentRating = parseInt(reviewRatingInput.value || 0);
+                           s.classList.toggle('selected', i < currentRating);
+                       });
+                 });
+            });
+             reviewRatingStarsContainer.addEventListener('mouseout', () => { // Reset preview on mouse out
+                 const value = parseInt(reviewRatingInput.value || 0);
+                 stars.forEach((s, i) => {
+                       s.textContent = i < value ? '★' : '☆';
+                       s.classList.toggle('selected', i < value); // Revert to actual selected state
+                 });
+             });
+             // Reset stars on initial load/hide
+             reviewRatingInput.value = ''; // Clear hidden input
+             stars.forEach(s => { s.classList.remove('selected'); s.textContent = '☆'; });
         }
 
-        function formatTimeAgo(dateString) {
+        async function handleReviewSubmission(event) {
+            event.preventDefault();
+            if (!currentUser?.logged_in || !currentProductDetailId) {
+                reviewStatus.textContent = 'You must be logged in.';
+                reviewStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                return;
+            }
+            const rating = reviewRatingInput.value;
+            const text = reviewTextInput.value.trim();
+
+            if (!rating) {
+                 reviewStatus.textContent = 'Please select a rating.';
+                 reviewStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                 return;
+            }
+
+            submitReviewButton.disabled = true;
+            submitReviewButton.textContent = 'Submitting...';
+            reviewStatus.textContent = '';
+            reviewStatus.className = 'text-sm text-center h-5 mt-2';
+
             try {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffMonths = (now.getFullYear() - date.getFullYear()) * 12 + (now.getMonth() - date.getMonth());
-                if (diffMonths < 1) return 'less than a month ago';
-                if (diffMonths === 1) return '1 month ago';
-                return `${diffMonths} months ago`;
-            } catch (e) {
-                return 'a while ago';
+                const response = await fetch(`${API_BASE_URL}/api/products/${currentProductDetailId}/reviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rating: parseInt(rating), text: text }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                     // Handle specific errors like 403 (not owned) or 409 (already reviewed)
+                     if (response.status === 403) throw new Error("Ownership verification failed.");
+                     if (response.status === 409) throw new Error("You have already reviewed this product.");
+                     throw new Error(result.error || `HTTP error ${response.status}`);
+                }
+
+                reviewStatus.textContent = 'Review submitted successfully!';
+                reviewStatus.classList.add('text-green-400');
+                showPopupMessage(productMessagePopup, 'Review submitted!', false); // Use product message popup
+                reviewSubmissionForm.reset(); // Reset form fields
+                initializeReviewStars(); // Reset stars visually
+                reviewSubmissionArea?.classList.add('hidden'); // Hide form after successful submission
+
+                // Fetch details again to show the new review immediately
+                fetchProductDetails(currentProductDetailId);
+
+
+            } catch (error) {
+                console.error("Error submitting review:", error);
+                reviewStatus.textContent = `Error: ${error.message}`;
+                reviewStatus.classList.add('text-red-400');
+                 showPopupMessage(errorMessagePopup, `Review submission failed: ${error.message}`, true);
+            } finally {
+                submitReviewButton.disabled = false;
+                submitReviewButton.textContent = 'Submit Review';
             }
         }
 
 
+        // --- Product Registration Logic --- <<< NEW SECTION >>>
+        async function populateProductRegistrationSelect() {
+            if (!registerProductSelect || !currentUser?.logged_in) return; // Only populate if logged in
+            try {
+                registerProductSelect.disabled = true; // Disable while loading
+                const response = await fetch(`${API_BASE_URL}/api/products`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const products = await response.json();
+                registerProductSelect.innerHTML = '<option value="">-- Select Product --</option>'; // Reset
+
+                let productsAvailableToRegister = 0;
+                products.forEach(product => {
+                    // Only show products the user HASN'T registered yet
+                    if (!userRegisteredProducts.includes(product._id)) {
+                        const option = document.createElement('option');
+                        option.value = product._id;
+                        option.textContent = product.name || 'Unnamed Product';
+                        registerProductSelect.appendChild(option);
+                        productsAvailableToRegister++;
+                    }
+                });
+
+                if (productsAvailableToRegister === 0) {
+                     registerProductSelect.innerHTML = '<option value="">-- No products available to register --</option>';
+                     // Consider disabling the whole form if nothing can be registered
+                     // registerSubmitButton.disabled = true;
+                }
+
+
+            } catch (error) {
+                console.error("Error populating product select:", error);
+                registerProductSelect.innerHTML = '<option value="">-- Error loading products --</option>';
+                if(registerStatus) {
+                    registerStatus.textContent = "Error loading product list.";
+                    registerStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                }
+            } finally {
+                 registerProductSelect.disabled = false; // Re-enable after loading
+            }
+        }
+
+        async function handleProductRegistration(event) {
+            event.preventDefault();
+            if (!currentUser || !currentUser.logged_in) {
+                showPopupMessage(errorMessagePopup, "Please log in to register products.", true);
+                return;
+            }
+
+            const productId = registerProductSelect.value;
+            const orderId = registerOrderIdInput.value.trim();
+            const email = registerEmailInput.value.trim();
+
+            if (!productId || !orderId || !email) {
+                registerStatus.textContent = 'Please fill all fields.';
+                registerStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                return;
+            }
+
+            registerSubmitButton.disabled = true;
+            registerSubmitButton.textContent = 'Registering...';
+            registerStatus.textContent = '';
+            registerStatus.className = 'text-sm text-center h-5 mt-2';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/register_product`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId, order_id: orderId, email: email }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    // Specific handling for 'already registered' (status 200 from backend)
+                    if (response.status === 200 && result.message && result.message.includes("already registered")) {
+                         registerStatus.textContent = result.message;
+                         registerStatus.classList.add('text-yellow-400'); // Use yellow for informational message
+                         productRegistrationForm.reset(); // Still reset form
+                    } else {
+                         throw new Error(result.error || `HTTP error ${response.status}`);
+                    }
+                } else { // Status 201 Created
+                    registerStatus.textContent = result.message || 'Registration successful!';
+                    registerStatus.classList.add('text-green-400');
+                    showPopupMessage(registrationMessagePopup, result.message || 'Registration successful!', false);
+                    productRegistrationForm.reset();
+                }
+
+
+                // --- Refresh user data & UI ---
+                const previousRegisteredCount = userRegisteredProducts.length;
+                await checkLoginStatus(); // Re-fetch user data which includes registered_products
+                populateProductRegistrationSelect(); // Re-populate dropdown (removes newly registered item)
+                loadDashboardMyProducts(); // Update "My Products" list in dashboard
+
+                // If a product was actually added (not just 'already registered'), refresh product list view if active
+                if (userRegisteredProducts.length > previousRegisteredCount && activeSectionId === pageSections['#products']) {
+                     fetchProducts();
+                }
+
+
+            } catch (error) {
+                console.error("Error registering product:", error);
+                registerStatus.textContent = `Error: ${error.message}`;
+                registerStatus.classList.add('text-red-400');
+                showPopupMessage(errorMessagePopup, `Registration failed: ${error.message}`, true);
+            } finally {
+                registerSubmitButton.disabled = false;
+                registerSubmitButton.textContent = 'Register Product';
+            }
+        }
+
+        // --- Dashboard "My Products" --- <<< NEW SECTION >>>
+        async function loadDashboardMyProducts() {
+             if (!dashboardMyProductsList || !dashboardMyProductsStatus) return;
+             if (!currentUser?.logged_in) {
+                  dashboardMyProductsStatus.textContent = "Log in to see your products.";
+                  dashboardMyProductsStatus.classList.remove('hidden');
+                  dashboardMyProductsList.innerHTML = '';
+                  return;
+             }
+
+             dashboardMyProductsStatus.textContent = "Loading your products...";
+             dashboardMyProductsStatus.classList.remove('hidden');
+             dashboardMyProductsList.innerHTML = ''; // Clear previous
+
+             if (userRegisteredProducts.length === 0) {
+                  dashboardMyProductsStatus.textContent = "You haven't registered any products yet.";
+                   dashboardMyProductsStatus.classList.remove('hidden');
+                  return;
+             }
+
+
+             try {
+                  // Fetch all products to get names and config info
+                  const response = await fetch(`${API_BASE_URL}/api/products`);
+                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                  const allProducts = await response.json();
+
+                  let foundProducts = false;
+                  allProducts.forEach(product => {
+                       // Check if the current user owns this product
+                       if (userRegisteredProducts.includes(product._id)) {
+                            foundProducts = true;
+                            const productDiv = document.createElement('div');
+                            productDiv.className = 'bg-slate-700/50 p-3 rounded-md flex justify-between items-center';
+                            const hasConfig = !!(product.config_url || product.has_config); // Check for config
+                            let configButtonHtml = '';
+                             if (hasConfig) {
+                                 const configTarget = product.config_url || `/#config/${encodeURIComponent(product.name || product._id)}`;
+                                 configButtonHtml = `<a href="${configTarget}" class="text-sm bg-purple-600 hover:bg-purple-700 text-white font-medium py-1 px-3 rounded-md transition duration-300">Configure</a>`;
+                             } else {
+                                  configButtonHtml = `<span class="text-sm text-gray-500">No Config</span>`;
+                             }
+
+                            productDiv.innerHTML = `
+                                <span class="text-white font-medium">${product.name || 'Unnamed Product'}</span>
+                                ${configButtonHtml}
+                            `;
+                            dashboardMyProductsList.appendChild(productDiv);
+                       }
+                  });
+
+                  if (foundProducts) {
+                       dashboardMyProductsStatus.textContent = ''; // Clear loading message
+                       dashboardMyProductsStatus.classList.add('hidden');
+                  } else {
+                       // This case means userRegisteredProducts has IDs for products not in the main product list anymore
+                       dashboardMyProductsStatus.textContent = "Some registered products could not be found.";
+                       dashboardMyProductsStatus.classList.remove('hidden');
+                  }
+
+             } catch (error) {
+                  console.error("Error loading 'My Products' list:", error);
+                  dashboardMyProductsStatus.textContent = "Error loading your products.";
+                   dashboardMyProductsStatus.classList.remove('hidden');
+             }
+        }
+
+
+        // --- Ticket Logic (fetchTickets, fetchTicketDetails, appendChatMessage) ---
         async function fetchTickets() {
             console.log("[fetchTickets] Starting...");
             if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
@@ -1256,7 +1618,7 @@
                 console.log(`[fetchTickets] Received ${tickets.length} tickets.`);
 
                 ticketListStatus.textContent = ""; moderatorActiveListStatus.textContent = ""; moderatorArchivedListStatus.textContent = "";
-                let hasActive = false; let hasArchived = false;
+                let hasActive = false; let hasArchived = false; let hasUserTickets = false;
 
                 if (tickets.length === 0) {
                     if (isMod) {
@@ -1299,12 +1661,14 @@
                             if (ticket.status === 'open') { moderatorActiveTicketListDiv.appendChild(item); hasActive = true; }
                             else { moderatorArchivedTicketListDiv.appendChild(item); hasArchived = true; }
                         } else {
-                            ticketListDiv.appendChild(item);
+                            ticketListDiv.appendChild(item); hasUserTickets = true;
                         }
                     });
                     if (isMod) {
                         if (!hasActive) moderatorActiveListStatus.textContent = "No active tickets found.";
                         if (!hasArchived) moderatorArchivedListStatus.textContent = "No archived tickets found.";
+                    } else {
+                         if (!hasUserTickets) ticketListStatus.textContent = "You have no support tickets.";
                     }
                 }
             } catch (error) {
@@ -1377,7 +1741,7 @@
             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
 
             messageElement.appendChild(usernameSpan);
-            messageElement.append(` ${safeText} `);
+            messageElement.append(` ${safeText} `); // Append text safely
 
             const timestampSpan = document.createElement('span');
             timestampSpan.classList.add('timestamp');
@@ -1389,8 +1753,11 @@
             }
 
             chatMessagesDiv.appendChild(messageElement);
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
         }
+
+
+        // --- SocketIO Logic ---
         function connectSocket(ticketIdToJoin = null) {
             if (socket && socket.connected) {
                 if (ticketIdToJoin && currentTicketId === ticketIdToJoin) {
@@ -1428,6 +1795,7 @@
              } else {
                  console.log("[ensureSocketConnected] Socket already connected.");
                  if (currentTicketId) {
+                     // Ensure user is still in the correct room if socket stayed connected
                      socket.emit('join_ticket_room', { ticket_id: currentTicketId });
                  }
              }
@@ -1435,6 +1803,7 @@
         function setupSocketListeners() {
              if (!socket) return;
              console.log("[setupSocketListeners] Setting up listeners.");
+             // Clear previous listeners to prevent duplicates if re-connecting
              socket.off('new_message'); socket.off('room_joined'); socket.off('error_message');
              socket.off('message_deleted'); socket.off('ticket_status_updated');
              socket.off('ticket_list_updated'); socket.off('action_success');
@@ -1459,127 +1828,23 @@
                   if (activeSectionId === pageSections['#tickets']) { console.log(`[Socket Listener] Ticket ${data.ticket_id} status updated to ${data.status}. Refreshing list.`); fetchTickets(); }
                   if (data.ticket_id === currentTicketId) { showPopupMessage(ticketMessagePopup, `Ticket status updated to ${data.status}.`); }
                   const ticketItem = document.querySelector(`.ticket-list-item[data-ticket-id="${data.ticket_id}"]`);
-                  if(ticketItem) ticketItem.dataset.ticketStatus = data.status;
+                  if(ticketItem) ticketItem.dataset.ticketStatus = data.status; // Update status on list item if visible
              });
               socket.on('ticket_list_updated', () => {
                   console.log("[Socket Listener] Received ticket_list_updated (likely due to deletion/creation).");
                   if (activeSectionId === pageSections['#tickets']) { console.log("[Socket Listener] Refreshing ticket list."); fetchTickets(); }
                   if (currentTicketId && activeSectionId === pageSections['#ticketDetail']) {
-                      console.log(`[Socket Listener] Ticket list updated while viewing ticket ${currentTicketId}. Redirecting to list.`);
-                      showPopupMessage(errorMessagePopup, "The ticket list was updated. Returning to list.", true);
-                      window.location.hash = '/#tickets';
+                      // If viewing a ticket that got deleted remotely?
+                      console.log(`[Socket Listener] Ticket list updated while viewing ticket ${currentTicketId}. Check if still valid?`);
+                      // fetchTicketDetails(currentTicketId); // Re-fetch to see if it still exists - might show error if deleted
                   }
               });
              socket.on('action_success', (data) => { console.log("[Socket Listener] Received action_success:", data); showPopupMessage(paymentMessage, data.message || 'Action successful.'); });
         }
         function disconnectSocket() { if (socket) { console.log('[disconnectSocket] Disconnecting WebSocket...'); socket.disconnect(); socket = null; } }
 
-        function displayUserRoles(roles) {
-            console.log('[displayUserRoles] Received roles:', roles);
 
-            const rolesContainer = document.getElementById('dashboard-user-roles');
-            if (!rolesContainer) {
-                console.error('[displayUserRoles] Container #dashboard-user-roles not found!');
-                return;
-            }
-            rolesContainer.innerHTML = '';
-
-            if (roles && Array.isArray(roles) && roles.length > 0) {
-                roles.forEach(role => {
-                    const roleElement = document.createElement('span');
-                    roleElement.classList.add('role-span');
-
-                    let hexColor = '#9CA3AF';
-                    if (role.color && role.color !== 0) {
-                        hexColor = '#' + role.color.toString(16).padStart(6, '0');
-                    }
-                    const r = parseInt(hexColor.slice(1, 3), 16);
-                    const g = parseInt(hexColor.slice(3, 5), 16);
-                    const b = parseInt(hexColor.slice(5, 7), 16);
-                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
-
-                    roleElement.textContent = role.name || `Role ${role.id}`;
-                    roleElement.style.backgroundColor = hexColor;
-                    roleElement.classList.add(textColorClass);
-                    rolesContainer.appendChild(roleElement);
-                });
-            } else {
-                console.log('[displayUserRoles] No roles found or roles data is invalid.');
-                rolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">No roles found.</p>';
-            }
-        }
-
-        function showUserInfoModal(senderId, username) {
-             if (!userInfoModal || !senderId) return;
-             modalUsername.textContent = username || 'Unknown User';
-             modalUserId.textContent = senderId;
-             modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Loading roles...</p>';
-
-             if (currentUser && currentUser.user_id === senderId && currentUser.roles) {
-                 const modalRolesContainer = document.getElementById('modal-user-roles');
-                 if (modalRolesContainer) {
-                     modalRolesContainer.innerHTML = '';
-                     if (currentUser.roles.length > 0) {
-                         currentUser.roles.forEach(role => {
-                             const roleElement = document.createElement('span');
-                             roleElement.classList.add('role-span');
-                             let hexColor = '#9CA3AF';
-                             if (role.color && role.color !== 0) hexColor = '#' + role.color.toString(16).padStart(6, '0');
-                             const r = parseInt(hexColor.slice(1, 3), 16), g = parseInt(hexColor.slice(3, 5), 16), b = parseInt(hexColor.slice(5, 7), 16);
-                             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                             const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
-                             roleElement.textContent = role.name || `Role ${role.id}`;
-                             roleElement.style.backgroundColor = hexColor;
-                             roleElement.classList.add(textColorClass);
-                             modalRolesContainer.appendChild(roleElement);
-                         });
-                     } else {
-                          modalRolesContainer.innerHTML = '<p class="text-gray-500 text-xs">User has no roles.</p>';
-                     }
-                 }
-             } else {
-                 modalUserRoles.innerHTML = '<p class="text-gray-500 text-xs">Role information unavailable.</p>';
-             }
-             userInfoModal.classList.add('active');
-        }
-        function hideUserInfoModal() { if (userInfoModal) userInfoModal.classList.remove('active'); }
-        function positionContextMenu(menuElement, event) {
-             const rect = event.target.getBoundingClientRect();
-             let top = event.clientY + window.scrollY + 5;
-             let left = event.clientX + window.scrollX + 5;
-
-             const menuHeight = menuElement.offsetHeight || 150;
-             const menuWidth = menuElement.offsetWidth || 150;
-
-             const windowHeight = window.innerHeight + window.scrollY;
-             const windowWidth = window.innerWidth + window.scrollX;
-
-             if (top + menuHeight > windowHeight) {
-                 top = event.clientY + window.scrollY - menuHeight - 5;
-             }
-             if (left + menuWidth > windowWidth) {
-                 left = event.clientX + window.scrollX - menuWidth - 5;
-             }
-             if (top < window.scrollY) top = window.scrollY;
-             if (left < window.scrollX) left = window.scrollX;
-
-             menuElement.style.top = `${top}px`;
-             menuElement.style.left = `${left}px`;
-             menuElement.style.display = 'block';
-        }
-        function hideContextMenu() {
-            if (chatContextMenu) chatContextMenu.style.display = 'none';
-            if (ticketContextMenu) ticketContextMenu.style.display = 'none';
-            document.removeEventListener('click', hideContextMenuOnClickOutside);
-            window.removeEventListener('scroll', hideContextMenu);
-            currentContextMenu = null;
-        }
-        function hideContextMenuOnClickOutside(event) {
-            if (currentContextMenu && !currentContextMenu.contains(event.target)) {
-                hideContextMenu();
-            }
-        }
+        // --- Context Menu Logic ---
         function showChatContextMenu(event) {
             event.preventDefault(); hideContextMenu();
             if (!currentUser || !currentUser.is_moderator || !chatContextMenu) return;
@@ -1588,13 +1853,13 @@
             contextMenuData.ticketId = currentTicketId;
             contextMenuData.messageTimestamp = messageElement.dataset.timestamp;
             contextMenuData.senderId = messageElement.dataset.senderId;
-            contextMenuData.ticketStatus = null;
+            contextMenuData.ticketStatus = null; // Not relevant for chat context
 
             positionContextMenu(chatContextMenu, event);
             currentContextMenu = chatContextMenu;
 
-            setTimeout(() => {
-                 document.addEventListener('click', hideContextMenuOnClickOutside);
+            setTimeout(() => { // Add listeners after menu is potentially positioned
+                 document.addEventListener('click', hideContextMenuOnClickOutside, { once: true });
                  window.addEventListener('scroll', hideContextMenu, { once: true });
             }, 0);
         }
@@ -1605,12 +1870,14 @@
 
              contextMenuData.ticketId = ticketElement.dataset.ticketId;
              contextMenuData.ticketStatus = ticketElement.dataset.ticketStatus;
-             contextMenuData.senderId = null;
-             contextMenuData.messageTimestamp = null;
+             contextMenuData.senderId = null; // Not relevant
+             contextMenuData.messageTimestamp = null; // Not relevant
              console.log("[showTicketContextMenu] Data:", contextMenuData);
 
              const isMod = currentUser.is_moderator === true;
-             const canClose = contextMenuData.ticketStatus === 'open';
+             // Only owner or mod can close, only mod can reopen/delete
+             const isOwner = !isMod && ticketElement.querySelector('.username')?.textContent.includes(currentUser.username); // Basic check, might need backend verification
+             const canClose = contextMenuData.ticketStatus === 'open' && (isOwner || isMod);
              const canReopen = contextMenuData.ticketStatus === 'closed' && isMod;
              const canDelete = isMod;
 
@@ -1622,7 +1889,7 @@
                  positionContextMenu(ticketContextMenu, event);
                  currentContextMenu = ticketContextMenu;
                  setTimeout(() => {
-                      document.addEventListener('click', hideContextMenuOnClickOutside);
+                      document.addEventListener('click', hideContextMenuOnClickOutside, { once: true });
                       window.addEventListener('scroll', hideContextMenu, { once: true });
                  }, 0);
              }
@@ -1655,25 +1922,27 @@
              }
              hideContextMenu();
          }
-
-        async function loadAdminDashboardData() {
+// --- Admin Dashboard Logic ---
+async function loadAdminDashboardData() {
             console.log("Loading admin dashboard data...");
             if (!currentUser?.is_moderator) return;
+            // Assume these are called when the dashboard section becomes active
             await loadSiteConfigForm();
             await loadProductManagementTable();
         }
 
         async function loadSiteConfigForm() {
-            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) return; // <-- MODIFIED: Added icon input check
+            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) return;
             if (!siteConfig) {
                 console.warn("Site config not loaded yet for admin form. Attempting fetch.");
+                // Optionally try fetching config again here if needed
                 configSaveStatus.textContent = "Error: Config not loaded.";
                 configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
                 return;
             }
             configSiteTitleInput.value = siteConfig.siteTitle || '';
-            configSiteIconUrlInput.value = siteConfig.siteIconUrl || ''; // <-- MODIFIED: Load icon URL
-            configHeaderLinksContainer.innerHTML = '';
+            configSiteIconUrlInput.value = siteConfig.siteIconUrl || '';
+            configHeaderLinksContainer.innerHTML = ''; // Clear existing links
             (siteConfig.headerLinks || []).forEach((link) => {
                 addHeaderLinkInput(link.name, link.href, link.target);
             });
@@ -1700,10 +1969,9 @@
             saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2';
 
-            // MODIFIED: Include siteIconUrl
             const updatedConfig = {
                  siteTitle: configSiteTitleInput.value.trim(),
-                 siteIconUrl: configSiteIconUrlInput.value.trim() || null, // Get icon URL
+                 siteIconUrl: configSiteIconUrlInput.value.trim() || null,
                  headerLinks: []
              };
             configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
@@ -1729,8 +1997,8 @@
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
 
-                siteConfig = result;
-                applySiteConfig(siteConfig);
+                siteConfig = result; // Update local config cache
+                applySiteConfig(siteConfig); // Re-apply to UI
                 configSaveStatus.textContent = 'Configuration saved successfully!';
                 configSaveStatus.classList.add('text-green-400');
                 showPopupMessage(configMessagePopup, 'Configuration saved!');
@@ -1785,12 +2053,12 @@
 
         function openProductEditModal(product = null) {
              if (!productEditModal || !productEditForm || !customHexInputContainer) return;
-             productEditForm.reset();
+             productEditForm.reset(); // Clear previous values
              productEditStatus.textContent = '';
              productEditStatus.className = 'text-sm text-center h-5 mt-2';
-             productEditThumbnailFilename.textContent = 'No file selected';
+             productEditThumbnailFilename.textContent = 'No file selected'; // Reset file indicator
 
-             if (product) {
+             if (product) { // Editing existing product
                  productModalTitle.textContent = 'Edit Product';
                  productEditIdInput.value = product._id;
                  productEditNameInput.value = product.name || '';
@@ -1803,21 +2071,20 @@
                  productEditDescriptionInput.value = product.description || '';
                  productEditFeaturesInput.value = (product.features || []).join('\n');
                  productEditPaymentLinkInput.value = product.paymentLink || '';
-             } else {
+                 // <<< ADDED: Load Config URL >>>
+                 productEditConfigUrlInput.value = product.config_url || '';
+                 // productEditHasConfigCheckbox.checked = product.has_config || false; // Alt: Checkbox
+             } else { // Adding new product
                  productModalTitle.textContent = 'Add Product';
-                 productEditIdInput.value = '';
-                 productEditTagColorSelect.value = 'gray';
+                 productEditIdInput.value = ''; // Ensure ID is empty
+                 productEditTagColorSelect.value = 'gray'; // Default color
                  productEditCustomHexInput.value = '';
+                 // <<< ADDED: Clear Config URL >>>
+                 productEditConfigUrlInput.value = '';
+                 // productEditHasConfigCheckbox.checked = false; // Alt: Checkbox
              }
-             toggleCustomHexInput();
+             toggleCustomHexInput(); // Show/hide custom hex input based on dropdown
              productEditModal.classList.add('active');
-        }
-
-        function toggleCustomHexInput() {
-            if (customHexInputContainer && productEditTagColorSelect) {
-                 const selectedColor = productEditTagColorSelect.value;
-                 customHexInputContainer.classList.toggle('hidden', selectedColor !== 'custom');
-            }
         }
 
         function closeProductEditModal() { if (productEditModal) productEditModal.classList.remove('active'); }
@@ -1827,13 +2094,10 @@
              productSaveButton.disabled = true; productSaveButton.textContent = 'Saving...';
              productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2';
 
-             const productId = productEditIdInput.value; const isEditing = !!productId;
-             const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
-             const method = isEditing ? 'PUT' : 'POST';
-
+             // --- Validate Tag Color/Hex ---
              let tagColorValue = productEditTagColorSelect.value;
              let customHexValue = productEditCustomHexInput.value.trim();
-             let finalTagColor = 'gray';
+             let finalTagColor = 'gray'; // Default
              let finalCustomHex = null;
 
              if (tagColorValue === 'custom') {
@@ -1841,14 +2105,17 @@
                      finalTagColor = 'custom';
                      finalCustomHex = customHexValue;
                  } else {
+                     // Invalid custom hex format
                      productEditStatus.textContent = 'Invalid Custom HEX format. Please use #RRGGBB.';
                      productEditStatus.classList.add('text-red-400');
                      productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
                  }
              } else {
-                 finalTagColor = tagColorValue || 'gray';
-                 finalCustomHex = null;
+                 finalTagColor = tagColorValue || 'gray'; // Use selected or default gray
+                 finalCustomHex = null; // Ensure custom hex is null if not selected
              }
+             // --- End Tag Color Validation ---
+
 
              const productData = {
                  name: productEditNameInput.value.trim(),
@@ -1859,14 +2126,22 @@
                  customBorderHex: finalCustomHex,
                  description: productEditDescriptionInput.value.trim() || null,
                  features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
-                 paymentLink: productEditPaymentLinkInput.value.trim() || null
+                 paymentLink: productEditPaymentLinkInput.value.trim() || null,
+                 // <<< ADDED: Config URL >>>
+                 config_url: productEditConfigUrlInput.value.trim() || null
+                 // has_config: productEditHasConfigCheckbox.checked // Alt: Checkbox
              };
 
-             if (!productData.name || isNaN(productData.price)) {
-                  productEditStatus.textContent = 'Name and valid Price are required.';
+             // Basic validation
+             if (!productData.name || isNaN(productData.price) || productData.price < 0) {
+                  productEditStatus.textContent = 'Name and a valid positive Price are required.';
                   productEditStatus.classList.add('text-red-400');
                   productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
              }
+
+             const productId = productEditIdInput.value; const isEditing = !!productId;
+             const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
+             const method = isEditing ? 'PUT' : 'POST';
 
              try {
                  const response = await fetch(url, {
@@ -1878,10 +2153,17 @@
                  const result = await response.json();
                  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
 
-                 showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
+                 showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'}!`);
                  closeProductEditModal();
-                 await loadProductManagementTable();
+                 await loadProductManagementTable(); // Refresh admin table
+
+                 // Refresh public product list view if it's the current view
                  if (activeSectionId === pageSections['#products']) await fetchProducts();
+                 // Refresh product detail view if we just edited the product being viewed
+                 if (isEditing && activeSectionId === pageSections['#productDetail'] && currentProductDetailId === productId) {
+                      await fetchProductDetails(productId);
+                 }
+
              } catch (error) {
                  console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
                  productEditStatus.textContent = `Error: ${error.message}`;
@@ -1894,7 +2176,7 @@
 
         async function handleDeleteProduct(productId, productName) {
             if (!productId) return;
-            if (!confirm(`Are you sure you want to delete the product "${productName || 'this product'}"? This cannot be undone.`)) return;
+            if (!confirm(`Are you sure you want to delete the product "${productName || 'this product'}"? This action cannot be undone and will also remove related user registrations and reviews.`)) return;
 
             console.log(`Attempting to delete product: ${productId}`);
             try {
@@ -1902,12 +2184,27 @@
                     method: 'DELETE',
                     credentials: 'include'
                 });
+                // Assume backend handles deleting related data (registrations, reviews)
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
 
                 showPopupMessage(productMessagePopup, 'Product deleted successfully!');
-                await loadProductManagementTable();
+                await loadProductManagementTable(); // Refresh admin table
+
+                // Refresh public views if necessary
                 if (activeSectionId === pageSections['#products']) await fetchProducts();
+                if (activeSectionId === pageSections['#productDetail'] && currentProductDetailId === productId) {
+                     // Product deleted, navigate away from detail page
+                     showPopupMessage(errorMessagePopup, "The product you were viewing was deleted.", true);
+                     window.location.hash = '/#products';
+                }
+                 if (activeSectionId === pageSections['#dashboard']) {
+                     // Re-fetch user data to update registered products list if needed
+                     await checkLoginStatus();
+                     loadDashboardMyProducts();
+                 }
+
+
             } catch (error) {
                 console.error("Error deleting product:", error);
                 showPopupMessage(errorMessagePopup, `Failed to delete product: ${error.message}`, true);
@@ -1915,40 +2212,63 @@
         }
 
 
+        // --- Event Listeners ---
+
+        // Login/Logout
         loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
         async function handleLogout() {
-            console.log('Logging out...');
-            try {
-                const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
-                if (!response.ok) {
-                    let errorMsg = 'Logout request failed';
-                    try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
-                    console.warn(`Backend logout failed: ${errorMsg}. Proceeding with client-side cleanup.`);
-                }
-            } catch(error) {
-                console.error("Network error during logout fetch:", error);
-            } finally {
-                 currentUser = { logged_in: false };
-                 isInitialLoginCheckComplete = false;
-                 isInitialConfigLoadComplete = false;
-                 localStorage.removeItem('currentPage');
-                 disconnectSocket();
-                 updateHeaderUI(currentUser);
-                 adminDashboardSections?.classList.add('hidden');
-                 console.log("Redirecting to /#home after logout cleanup.");
-                 window.location.hash = '/#home';
-            }
+             console.log('Logging out...');
+             try {
+                // Attempt backend logout first
+                 const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+                 if (!response.ok) {
+                    // Log warning but proceed with client cleanup
+                     let errorMsg = 'Logout request failed';
+                     try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
+                     console.warn(`Backend logout failed: ${errorMsg}. Proceeding with client-side cleanup.`);
+                 }
+             } catch(error) {
+                 console.error("Network error during logout fetch:", error);
+                 // Proceed with client cleanup even if network error occurs
+             } finally {
+                  // --- Client-side cleanup ---
+                  currentUser = { logged_in: false }; // Clear user object
+                  userRegisteredProducts = []; // Clear registered products array
+                  isInitialLoginCheckComplete = false; // Reset flags
+                  isInitialConfigLoadComplete = false;
+                  disconnectSocket(); // Disconnect websocket
+                  updateHeaderUI(currentUser); // Update UI immediately
+                  adminDashboardSections?.classList.add('hidden'); // Hide admin sections
+
+                  // Clear dashboard specific data explicitly
+                  if(dashboardMyProductsList) dashboardMyProductsList.innerHTML = '';
+                  if(dashboardMyProductsStatus) dashboardMyProductsStatus.textContent = "Log in to see your products.";
+                  if(dashboardUserRolesContainer) dashboardUserRolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">Log in to see roles.</p>';
+                  if(registerProductSelect) registerProductSelect.innerHTML = '<option value="">-- Log in to register --</option>'; // Reset registration dropdown
+
+                  console.log("Redirecting to /#home after logout cleanup.");
+                  window.location.hash = '/#home'; // Navigate to home
+                  // Ensure navigation logic runs to display the correct section
+                  // Need a slight delay sometimes for hash change to register properly after state clear
+                  // setTimeout(runNavigation, 50);
+             }
         }
         logoutButton.addEventListener('click', handleLogout);
         dashboardLogoutButton.addEventListener('click', handleLogout);
 
+        // Navigation
         window.addEventListener('hashchange', runNavigation);
 
+        // Ticket Form
         if(createTicketForm) createTicketForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             const subject = ticketSubjectInput.value.trim(); const message = ticketMessageInput.value.trim();
             createTicketStatus.textContent = ''; createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
             if (!subject || !message) { createTicketStatus.textContent = 'Please fill out both subject and message.'; createTicketStatus.classList.add('error'); return; }
+            if (!currentUser?.logged_in) {
+                 showPopupMessage(errorMessagePopup, "Please log in to submit a ticket.", true);
+                 return;
+            }
 
             const submitButton = document.getElementById('create-ticket-button');
             submitButton.disabled = true; submitButton.textContent = 'Submitting...';
@@ -1968,27 +2288,33 @@
                 const result = await response.json();
                 createTicketStatus.textContent = 'Ticket submitted successfully!';
                 createTicketStatus.classList.add('success');
+                showPopupMessage(ticketMessagePopup, 'Ticket submitted!', false); // Use ticket popup
                 createTicketForm.reset();
-                if (activeSectionId === pageSections['#tickets']) fetchTickets();
+                // Backend now emits 'ticket_list_updated', so no need to manually fetch here
+                // if (activeSectionId === pageSections['#tickets']) fetchTickets();
             } catch (error) {
                 console.error('Error creating ticket:', error);
                 createTicketStatus.textContent = `Error: ${error.message}`;
                 createTicketStatus.classList.add('error');
+                 showPopupMessage(errorMessagePopup, `Ticket submission failed: ${error.message}`, true);
             } finally {
                 submitButton.disabled = false; submitButton.textContent = 'Submit Ticket';
             }
         });
 
+        // Chat Form
         if(chatInputForm) chatInputForm.addEventListener('submit', (event) => {
             event.preventDefault(); const messageText = chatInput.value.trim();
             if (messageText && socket && socket.connected && currentTicketId) {
                 socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                chatInput.value = '';
+                chatInput.value = ''; // Clear input after sending
             }
             else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true); }
             else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
+            else if (!messageText) { /* Do nothing if message is empty */ }
         });
 
+        // Modals & Context Menus
         if (modalCloseButton) modalCloseButton.addEventListener('click', hideUserInfoModal);
         if (userInfoModal) userInfoModal.addEventListener('click', (event) => { if (event.target === userInfoModal) hideUserInfoModal(); });
         if (contextDeleteButton) contextDeleteButton.addEventListener('click', deleteChatMessage);
@@ -2005,39 +2331,215 @@
         if (contextReopenTicketButton) contextReopenTicketButton.addEventListener('click', reopenTicket);
         if (contextDeleteTicketButton) contextDeleteTicketButton.addEventListener('click', deleteTicket);
 
+        // Mobile Menu
         if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
 
+        // Admin Forms
         if (siteConfigForm) siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
         if (addHeaderLinkButton) addHeaderLinkButton.addEventListener('click', () => addHeaderLinkInput());
-        if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal());
+        if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal()); // Pass no product to add new
         if (productEditModal && productModalCloseButton) productModalCloseButton.addEventListener('click', closeProductEditModal);
-        if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); });
+        if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); }); // Close on backdrop click
         if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
         if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
-
+        // Thumbnail file logic
         if(productEditThumbnailButton && productEditThumbnailFileInput) {
             productEditThumbnailButton.addEventListener('click', () => {
-                productEditThumbnailFileInput.click();
+                productEditThumbnailFileInput.click(); // Trigger hidden file input
             });
         }
         if(productEditThumbnailFileInput && productEditThumbnailFilename) {
             productEditThumbnailFileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file) {
-                    productEditThumbnailFilename.textContent = file.name;
+                    productEditThumbnailFilename.textContent = file.name; // Show selected filename
+                    // NOTE: Actual file upload would need separate handling (e.g., using FormData)
+                    // This example only handles URL input or displays filename.
                 } else {
                     productEditThumbnailFilename.textContent = 'No file selected';
                 }
-
-                event.target.value = null;
+                // event.target.value = null; // Reset file input if needed (optional)
             });
         }
 
+        // <<< ADDED: Registration Form Listener >>>
+        if (productRegistrationForm) {
+            productRegistrationForm.addEventListener('submit', handleProductRegistration);
+        }
 
+        // <<< ADDED: Review Form Listener >>>
+        if (reviewSubmissionForm) {
+             reviewSubmissionForm.addEventListener('submit', handleReviewSubmission);
+        }
+// --- Event Listeners ---
+
+        // Login/Logout
+        loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
+        async function handleLogout() {
+             console.log('Logging out...');
+             try {
+                // Attempt backend logout first
+                 const response = await fetch(`${API_BASE_URL}/logout`, { credentials: 'include' });
+                 if (!response.ok) {
+                    // Log warning but proceed with client cleanup
+                     let errorMsg = 'Logout request failed';
+                     try { const errorData = await response.json(); errorMsg = errorData.error || errorMsg; } catch (parseError) {}
+                     console.warn(`Backend logout failed: ${errorMsg}. Proceeding with client-side cleanup.`);
+                 }
+             } catch(error) {
+                 console.error("Network error during logout fetch:", error);
+                 // Proceed with client cleanup even if network error occurs
+             } finally {
+                  // --- Client-side cleanup ---
+                  currentUser = { logged_in: false }; // Clear user object
+                  userRegisteredProducts = []; // <<< ADDED: Clear registered products
+                  isInitialLoginCheckComplete = false; // Reset flags
+                  isInitialConfigLoadComplete = false;
+                  disconnectSocket(); // Disconnect websocket
+                  updateHeaderUI(currentUser); // Update UI immediately
+                  adminDashboardSections?.classList.add('hidden'); // Hide admin sections
+
+                  // Clear dashboard specific data explicitly
+                  if(dashboardMyProductsList) dashboardMyProductsList.innerHTML = '';
+                  if(dashboardMyProductsStatus) {
+                     dashboardMyProductsStatus.textContent = "Log in to see your products.";
+                     dashboardMyProductsStatus.classList.remove('hidden');
+                  }
+                  if(dashboardUserRolesContainer) dashboardUserRolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">Log in to see roles.</p>';
+                  if(registerProductSelect) registerProductSelect.innerHTML = '<option value="">-- Log in to register --</option>'; // Reset registration dropdown
+
+                  console.log("Redirecting to /#home after logout cleanup.");
+                  window.location.hash = '/#home'; // Navigate to home
+                  // Ensure navigation logic runs to display the correct section
+                  // Need a slight delay sometimes for hash change to register properly after state clear
+                  // setTimeout(runNavigation, 50); // This might cause issues if called too early
+             }
+        }
+        logoutButton.addEventListener('click', handleLogout);
+        dashboardLogoutButton.addEventListener('click', handleLogout);
+
+        // Navigation
+        window.addEventListener('hashchange', runNavigation);
+
+        // Ticket Form
+        if(createTicketForm) createTicketForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const subject = ticketSubjectInput.value.trim(); const message = ticketMessageInput.value.trim();
+            createTicketStatus.textContent = ''; createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
+            if (!subject || !message) { createTicketStatus.textContent = 'Please fill out both subject and message.'; createTicketStatus.classList.add('error'); return; }
+            if (!currentUser?.logged_in) {
+                 showPopupMessage(errorMessagePopup, "Please log in to submit a ticket.", true);
+                 return;
+            }
+
+            const submitButton = document.getElementById('create-ticket-button');
+            submitButton.disabled = true; submitButton.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ subject, message }),
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    let errorData;
+                    try { errorData = await response.json(); } catch (e) {}
+                    throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                createTicketStatus.textContent = 'Ticket submitted successfully!';
+                createTicketStatus.classList.add('success');
+                showPopupMessage(ticketMessagePopup, 'Ticket submitted!', false); // Use ticket popup
+                createTicketForm.reset();
+                // Backend now emits 'ticket_list_updated', so no need to manually fetch here
+                // if (activeSectionId === pageSections['#tickets']) fetchTickets();
+            } catch (error) {
+                console.error('Error creating ticket:', error);
+                createTicketStatus.textContent = `Error: ${error.message}`;
+                createTicketStatus.classList.add('error');
+                 showPopupMessage(errorMessagePopup, `Ticket submission failed: ${error.message}`, true);
+            } finally {
+                submitButton.disabled = false; submitButton.textContent = 'Submit Ticket';
+            }
+        });
+
+        // Chat Form
+        if(chatInputForm) chatInputForm.addEventListener('submit', (event) => {
+            event.preventDefault(); const messageText = chatInput.value.trim();
+            if (messageText && socket && socket.connected && currentTicketId) {
+                socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
+                chatInput.value = ''; // Clear input after sending
+            }
+            else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true); }
+            else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
+            else if (!messageText) { /* Do nothing if message is empty */ }
+        });
+
+        // Modals & Context Menus
+        if (modalCloseButton) modalCloseButton.addEventListener('click', hideUserInfoModal);
+        if (userInfoModal) userInfoModal.addEventListener('click', (event) => { if (event.target === userInfoModal) hideUserInfoModal(); });
+        if (contextDeleteButton) contextDeleteButton.addEventListener('click', deleteChatMessage);
+        if (contextUserInfoButton) contextUserInfoButton.addEventListener('click', () => {
+            if (contextMenuData.senderId) {
+                const messageElement = chatMessagesDiv?.querySelector(`.chat-message[data-timestamp="${contextMenuData.messageTimestamp}"]`);
+                const usernameElement = messageElement?.querySelector('.username');
+                const username = usernameElement ? usernameElement.textContent.replace(':', '') : 'Unknown User';
+                showUserInfoModal(contextMenuData.senderId, username);
+            }
+            hideContextMenu();
+        });
+        if (contextCloseTicketButton) contextCloseTicketButton.addEventListener('click', closeTicket);
+        if (contextReopenTicketButton) contextReopenTicketButton.addEventListener('click', reopenTicket);
+        if (contextDeleteTicketButton) contextDeleteTicketButton.addEventListener('click', deleteTicket);
+
+        // Mobile Menu
+        if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
+
+        // Admin Forms
+        if (siteConfigForm) siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
+        if (addHeaderLinkButton) addHeaderLinkButton.addEventListener('click', () => addHeaderLinkInput());
+        if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal()); // Pass no product to add new
+        if (productEditModal && productModalCloseButton) productModalCloseButton.addEventListener('click', closeProductEditModal);
+        if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); }); // Close on backdrop click
+        if (productEditForm) productEditForm.addEventListener('submit', handleSaveProduct);
+        if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
+        // Thumbnail file logic
+        if(productEditThumbnailButton && productEditThumbnailFileInput) {
+            productEditThumbnailButton.addEventListener('click', () => {
+                productEditThumbnailFileInput.click(); // Trigger hidden file input
+            });
+        }
+        if(productEditThumbnailFileInput && productEditThumbnailFilename) {
+            productEditThumbnailFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    productEditThumbnailFilename.textContent = file.name; // Show selected filename
+                    // NOTE: Actual file upload would need separate handling (e.g., using FormData)
+                    // This example only handles URL input or displays filename.
+                } else {
+                    productEditThumbnailFilename.textContent = 'No file selected';
+                }
+                // event.target.value = null; // Reset file input if needed (optional)
+            });
+        }
+
+        // <<< ADDED: Registration Form Listener >>>
+        if (productRegistrationForm) {
+            productRegistrationForm.addEventListener('submit', handleProductRegistration);
+        }
+
+        // <<< ADDED: Review Form Listener >>>
+        if (reviewSubmissionForm) {
+             reviewSubmissionForm.addEventListener('submit', handleReviewSubmission);
+        }
+
+
+        // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded.");
             createSnowflakes();
-            checkLoginStatus();
+            checkLoginStatus(); // Start the auth check -> config check -> navigation flow
         });
 
     </script>
