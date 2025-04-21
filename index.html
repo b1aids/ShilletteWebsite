@@ -1126,11 +1126,11 @@
                     genButton.textContent = "Generate";
                     // Add listener *directly* to the button we just created
                     genButton.addEventListener('click', (e) => {
-                         e.stopPropagation();
-                         // Call the function to open the modal
-                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
-                     });
-                    // Append the button
+                        e.stopPropagation();
+                        // Call the function to open the modal
+                        openFirmwareGenerateModal(product._id, productElement.dataset.productName);
+                    });
+                    // Append the button <<<< **** MAKE SURE THIS LINE IS PRESENT ****
                     productElement.appendChild(genButton);
                 }
                 // --- genButton variable does not exist outside the IF block ---
