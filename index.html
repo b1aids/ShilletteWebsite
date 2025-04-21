@@ -571,11 +571,9 @@
             <h3 class="text-lg font-semibold mb-4">Register Product</h3>
             <form id="register-product-form" class="space-y-4">
                 <div>
-                    <label for="register-product-select" class="block text-sm font-medium text-gray-300 mb-1">Product to Register</label>
-                    <select id="register-product-select" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent mb-4">
-                        <option value="" disabled selected>Loading products...</option>
-                    </select>
-                </div>
+                    <label for="register-order-id" class="block text-sm font-medium text-gray-300 mb-1">Order ID</label>
+                    <input type="text" id="register-order-id" required> </div>
+                <div>
                     <label for="register-email" class="block text-sm font-medium text-gray-300 mb-1">Email Address</label>
                     <input type="email" id="register-email" required> </div>
                 <button type="submit" id="submit-registration-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">Submit Registration</button>
@@ -2447,45 +2445,15 @@
         }
 
         // --- NEW: Product Registration Modal Listeners ---
-        const registerProductSelect = document.getElementById('register-product-select'); // Get the new dropdown
+        // Note: Removed registerProductSelect and populateProductRegistrationDropdown as per user clarification
 
-        // Function to populate the product dropdown
-        async function populateProductRegistrationDropdown() {
-            if (!registerProductSelect) return;
-            registerProductSelect.innerHTML = '<option value="" disabled selected>Loading products...</option>'; // Show loading state
-            registerProductSelect.disabled = true;
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/products`);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const products = await response.json();
-
-                registerProductSelect.innerHTML = '<option value="" disabled selected>Select a product...</option>'; // Reset with prompt
-                if (products && products.length > 0) {
-                    products.forEach(product => {
-                        const option = document.createElement('option');
-                        option.value = product._id;
-                        option.textContent = product.name || `Product ${product._id}`;
-                        registerProductSelect.appendChild(option);
-                    });
-                    registerProductSelect.disabled = false; // Enable dropdown
-                } else {
-                    registerProductSelect.innerHTML = '<option value="" disabled selected>No products available</option>';
-                }
-            } catch (error) {
-                console.error("Error fetching products for registration dropdown:", error);
-                registerProductSelect.innerHTML = '<option value="" disabled selected>Error loading products</option>';
-                showPopupMessage(errorMessagePopup, `Failed to load products: ${error.message}`, true);
-            }
-        }
-
-        // Open Modal Listener: Populate dropdown when modal opens
+        // Open Modal Listener
         if (registerProductButton) {
             registerProductButton.addEventListener('click', () => {
                 if (registerProductModal) {
                     registrationStatus.textContent = ''; // Clear previous status
-                    registerProductForm.reset();      // Clear form (will reset dropdown too)
-                    populateProductRegistrationDropdown(); // <<< POPULATE DROPDOWN
+                    registerProductForm.reset();      // Clear form
+                    // Removed populateProductRegistrationDropdown() call
                     registerProductModal.classList.add('active'); // Show modal
                 }
             });
@@ -2513,22 +2481,22 @@
         if (registerProductForm) {
             registerProductForm.addEventListener('submit', async (event) => {
                 event.preventDefault(); // Prevent default form submission
-                // Ensure all required elements exist
-                if (!registerProductSelect || !registerOrderIdInput || !registerEmailInput || !registrationStatus || !submitRegistrationButton) {
+                // Ensure required elements exist (excluding dropdown)
+                if (!registerOrderIdInput || !registerEmailInput || !registrationStatus || !submitRegistrationButton) {
                      console.error("Registration form elements missing!"); return;
                 }
 
-                const productId = registerProductSelect.value;
+                // const productId = registerProductSelect.value; // REMOVED
                 const orderId = registerOrderIdInput.value.trim();
                 const email = registerEmailInput.value.trim();
                 registrationStatus.textContent = ''; // Clear status
                 registrationStatus.className = 'text-sm text-center h-5 mt-2'; // Reset class
 
-                // Basic validation
-                if (!productId) {
-                    registrationStatus.textContent = 'Please select a product.';
-                    registrationStatus.classList.add('text-red-400'); return;
-                }
+                // Basic validation (excluding dropdown)
+                // if (!productId) { // REMOVED
+                //     registrationStatus.textContent = 'Please select a product.';
+                //     registrationStatus.classList.add('text-red-400'); return;
+                // }
                  if (!orderId) {
                     registrationStatus.textContent = 'Please enter your Order ID.';
                     registrationStatus.classList.add('text-red-400'); return;
@@ -2540,17 +2508,17 @@
 
                 // Disable button, show submitting state
                 submitRegistrationButton.disabled = true;
-                submitRegistrationButton.textContent = 'Submitting...'; // <<< BUTTON TEXT CHANGES HERE
+                submitRegistrationButton.textContent = 'Submitting...';
 
-                console.log(`Registering Product ID: ${productId}, Order ID: ${orderId}, Email: ${email}`);
+                console.log(`Registering Order ID: ${orderId}, Email: ${email}`); // Simplified log
 
                 // --- ACTUAL API CALL ---
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/register_product`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        // Include product_id in the body
-                        body: JSON.stringify({ product_id: productId, order_id: orderId, email: email }),
+                        // ONLY send order_id and email
+                        body: JSON.stringify({ order_id: orderId, email: email }), // <<< MODIFIED
                         credentials: 'include' // Send cookies if needed for auth
                     });
                     const result = await response.json(); // Always try to parse JSON
@@ -2571,23 +2539,23 @@
                         if(registerProductModal) registerProductModal.classList.remove('active');
                     }, 1500);
 
-                } catch (error) { // <<< CATCHES THE ERROR (like "Invalid product ID format")
+                } catch (error) {
                     // Handle fetch errors or errors thrown from !response.ok
                     console.error('Registration failed:', error);
-                    registrationStatus.textContent = `Error: ${error.message}`; // <<< DISPLAYS THE ERROR
+                    registrationStatus.textContent = `Error: ${error.message}`;
                     registrationStatus.classList.add('text-red-400');
                     showPopupMessage(errorMessagePopup, `Registration failed: ${error.message}`, true);
-                } finally { // <<< THIS BLOCK *ALWAYS* RUNS AFTER TRY OR CATCH
+                } finally {
                     // --- IMPORTANT: Re-enable button in finally block ---
-                    // This ensures the button is always re-enabled, even if errors occur
                     if(submitRegistrationButton){
-                         submitRegistrationButton.disabled = false; // <<< RE-ENABLES BUTTON
-                         submitRegistrationButton.textContent = 'Submit Registration'; // <<< RESETS TEXT
+                         submitRegistrationButton.disabled = false;
+                         submitRegistrationButton.textContent = 'Submit Registration';
                     }
                 }
                 // --- END ACTUAL API CALL ---
             });
         }
+        // --- End of Product Registration Listeners ---
 
 
         // --- Initial Load ---
