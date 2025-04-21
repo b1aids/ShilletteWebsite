@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="site-title-display">Shillette - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link id="favicon" rel="icon" type="image/png" href="/images/icon.png">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div id="snow-container"></div>
+
+    <div id="payment-message">Placeholder</div>
+    <div id="ticket-message">Placeholder</div>
+    <div id="error-message">Placeholder</div>
+    <div id="config-message">Placeholder</div>
+    <div id="product-message">Placeholder</div>
+    <div id="registration-message">Placeholder</div>
+
+    <div id="loading-overlay">
+        <div class="loader"><span class="loader-bar"></span><span class="loader-bar"></span><span class="loader-bar"></span></div>
+    </div>
+
+    <div id="user-info-modal" class="modal">
+        <div class="modal-content">
+            <button id="modal-close-button" class="modal-close-button">
+                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <h3 class="text-lg font-semibold mb-3" id="modal-username">Username</h3>
+            <p class="text-sm text-gray-400 mb-1">User ID: <span id="modal-user-id">N/A</span></p>
+            <p class="text-sm font-medium mb-2">Roles:</p>
+            <div id="modal-user-roles"><p class="text-gray-500 text-xs">Roles not available.</p></div>
+        </div>
+    </div>
+
+    <div id="product-edit-modal" class="modal">
+        <div class="modal-content max-w-lg">
+            <button id="product-modal-close-button" class="modal-close-button">
+                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <h3 class="text-lg font-semibold mb-4" id="product-modal-title">Add Product</h3>
+            <form id="product-edit-form" class="admin-form space-y-4">
+                <input type="hidden" id="product-edit-id">
+                <div>
+                    <label for="product-edit-name">Product Name</label>
+                    <input type="text" id="product-edit-name" required>
+                </div>
+                 <div>
+                    <label for="product-edit-thumbnail">Thumbnail URL or Select File</label>
+                    <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL...">
+                    <div class="mt-2 flex items-center gap-x-3">
+                         <input type="file" id="product-edit-thumbnail-file" accept=".png" class="hidden">
+                         <button type="button" id="product-edit-thumbnail-button" class="text-sm">Select PNG File</button>
+                         <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
+                    </div>
+                 </div>
+                <div>
+                    <label for="product-edit-price">Price ($)</label>
+                    <input type="number" id="product-edit-price" step="0.01" required>
+                </div>
+                 <div>
+                    <label for="product-edit-tag">Tag (e.g., ALL IN ONE, SOFTWARE)</label>
+                    <input type="text" id="product-edit-tag">
+                 </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                         <label for="product-edit-tagColor">Tag Border Color</label>
+                         <select id="product-edit-tagColor">
+                            <option value="gray">Gray</option>
+                            <option value="orange">Orange</option>
+                            <option value="blue">Blue</option>
+                            <option value="green">Green</option>
+                            <option value="red">Red</option>
+                            <option value="purple">Purple</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="pink">Pink</option>
+                            <option value="teal">Teal</option>
+                            <option value="custom">Custom HEX</option>
+                         </select>
+                     </div>
+                     <div id="custom-hex-input-container" class="hidden">
+                         <label for="product-edit-customHex">Custom HEX Color</label>
+                         <input type="text" id="product-edit-customHex" placeholder="#RRGGBB">
+                     </div>
+                 </div>
+                <div>
+                    <label for="product-edit-description">Description (Optional)</label>
+                    <textarea id="product-edit-description" rows="3"></textarea>
+                </div>
+                 <div>
+                    <label for="product-edit-features">Features (One per line)</label>
+                    <textarea id="product-edit-features" rows="5"></textarea>
+                 </div>
+                 <div>
+                    <label for="product-edit-paymentLink">Payment Link/ID (e.g., PayPal button ID)</label>
+                    <input type="text" id="product-edit-paymentLink">
+                 </div>
+                <div>
+                    <label for="product-edit-config-url">Config URL (Optional)</label>
+                    <input type="text" id="product-edit-config-url" placeholder="Enter URL for config page/download...">
+                </div>
+                 <button type="submit" id="product-save-button">Save Product</button>
+                 <div id="product-edit-status" class="text-sm text-center h-5 mt-2"></div>
+            </form>
+        </div>
+    </div>
+
+
+    <header class="py-4 sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img id="header-site-icon" src="/images/icon.png" alt="Site Icon" class="w-8 h-8" onerror="this.src='/images/icon.png'; this.onerror=null;">
+                <span id="site-title-display-header" class="text-2xl font-bold text-white">Shillette</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <nav id="main-navigation" class="hidden md:flex space-x-6">
+                    </nav>
+                <div id="user-area" class="flex items-center">
+                    <a id="login-button" href="https://api.shillette.com/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44 4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
+                        <span>Login with Discord</span>
+                    </a>
+                    <a href="/dashboard.html" id="user-info" class="hidden items-center space-x-3 hover:bg-slate-700/50 p-1.5 rounded-lg transition duration-200 cursor-pointer">
+                        <img id="user-avatar" src="https://placehold.co/32x32/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-8 h-8 rounded-full border-2 border-slate-600" onerror="this.src='https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';">
+                        <span id="user-name" class="text-white text-sm font-medium">Username</span>
+                        <button id="logout-button" class="text-gray-400 hover:text-white text-xs font-medium bg-slate-600 hover:bg-slate-500 px-2 py-1 rounded-md transition duration-200">Logout</button>
+                    </a>
+                </div>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-300 hover:text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden">
+             </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-10">
+        <div id="dashboard-content">
+            <h2>Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="dashboard-card md:col-span-1">
+                    <h3 class="text-lg font-semibold text-white mb-4">Welcome!</h3>
+                    <div class="flex items-center space-x-4 mb-4">
+                         <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';">
+                         <div>
+                             <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
+                             <p class="text-sm text-gray-400">Status: Active</p>
+                         </div>
+                    </div>
+                    <button id="dashboard-logout-button" class="w-full bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300">
+                        Logout
+                    </button>
+                </div>
+
+                <div class="dashboard-card md:col-span-2">
+                    <h3 class="text-lg font-semibold text-white mb-4">My Products</h3>
+                    <div id="dashboard-my-products-list" class="space-y-3">
+                        <p id="dashboard-my-products-status" class="text-gray-400">Loading your products...</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card md:col-span-1">
+                    <h3 class="text-lg font-semibold text-white mb-4">My Roles</h3>
+                    <div id="dashboard-user-roles" class="space-y-2 flex flex-wrap gap-1">
+                        <p class="text-gray-400 text-sm w-full">Loading roles...</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-card md:col-span-2">
+                     <h3 class="text-lg font-semibold text-white mb-4">Settings</h3>
+                     <p class="text-gray-400">User settings will appear here (Feature not implemented).</p>
+                </div>
+
+                <div class="dashboard-card md:col-span-3 lg:col-span-1">
+                    <h3 class="text-lg font-semibold text-white mb-4">Register a Product</h3>
+                    <form id="product-registration-form" class="space-y-3">
+                         <div>
+                             <label for="register-product-select" class="block text-sm font-medium text-gray-300 mb-1">Select Product</label>
+                             <select id="register-product-select" required>
+                                  <option value="">-- Select Product --</option>
+                                  </select>
+                         </div>
+                         <div>
+                             <label for="register-order-id" class="block text-sm font-medium text-gray-300 mb-1">Order ID</label>
+                             <input type="text" id="register-order-id" required>
+                         </div>
+                         <div>
+                             <label for="register-email" class="block text-sm font-medium text-gray-300 mb-1">Email Used for Purchase</label>
+                             <input type="email" id="register-email" required>
+                         </div>
+                         <button type="submit" id="register-submit-button" class="register-button">Register Product</button>
+                         <div id="register-status" class="text-sm text-center h-5 mt-2"></div>
+                    </form>
+                </div>
+
+                <div id="admin-dashboard-sections" class="hidden md:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="admin-section lg:col-span-1">
+                        <h3>Site Configuration</h3>
+                        <form id="site-config-form" class="admin-form">
+                            <div>
+                                <label for="config-site-title">Site Title</label>
+                                <input type="text" id="config-site-title" required>
+                            </div>
+                             <div>
+                                <label for="config-site-icon-url">Site Icon URL (PNG, ICO)</label>
+                                <input type="text" id="config-site-icon-url" placeholder="/images/icon.png">
+                             </div>
+                             <div>
+                                <label>Header Navigation Links</label>
+                                <div id="config-header-links-container" class="space-y-2">
+                                     </div>
+                                <button type="button" id="add-header-link-button" class="mt-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300">Add Link</button>
+                             </div>
+                             <button type="submit" id="save-config-button">Save Configuration</button>
+                             <div id="config-save-status" class="text-sm text-center h-5 mt-2"></div>
+                        </form>
+                    </div>
+                    <div class="admin-section lg:col-span-1">
+                        <h3>Product Management</h3>
+                        <button id="add-product-button" class="mb-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">Add New Product</button>
+                        <div class="overflow-x-auto">
+                            <table id="product-list-table">
+                                <thead>
+                                    <tr><th>Name</th><th>Price</th><th>Tag</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody id="product-list-tbody">
+                                     </tbody>
+                            </table>
+                        </div>
+                        <p id="product-list-status">Loading products...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-black mt-auto py-6 border-t border-gray-800">
+        <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
+            <p>&copy; <span id="footer-year">2025</span> Shillette. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>
