@@ -1,0 +1,43 @@
+<div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+    <div class="flex justify-start mb-8">
+        <a href="/#products" id="back-to-products-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <span>Back to Products</span>
+        </a>
+    </div>
+    <h2>Support Tickets</h2>
+
+    <div id="moderator-management-view" class="hidden mb-8 ticket-card">
+        <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
+        <details class="mb-6" open> <summary>Active Tickets</summary>
+            <div id="moderator-active-ticket-list" class="ticket-list-container mt-3"></div>
+            <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+        </details>
+        <details> <summary>Archived Tickets</summary>
+            <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3"></div>
+            <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
+        </details>
+    </div>
+
+    <div id="user-ticket-view" class="mb-8 ticket-card">
+        <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
+        <div id="ticket-list" class="ticket-list-container"></div>
+        <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
+        </div>
+
+    <div class="ticket-card">
+        <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
+        <form id="create-ticket-form" novalidate>
+            <div class="mb-4">
+                <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
+                <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
+            </div>
+            <div class="mb-4">
+                <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+                <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
+            </div>
+            <div id="create-ticket-status" class="h-6"></div>
+            <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">Submit Ticket</button>
+        </form>
+    </div>
+</div>
