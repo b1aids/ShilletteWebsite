@@ -247,7 +247,7 @@
                     <label for="product-edit-firmware-dir">Firmware Directory Name</label>
                     <input type="text" id="product-edit-firmware-dir" placeholder="Directory name used for build">
                     <p class="text-xs text-gray-400 mt-1">Must match the folder name under the firmware base directory.</p>
-                </div>           
+               </div>
 
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
@@ -2849,19 +2849,16 @@
              const thumbnailFileInput = document.getElementById('product-edit-thumbnail-file');
              const thumbnailFilename = document.getElementById('product-edit-thumbnail-filename');
              const priceInput = document.getElementById('product-edit-price');
-             const tagInput = document.getElementById('product-edit-tag');
+             const tagInput = document.getElementById('product-edit-tag'); // Singular tag input
              const tagColorSelect = document.getElementById('product-edit-tagColor');
              const customHexInput = document.getElementById('product-edit-customHex');
              const descriptionInput = document.getElementById('product-edit-description');
              const featuresInput = document.getElementById('product-edit-features');
              const paymentLinkInput = document.getElementById('product-edit-paymentLink');
              const deviceTypeInput = document.getElementById('product-edit-device-type');
-             // --- Get refs for firmware directory ---
              const firmwareDirInput = document.getElementById('product-edit-firmware-dir');
              const firmwareDirContainer = document.getElementById('firmware-directory-container');
-             // --- End Get ---
              const deviceTypeContainer = document.getElementById('device-type-input-container');
-             // Removed firmwareSettingsInfoDiv ref
 
              // Null Checks
              if (!modal) { console.error("Edit Modal Error: Element with ID 'product-edit-modal' not found!"); return; }
@@ -2870,21 +2867,18 @@
              if (!status) { console.error("Edit Modal Error: Element with ID 'product-edit-status' not found!"); }
              if (!thumbnailFilename) { console.error("Edit Modal Error: Element with ID 'product-edit-thumbnail-filename' not found!"); }
              if (!deviceTypeContainer) { console.error("Edit Modal Error: Element with ID 'device-type-input-container' not found!"); }
-             // --- Add check for firmware dir elements ---
              if (!firmwareDirContainer) { console.error("Edit Modal Error: Element with ID 'firmware-directory-container' not found!"); }
              if (!firmwareDirInput) { console.error("Edit Modal Error: Element with ID 'product-edit-firmware-dir' not found!"); }
-             // --- End Add ---
 
 
              form.reset();
              if (status) status.textContent = '';
              if (thumbnailFilename) thumbnailFilename.textContent = 'No file selected';
-             // Removed firmwareSettingsInfoDiv reset
 
              if (status) status.className = 'text-sm text-center h-5 mt-2';
              // Hide conditional containers by default
              if (deviceTypeContainer) deviceTypeContainer.classList.add('hidden');
-             if (firmwareDirContainer) firmwareDirContainer.classList.add('hidden'); // Hide firmware dir by default
+             if (firmwareDirContainer) firmwareDirContainer.classList.add('hidden');
 
 
              if (product) {
@@ -2898,9 +2892,8 @@
                  if(priceInput) priceInput.value = product.price || '';
                  if(tagInput) tagInput.value = product.tag || '';
                  if(deviceTypeInput) deviceTypeInput.value = product.device_type || '';
-                 // --- Populate firmware directory name ---
-                 // Use specific field, fallback to product name if field doesn't exist yet
-                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || '';'';
+                 // --- Populate firmware directory name (Corrected Line) ---
+                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || ''; // Removed extra '';
                  // --- End Populate ---
                  if(descriptionInput) descriptionInput.value = product.description || '';
                  if(featuresInput) featuresInput.value = (product.features || []).join('\n');
@@ -2946,6 +2939,7 @@
              toggleCustomHexInput();
              modal.classList.add('active');
         }
+
 
         /** Handles the submission of the product add/edit form. */
         async function handleSaveProduct(event) {
