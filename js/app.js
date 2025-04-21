@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadPageContent(pageName, params = {}) {
         console.log(`[loadPageContent] Attempting to load page: ${pageName} with params:`, params);
         if (!pageContentContainer) {
-            console.error("CRITICAL: Page content container (#page-content-container) not found!");
+            console.error("CRITICAL: Page content container (page-content-container) not found!");
             return;
         }
         const filePath = pageRoutes[pageName];
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (currentTicketId) {
                          // Ensure the back button link is correct (might be redundant if static in HTML)
                          const backBtn = document.getElementById('back-to-tickets-button');
-                         if (backBtn) backBtn.href = '/#tickets';
+                         if (backBtn) backBtn.href = '/tickets';
                          await fetchTicketDetails(currentTicketId); // Fetch chat messages for this ticket
                          setupTicketDetailListeners(); // Add listeners for chat form
                     } else {
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                      if (productId) {
                          // Ensure back button link
                          const backBtn = document.getElementById('back-to-products-button-detail');
-                         if (backBtn) backBtn.href = '/#products';
+                         if (backBtn) backBtn.href = '/products';
                          await fetchProductDetails(productId); // Fetch product data
                          setupProductDetailListeners(); // Add listeners for buy/basket/quantity buttons
                      } else {
@@ -348,9 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = config?.siteTitle || "Shillette";
         const iconUrl = config?.siteIconUrl || "/images/icon.png"; // Default icon path
         const links = config?.headerLinks || [ // Default header links
-            {name: "Home", href: "/#home"},
-            {name: "Products", href: "/#products"},
-            {name: "Tickets", href: "/#tickets"},
+            {name: "Home", href: "/home"},
+            {name: "Products", href: "/products"},
+            {name: "Tickets", href: "/tickets"},
             {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
         ];
 
@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const hash = window.location.hash || '#home'; // Default to #home if hash is empty
+        const hash = window.location.hash || 'home'; // Default to #home if hash is empty
         const hashParts = hash.split('?'); // Separate path from query string
 
         // Extract page name from the hash path part (remove # and potential leading /)
@@ -467,10 +467,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Redirect to home page, but avoid infinite loops if already trying to access home
             if (pageName !== 'home') {
                 console.log("[runNavigation] Redirecting to /#home.");
-                window.location.hash = '/#home';
+                window.location.hash = '/home';
             } else {
                 // If they were already trying to access #home, load it directly
-                console.log("[runNavigation] Already on #home, loading content.");
+                console.log("[runNavigation] Already on home, loading content.");
                 loadPageContent('home', {}); // Load home page content
             }
             return; // Stop further processing for this navigation attempt
@@ -626,7 +626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  // Navigate to product detail page
                  const productId = detailsButton.dataset.productId;
                  if (productId) {
-                     window.location.hash = `productDetail?id=${productId}`;
+                     window.location.hash = `/productDetail?id=${productId}`;
                  }
              } else {
                  // Click on card area *not* buttons - could also navigate to detail
@@ -787,7 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add click listener to navigate to the ticket detail page
         item.addEventListener('click', (e) => {
             e.preventDefault(); // Prevent default link behavior if wrapped in <a>
-            const targetHash = `/#ticketDetail?id=${ticket._id}`;
+            const targetHash = `/ticketDetail?id=${ticket._id}`;
             console.log(`[Ticket Item Click] Navigating to: ${targetHash}`);
             window.location.hash = targetHash;
         });
@@ -886,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
          // Ensure user is logged in (redundant check)
          if (!currentUser?.logged_in) {
              console.warn("[fetchTicketDetails] User not logged in, cannot fetch details.");
-             window.location.hash = '/#tickets'; // Redirect if somehow accessed while logged out
+             window.location.hash = '/tickets'; // Redirect if somehow accessed while logged out
              return;
          }
          ensureSocketConnected(); // Make sure socket is ready for chat
@@ -934,7 +934,7 @@ document.addEventListener('DOMContentLoaded', () => {
              showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
              // Redirect back to tickets list if ticket not found or forbidden
              if (error.message.includes("not found") || error.message.includes("Access Denied")) {
-                 setTimeout(() => { window.location.hash = '/#tickets'; }, 3000); // Redirect after a short delay
+                 setTimeout(() => { window.location.hash = '/tickets'; }, 3000); // Redirect after a short delay
              }
          }
     }
@@ -1140,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Use specific classes for easier selection if needed later
         linkGroup.innerHTML = `
              <input type="text" placeholder="Link Name" value="${name}" class="link-name config-link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
-             <input type="text" placeholder="Link Href (e.g., /#page)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+             <input type="text" placeholder="Link Href (e.g., /page)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
              <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target config-link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
              <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
          `;
@@ -1363,7 +1363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
             // Optionally redirect if product not found
             if (error.message.includes("not found")) {
-                 setTimeout(() => { window.location.hash = '/#products'; }, 3000);
+                 setTimeout(() => { window.location.hash = '/products'; }, 3000);
             }
         }
     }
@@ -2134,7 +2134,7 @@ document.addEventListener('DOMContentLoaded', () => {
              // If the user was viewing the detail page of the deleted product, redirect them
              if (currentPage === 'productDetail' && window.location.hash.includes(`id=${productId}`)) {
                  console.log("Deleted product was being viewed, redirecting to products list.");
-                 window.location.hash = '/#products';
+                 window.location.hash = '/products';
              }
 
          } catch (error) {
@@ -2181,9 +2181,9 @@ document.addEventListener('DOMContentLoaded', () => {
               updateHeaderUI(null); // Update header to show login button
               // Clear the main content area (optional, as navigation will reload)
               // if (pageContentContainer) pageContentContainer.innerHTML = '';
-              console.log("[handleLogout] Client-side cleanup complete. Redirecting to /#home.");
+              console.log("[handleLogout] Client-side cleanup complete. Redirecting to /home.");
               // loadingOverlay.classList.remove('active'); // Hide loading state
-              window.location.hash = '/#home'; // Navigate to home page
+              window.location.hash = '/home'; // Navigate to home page
               // Force reload if navigation doesn't trigger content update reliably
               // window.location.reload();
          }
