@@ -722,6 +722,15 @@
         const adminEditProductButton = document.getElementById('context-edit-product'); // Optional Edit
         const myProductUnregisterButton = document.getElementById('context-unregister-my-product');
         const myProductGotoButton = document.getElementById('context-goto-product');
+        // --- Context Menu Button Listeners ---
+        // (Keep existing listeners for adminDeleteProductButton, adminEditProductButton, etc.)
+        const myProductViewOrderIdButton = document.getElementById('context-view-order-id'); // Get the new button
+
+        // ... (existing listeners) ...
+
+        if (myProductViewOrderIdButton) {
+            myProductViewOrderIdButton.addEventListener('click', handleViewOrderId);
+        }
 
         if (adminDeleteProductButton) {
             adminDeleteProductButton.addEventListener('click', () => {
@@ -843,61 +852,56 @@
 
         /**
          * Displays the user's registered products in the dashboard.
-         * @param {Array<string>} registeredProductIds - Array of product IDs registered to the user.
-         * @param {Array<object>} allProducts - The full list of all available products.
+         * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
          */
-         function displayRegisteredProducts(registeredProductIds, allProducts) {
+         function displayRegisteredProducts(productsToDisplay) { // Changed signature
             const container = document.getElementById('dashboard-my-products-list');
             if (!container) return;
-            container.innerHTML = '';
+            container.innerHTML = ''; // Clear loading/previous
 
-            if (!registeredProductIds || registeredProductIds.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
-                return;
-            }
-            if (!allProducts) {
+            // Handle error case or empty list
+            if (productsToDisplay === null) {
                  container.innerHTML = '<p class="text-red-400 text-sm">Could not load product details.</p>';
                  return;
             }
-
-            const userProducts = allProducts.filter(product => registeredProductIds.includes(product._id));
-
-            if (userProducts.length === 0) {
-                 container.innerHTML = '<p class="text-gray-400 text-sm">Could not find details for your registered products. Please contact support if this persists.</p>';
-                 return;
+            if (productsToDisplay.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
+                return;
             }
 
-            userProducts.forEach(product => {
+            // Display each product
+            productsToDisplay.forEach(product => {
                 const productElement = document.createElement('div');
-                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center space-x-2 hover:bg-slate-600/50 transition-colors'; // Added hover effect
-                // --- ADD data attributes ---
-                productElement.dataset.productId = product._id;
-                productElement.dataset.productName = product.name || 'Unnamed Product';
-                // --- END ADD ---
+                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center space-x-2 hover:bg-slate-600/50 transition-colors';
+                // --- ADD/MODIFY data attributes ---
+                productElement.dataset.productId = product._id; // Already there
+                productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product'; // Use name from registration or product
+                productElement.dataset.orderId = product.order_id || ''; // Store order_id (or empty string if missing)
+                // --- END ADD/MODIFY ---
 
+                // Thumbnail logic (remains the same)
                 let thumbnailHtml = '';
                 if (product.thumbnailUrl) {
-                   thumbnailHtml = `<img src="${product.thumbnailUrl}" alt="${product.name}" class="w-8 h-8 rounded object-cover flex-shrink-0 pointer-events-none" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   thumbnailHtml = `<img src="${product.thumbnailUrl}" alt="${product.dataset.productName}" class="w-8 h-8 rounded object-cover flex-shrink-0 pointer-events-none" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                                     <div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 items-center justify-center text-xs text-gray-400 pointer-events-none" style="display: none;">N/A</div>`;
                 } else {
                     thumbnailHtml = '<div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">N/A</div>';
                 }
 
+                // Use the name stored in dataset for display
                 productElement.innerHTML = `
                     ${thumbnailHtml}
-                    <span class="text-white font-medium pointer-events-none">${product.name || 'Unnamed Product'}</span>
+                    <span class="text-white font-medium pointer-events-none">${productElement.dataset.productName}</span>
                     `;
+
                  productElement.style.cursor = 'pointer';
-                 // --- CHANGE click listener to NOT handle contextmenu ---
                  productElement.addEventListener('click', (e) => {
-                     // Prevent triggering if it was a right-click that might open a context menu
                      if (e.button !== 2) {
-                         window.location.hash = `productDetail?id=${product._id}`;
+                         window.location.hash = `/#productDetail?id=${product._id}`;
                      }
                  });
-                 // --- ADD Context Menu Listener ---
+                 // Add Context Menu Listener (already there)
                  productElement.addEventListener('contextmenu', showMyProductContextMenu);
-                 // --- END ADD ---
 
                 container.appendChild(productElement);
             });
@@ -910,14 +914,15 @@
          function showMyProductContextMenu(event) {
             event.preventDefault(); hideContextMenu();
             const menuElement = document.getElementById('my-product-context-menu');
-            if (!currentUser?.logged_in || !menuElement) return; // Must be logged in
+            if (!currentUser?.logged_in || !menuElement) return;
 
-            const productElement = event.target.closest('[data-product-id]'); // Find the element with product ID
+            const productElement = event.target.closest('[data-product-id]');
             if (!productElement || !productElement.dataset.productId) return;
 
-            // Store product data
+            // Store product data AND orderId
             contextMenuData.productId = productElement.dataset.productId;
             contextMenuData.productName = productElement.dataset.productName;
+            contextMenuData.orderId = productElement.dataset.orderId; // <-- ADD THIS LINE
 
             // Position and show
             positionContextMenu(menuElement, event);
@@ -1035,6 +1040,18 @@
             if (sectionElementId !== pageSections['#ticketDetail']) {
                  currentTicketId = null;
             }
+        }
+        /** Displays the Order ID stored in contextMenuData using an alert. */
+        function handleViewOrderId() {
+            const { orderId, productName } = contextMenuData; // Get data from context
+
+            if (orderId) {
+                alert(`Order ID for "${productName || 'this product'}":\n\n${orderId}`);
+            } else {
+                alert(`Order ID not found for "${productName || 'this product'}".`);
+                console.warn("handleViewOrderId called but contextMenuData.orderId was empty or missing.");
+            }
+            hideContextMenu(); // Close the menu after showing the alert
         }
 
         /**
