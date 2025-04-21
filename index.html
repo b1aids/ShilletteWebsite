@@ -243,9 +243,11 @@
                     <input type="text" id="product-edit-tag">
                 </div>
 
-                 <div id="firmware-settings-info" class="text-sm text-gray-400 border-t border-slate-700 pt-3 mt-3 hidden">
-                     {/* Content will be added by JavaScript */}
-                 </div>
+                <div id="firmware-directory-container" class="hidden"> {/* Container to show/hide */}
+                    <label for="product-edit-firmware-dir">Firmware Directory Name</label>
+                    <input type="text" id="product-edit-firmware-dir" placeholder="Directory name used for build">
+                    <p class="text-xs text-gray-400 mt-1">Must match the folder name under the firmware base directory.</p>
+                </div>           
 
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
@@ -2831,7 +2833,8 @@
                 /**
          * Opens the product edit/add modal.
          * Includes null checks for elements before setting textContent.
-         * Conditionally shows/hides Device Type input based on FIRMWARE tag.
+         * Conditionally shows/hides Device Type and Firmware Directory inputs based on FIRMWARE tag.
+         * Populates the Firmware Directory input.
          * @param {object | null} [product=null] - Product data to edit, or null to add a new product.
          */
          function openProductEditModal(product = null) {
@@ -2846,15 +2849,19 @@
              const thumbnailFileInput = document.getElementById('product-edit-thumbnail-file');
              const thumbnailFilename = document.getElementById('product-edit-thumbnail-filename');
              const priceInput = document.getElementById('product-edit-price');
-             const tagInput = document.getElementById('product-edit-tag'); // Singular tag input
+             const tagInput = document.getElementById('product-edit-tag');
              const tagColorSelect = document.getElementById('product-edit-tagColor');
              const customHexInput = document.getElementById('product-edit-customHex');
              const descriptionInput = document.getElementById('product-edit-description');
              const featuresInput = document.getElementById('product-edit-features');
              const paymentLinkInput = document.getElementById('product-edit-paymentLink');
              const deviceTypeInput = document.getElementById('product-edit-device-type');
-             const firmwareSettingsInfoDiv = document.getElementById('firmware-settings-info');
+             // --- Get refs for firmware directory ---
+             const firmwareDirInput = document.getElementById('product-edit-firmware-dir');
+             const firmwareDirContainer = document.getElementById('firmware-directory-container');
+             // --- End Get ---
              const deviceTypeContainer = document.getElementById('device-type-input-container');
+             // Removed firmwareSettingsInfoDiv ref
 
              // Null Checks
              if (!modal) { console.error("Edit Modal Error: Element with ID 'product-edit-modal' not found!"); return; }
@@ -2862,25 +2869,22 @@
              if (!title) { console.error("Edit Modal Error: Element with ID 'product-modal-title' not found!"); }
              if (!status) { console.error("Edit Modal Error: Element with ID 'product-edit-status' not found!"); }
              if (!thumbnailFilename) { console.error("Edit Modal Error: Element with ID 'product-edit-thumbnail-filename' not found!"); }
-             if (!firmwareSettingsInfoDiv) { console.error("Edit Modal Error: Element with ID 'firmware-settings-info' not found!"); }
              if (!deviceTypeContainer) { console.error("Edit Modal Error: Element with ID 'device-type-input-container' not found!"); }
+             // --- Add check for firmware dir elements ---
+             if (!firmwareDirContainer) { console.error("Edit Modal Error: Element with ID 'firmware-directory-container' not found!"); }
+             if (!firmwareDirInput) { console.error("Edit Modal Error: Element with ID 'product-edit-firmware-dir' not found!"); }
+             // --- End Add ---
 
 
              form.reset();
-             // --- Reset text content and visibility ---
              if (status) status.textContent = '';
              if (thumbnailFilename) thumbnailFilename.textContent = 'No file selected';
-             if (firmwareSettingsInfoDiv) {
-                 firmwareSettingsInfoDiv.textContent = '';
-                 firmwareSettingsInfoDiv.classList.add('hidden'); // Hide by default
-             }
-             // --- Hide Device Type Container by Default ---
-             if (deviceTypeContainer) {
-                 deviceTypeContainer.classList.add('hidden');
-             }
-             // --- End Reset ---
+             // Removed firmwareSettingsInfoDiv reset
 
              if (status) status.className = 'text-sm text-center h-5 mt-2';
+             // Hide conditional containers by default
+             if (deviceTypeContainer) deviceTypeContainer.classList.add('hidden');
+             if (firmwareDirContainer) firmwareDirContainer.classList.add('hidden'); // Hide firmware dir by default
 
 
              if (product) {
@@ -2892,53 +2896,163 @@
                  if(nameInput) nameInput.value = product.name || '';
                  if(thumbnailInput) thumbnailInput.value = product.thumbnailUrl || '';
                  if(priceInput) priceInput.value = product.price || '';
-                 if(tagInput) tagInput.value = product.tag || ''; // Populate singular tag
+                 if(tagInput) tagInput.value = product.tag || '';
                  if(deviceTypeInput) deviceTypeInput.value = product.device_type || '';
+                 // --- Populate firmware directory name ---
+                 // Use specific field, fallback to product name if field doesn't exist yet
+                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || '';
+                 // --- End Populate ---
                  if(descriptionInput) descriptionInput.value = product.description || '';
                  if(featuresInput) featuresInput.value = (product.features || []).join('\n');
                  if(paymentLinkInput) paymentLinkInput.value = product.paymentLink || '';
 
                  // Populate selects/complex fields
                  if (tagColorSelect && customHexInput) {
-                    const hasValidCustomHex = product.customBorderHex && /^#[0-9A-Fa-f]{6}$/i.test(product.customBorderHex);
+                    const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
                     tagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
                     customHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
                  }
 
 
-                 // --- Conditionally Show Firmware Settings & Device Type Input ---
+                 // --- Conditionally Show Firmware Directory & Device Type Input ---
                  const productTag = product.tag || '';
                  const isFirmware = productTag.trim().toUpperCase() === 'FIRMWARE';
 
                  if (isFirmware) {
-                     // Show Firmware Settings Info Div
-                     if (firmwareSettingsInfoDiv) {
-                         firmwareSettingsInfoDiv.textContent = `Firmware Settings: Directory = ${product.name || 'N/A'}`;
-                         firmwareSettingsInfoDiv.classList.remove('hidden'); // Show
+                     // Show Firmware Directory Input Div
+                     if (firmwareDirContainer) {
+                         firmwareDirContainer.classList.remove('hidden'); // Show
                      }
                      // Show Device Type Input Div
                      if (deviceTypeContainer) {
                          deviceTypeContainer.classList.remove('hidden'); // Show
                      }
                  }
-                 // --- If not firmware, the divs remain hidden due to the reset logic above ---
                  // --- End Conditional Show ---
 
              } else {
                  // --- Adding new product ---
                  if (title) title.textContent = 'Add Product';
-
                  // Clear potentially leftover values
                  if(idInput) idInput.value = '';
                  if(tagInput) tagInput.value = '';
                  if(deviceTypeInput) deviceTypeInput.value = '';
+                 if(firmwareDirInput) firmwareDirInput.value = ''; // Clear firmware dir input
                  if(tagColorSelect) tagColorSelect.value = 'gray';
                  if(customHexInput) customHexInput.value = '';
-                 // Ensure device type container is hidden when adding new (already handled by default hide)
+                 // Ensure conditional containers are hidden (already handled by default hide)
              }
 
              toggleCustomHexInput();
              modal.classList.add('active');
+        }
+
+        /** Handles the submission of the product add/edit form. */
+        async function handleSaveProduct(event) {
+             event.preventDefault();
+             // Get references
+             const form = document.getElementById('product-edit-form');
+             const saveButton = document.getElementById('product-save-button');
+             const status = document.getElementById('product-edit-status');
+             const idInput = document.getElementById('product-edit-id');
+             const nameInput = document.getElementById('product-edit-name');
+             const thumbnailInput = document.getElementById('product-edit-thumbnail');
+             const priceInput = document.getElementById('product-edit-price');
+             const tagInput = document.getElementById('product-edit-tag');
+             const tagColorSelect = document.getElementById('product-edit-tagColor');
+             const customHexInput = document.getElementById('product-edit-customHex');
+             const descriptionInput = document.getElementById('product-edit-description');
+             const featuresInput = document.getElementById('product-edit-features');
+             const paymentLinkInput = document.getElementById('product-edit-paymentLink');
+             const deviceTypeInput = document.getElementById('product-edit-device-type');
+             // --- Get firmware directory input ---
+             const firmwareDirInput = document.getElementById('product-edit-firmware-dir');
+             // --- End Get ---
+
+             if (!form || !saveButton || !firmwareDirInput) return; // Added check for new input
+
+             saveButton.disabled = true; saveButton.textContent = 'Saving...';
+             status.textContent = ''; status.className = 'text-sm text-center h-5 mt-2';
+
+             const productId = idInput.value;
+             const isEditing = !!productId;
+             const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
+             const method = isEditing ? 'PUT' : 'POST';
+
+             // --- Get Tag Color / Custom Hex ---
+             let tagColorValue = tagColorSelect.value;
+             let customHexValue = customHexInput.value.trim();
+             let finalTagColor = 'gray';
+             let finalCustomHex = null;
+             if (tagColorValue === 'custom') {
+                if (customHexValue && /^#[0-9A-Fa-f]{6}$/i.test(customHexValue)) {
+                     finalTagColor = 'custom';
+                     finalCustomHex = customHexValue;
+                 } else {
+                     status.textContent = 'Invalid Custom HEX format. Please use #RRGGBB.';
+                     status.classList.add('text-red-400');
+                     saveButton.disabled = false; saveButton.textContent = 'Save Product'; return;
+                 }
+             } else {
+                 finalTagColor = tagColorValue || 'gray';
+                 finalCustomHex = null;
+             }
+             // --- End Get Tag Color ---
+
+             const productData = {
+                 name: nameInput.value.trim(),
+                 thumbnailUrl: thumbnailInput.value.trim() || null,
+                 price: parseFloat(priceInput.value),
+                 tag: tagInput.value.trim() || null,
+                 tagColor: finalTagColor,
+                 customBorderHex: finalCustomHex,
+                 description: descriptionInput.value.trim() || null,
+                 features: featuresInput.value.split('\n').map(f => f.trim()).filter(f => f),
+                 paymentLink: paymentLinkInput.value.trim() || null,
+                 device_type: deviceTypeInput.value.trim() || null,
+                 // --- ADD firmware_directory_name to payload ---
+                 firmware_directory_name: firmwareDirInput.value.trim() || null // Save null if empty
+                 // --- END ADD ---
+             };
+
+             // Basic validation
+             if (!productData.name || isNaN(productData.price)) {
+                  status.textContent = 'Name and valid Price are required.';
+                  status.classList.add('text-red-400');
+                  saveButton.disabled = false; saveButton.textContent = 'Save Product'; return;
+             }
+             // Add validation for firmware directory name if needed (e.g., no spaces, etc.)
+             if (productData.tag?.trim().toUpperCase() === 'FIRMWARE' && !productData.firmware_directory_name) {
+                  status.textContent = 'Firmware Directory Name is required for FIRMWARE products.';
+                  status.classList.add('text-red-400');
+                  saveButton.disabled = false; saveButton.textContent = 'Save Product'; return;
+             }
+
+
+             // Send data to API
+             try {
+                 const response = await fetch(url, {
+                     method: method,
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(productData),
+                     credentials: 'include'
+                 });
+                 const result = await response.json();
+                 if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                 showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
+                 closeProductEditModal();
+                 await loadProductManagementTable(); // Refresh admin table
+                 // Also refresh public product list if currently viewed
+                 if (activeSectionId === pageSections['#products']) await fetchProducts();
+             } catch (error) {
+                 console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
+                 status.textContent = `Error: ${error.message}`;
+                 status.classList.add('text-red-400');
+                 showPopupMessage(errorMessagePopup, `Failed to save product: ${error.message}`, true);
+             } finally {
+                 saveButton.disabled = false; saveButton.textContent = 'Save Product';
+             }
         }
 
 
