@@ -215,6 +215,10 @@
 
     <div id="product-edit-modal" class="modal">
         <div class="modal-content max-w-lg">
+            <button id="product-modal-close-button" class="modal-close-button absolute top-3 right-3 text-gray-400 hover:text-white transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <h3 class="text-lg font-semibold mb-4" id="product-modal-title">Edit Product</h3>
             <form id="product-edit-form" class="admin-form space-y-4">
                 <input type="hidden" id="product-edit-id">
                 <div>
@@ -223,25 +227,46 @@
                 </div>
                  <div>
                     <label for="product-edit-thumbnail">Thumbnail URL or Select File</label>
+                    <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL...">
+                    <div class="mt-2 flex items-center gap-x-3">
+                         <input type="file" id="product-edit-thumbnail-file" accept=".png" class="hidden">
+                         <button type="button" id="product-edit-thumbnail-button" class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md transition duration-300">Select PNG File</button>
+                         <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
                     </div>
-                <div>
+                 </div>
+                 <div>
                     <label for="product-edit-price">Price ($)</label>
                     <input type="number" id="product-edit-price" step="0.01" required>
                 </div>
                  <div>
                     <label for="product-edit-tag">Tag (e.g., FIRMWARE, SOFTWARE)</label>
-                    <input type="text" id="product-edit-tag"> {/* Singular tag input */}
+                    <input type="text" id="product-edit-tag">
                 </div>
 
                  <div id="firmware-settings-info" class="text-sm text-gray-400 border-t border-slate-700 pt-3 mt-3 hidden">
                      {/* Content will be added by JavaScript */}
                  </div>
+
                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
                          <label for="product-edit-tagColor">Tag Border Color</label>
-                         </div>
+                         <select id="product-edit-tagColor">
+                             <option value="gray">Gray</option>
+                             <option value="orange">Orange</option>
+                             <option value="blue">Blue</option>
+                             <option value="green">Green</option>
+                             <option value="red">Red</option>
+                             <option value="purple">Purple</option>
+                             <option value="yellow">Yellow</option>
+                             <option value="pink">Pink</option>
+                             <option value="teal">Teal</option>
+                             <option value="custom">Custom HEX</option>
+                         </select>
+                     </div>
                      <div id="custom-hex-input-container" class="hidden">
-                         </div>
+                         <label for="product-edit-customHex">Custom HEX (#RRGGBB)</label>
+                         <input type="text" id="product-edit-customHex" pattern="^#[0-9A-Fa-f]{6}$" title="Enter a valid 6-digit hex color code starting with #">
+                     </div>
                  </div>
                  <div>
                      <label for="product-edit-device-type">Device Type (for FIRMWARE tag)</label>
@@ -259,11 +284,12 @@
                     <label for="product-edit-paymentLink">Payment Link/ID (e.g., PayPal button ID)</label>
                     <input type="text" id="product-edit-paymentLink">
                 </div>
-                <button type="submit" id="product-save-button">Save Product</button>
+                <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
                 <div id="product-edit-status" class="text-sm text-center h-5 mt-2"></div>
             </form>
         </div>
     </div>
+
 
 
     <div id="chat-context-menu">
