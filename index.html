@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <style type="text/tailwindcss">
+    <link id="favicon" rel="icon" type="image/png" href="/images/icon.png"> <style type="text/tailwindcss">
         @keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
@@ -265,9 +265,7 @@
     <header class="py-4 sticky top-0 z-40 bg-gray-900/80 backdrop-blur-md border-b border-gray-700/50">
         <div class="container mx-auto px-6 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="images/icon.png" alt="Shillette Icon" class="w-8 h-8" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                <span class="text-2xl font-bold text-white hidden">Shillette</span>
-                <span id="site-title-display" class="text-2xl font-bold text-white">Shillette</span>
+                <img id="header-site-icon" src="/images/icon.png" alt="Site Icon" class="w-8 h-8" onerror="this.src='/images/icon.png'; this.onerror=null;"> <span id="site-title-display" class="text-2xl font-bold text-white">Shillette</span>
             </div>
             <div class="flex items-center space-x-6">
                 <nav id="main-navigation" class="hidden md:flex space-x-6">
@@ -376,6 +374,10 @@
                         <div>
                             <label for="config-site-title">Site Title</label>
                             <input type="text" id="config-site-title" required>
+                        </div>
+                        <div>
+                             <label for="config-site-icon-url">Site Icon URL</label>
+                             <input type="text" id="config-site-icon-url" placeholder="e.g., /images/icon.png or https://...">
                         </div>
                         <div>
                             <label>Header Links</label>
@@ -570,6 +572,8 @@
             '#productDetail': 'product-detail-page-content'
         };
         const siteTitleDisplay = document.getElementById('site-title-display');
+        const headerSiteIcon = document.getElementById('header-site-icon'); // <-- MODIFIED: Added ID
+        const faviconElement = document.getElementById('favicon'); // <-- ADDED: Favicon element ID
         const mainNavigation = document.getElementById('main-navigation');
         const mobileMenuNav = document.getElementById('mobile-menu');
         const loginButton = document.getElementById('login-button');
@@ -624,6 +628,7 @@
         const adminDashboardSections = document.getElementById('admin-dashboard-sections');
         const siteConfigForm = document.getElementById('site-config-form');
         const configSiteTitleInput = document.getElementById('config-site-title');
+        const configSiteIconUrlInput = document.getElementById('config-site-icon-url'); // <-- MODIFIED: Added ID
         const configHeaderLinksContainer = document.getElementById('config-header-links-container');
         const addHeaderLinkButton = document.getElementById('add-header-link-button');
         const saveConfigButton = document.getElementById('save-config-button');
@@ -960,6 +965,7 @@
 
         function applySiteConfig(config) {
             const title = config?.siteTitle || "Shillette";
+            const iconUrl = config?.siteIconUrl || "/images/icon.png"; // <-- MODIFIED: Get icon URL
             const links = config?.headerLinks || [
                 {name: "Home", href: "/#home"}, {name: "Products", href: "/#products"},
                 {name: "Tickets", href: "/#tickets"}, {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
@@ -967,6 +973,14 @@
 
             document.title = title;
             siteTitleDisplay.textContent = title;
+
+            // MODIFIED: Update header icon and favicon
+            if (headerSiteIcon) {
+                headerSiteIcon.src = iconUrl;
+            }
+            if (faviconElement) {
+                 faviconElement.href = iconUrl;
+            }
 
             mainNavigation.innerHTML = '';
             mobileMenuNav.innerHTML = '';
@@ -1650,7 +1664,7 @@
         }
 
         async function loadSiteConfigForm() {
-            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus) return;
+            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) return; // <-- MODIFIED: Added icon input check
             if (!siteConfig) {
                 console.warn("Site config not loaded yet for admin form. Attempting fetch.");
                 configSaveStatus.textContent = "Error: Config not loaded.";
@@ -1658,6 +1672,7 @@
                 return;
             }
             configSiteTitleInput.value = siteConfig.siteTitle || '';
+            configSiteIconUrlInput.value = siteConfig.siteIconUrl || ''; // <-- MODIFIED: Load icon URL
             configHeaderLinksContainer.innerHTML = '';
             (siteConfig.headerLinks || []).forEach((link) => {
                 addHeaderLinkInput(link.name, link.href, link.target);
@@ -1685,7 +1700,12 @@
             saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2';
 
-            const updatedConfig = { siteTitle: configSiteTitleInput.value.trim(), headerLinks: [] };
+            // MODIFIED: Include siteIconUrl
+            const updatedConfig = {
+                 siteTitle: configSiteTitleInput.value.trim(),
+                 siteIconUrl: configSiteIconUrlInput.value.trim() || null, // Get icon URL
+                 headerLinks: []
+             };
             configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
                 const nameInput = group.querySelector('.link-name');
                 const hrefInput = group.querySelector('.link-href');
@@ -2008,7 +2028,7 @@
                 } else {
                     productEditThumbnailFilename.textContent = 'No file selected';
                 }
-                 // Reset file input value so the same file can be selected again if needed
+
                 event.target.value = null;
             });
         }
