@@ -2827,22 +2827,25 @@
              const deviceTypeInput = document.getElementById('product-edit-device-type');
              const firmwareSettingsInfoDiv = document.getElementById('firmware-settings-info');
 
-             // --- Add Null Checks for required elements ---
+             // --- ADDED Null Checks for required elements ---
+             // These checks were added to find the cause of the TypeError
              if (!modal) { console.error("Edit Modal Error: Element with ID 'product-edit-modal' not found!"); return; }
              if (!form) { console.error("Edit Modal Error: Element with ID 'product-edit-form' not found!"); return; }
+             // Check elements where textContent will be set
              if (!title) { console.error("Edit Modal Error: Element with ID 'product-modal-title' not found!"); /* Continue cautiously or return */ }
              if (!status) { console.error("Edit Modal Error: Element with ID 'product-edit-status' not found!"); /* Continue cautiously or return */ }
              if (!thumbnailFilename) { console.error("Edit Modal Error: Element with ID 'product-edit-thumbnail-filename' not found!"); /* Continue cautiously or return */ }
              if (!firmwareSettingsInfoDiv) { console.error("Edit Modal Error: Element with ID 'firmware-settings-info' not found!"); /* Continue cautiously or return */ }
-             // Add checks for input elements too if needed, though error was on textContent
              // --- End Null Checks ---
 
 
              form.reset();
-             // Check before setting textContent
+             // --- ADDED Checks before setting textContent ---
+             // These ensure we don't try to set textContent on a null element
              if (status) status.textContent = '';
              if (thumbnailFilename) thumbnailFilename.textContent = 'No file selected';
              if (firmwareSettingsInfoDiv) firmwareSettingsInfoDiv.textContent = '';
+             // --- End Checks ---
 
              if (status) status.className = 'text-sm text-center h-5 mt-2';
              if (firmwareSettingsInfoDiv) firmwareSettingsInfoDiv.classList.add('hidden');
@@ -2851,7 +2854,7 @@
                  // Editing existing product
                  if (title) title.textContent = 'Edit Product'; // Check before setting
 
-                 // Populate inputs (add checks if needed)
+                 // Populate inputs (add checks if needed for robustness)
                  if(idInput) idInput.value = product._id;
                  if(nameInput) nameInput.value = product.name || '';
                  if(thumbnailInput) thumbnailInput.value = product.thumbnailUrl || '';
@@ -2862,7 +2865,7 @@
                  if(featuresInput) featuresInput.value = (product.features || []).join('\n');
                  if(paymentLinkInput) paymentLinkInput.value = product.paymentLink || '';
 
-                 // Populate selects/complex fields (add checks if needed)
+                 // Populate selects/complex fields
                  if (tagColorSelect && customHexInput) {
                     const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
                     tagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
@@ -2873,15 +2876,19 @@
                  // Show Firmware Settings Info if applicable
                  const productTag = product.tag || '';
                  if (productTag.trim().toUpperCase() === 'FIRMWARE') {
-                     if (firmwareSettingsInfoDiv) { // Check before setting
+                     // --- ADDED Check before setting textContent ---
+                     if (firmwareSettingsInfoDiv) {
                          firmwareSettingsInfoDiv.textContent = `Firmware Settings: Directory = ${product.name || 'N/A'}`;
                          firmwareSettingsInfoDiv.classList.remove('hidden');
                      }
+                     // --- End Check ---
                  }
 
              } else {
                  // Adding new product
-                 if (title) title.textContent = 'Add Product'; // Check before setting
+                  // --- ADDED Check before setting textContent ---
+                 if (title) title.textContent = 'Add Product';
+                  // --- End Check ---
 
                  // Clear potentially leftover values
                  if(idInput) idInput.value = '';
@@ -2894,6 +2901,7 @@
              toggleCustomHexInput(); // Assumes related elements exist or handles null internally
              modal.classList.add('active');
         }
+
 
 
 
