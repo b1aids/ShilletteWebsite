@@ -2547,45 +2547,98 @@
             }
         }
 
-        /** Loads the product list into the admin management table. */
-        async function loadProductManagementTable() {
-             if (!productListTableBody || !productListStatus) return;
-             productListTableBody.innerHTML = ''; productListStatus.textContent = 'Loading products...';
+                /** Loads the product list into the admin management table. */
+                async function loadProductManagementTable() {
+             if (!productListTableBody || !productListStatus) return; // Ensure elements exist
+             productListTableBody.innerHTML = ''; productListStatus.textContent = 'Loading products...'; // Clear table, show loading
              productListStatus.classList.remove('hidden');
 
              try {
-                 const response = await fetch(`${API_BASE_URL}/api/products`);
+                 const response = await fetch(`${API_BASE_URL}/api/products`); // Fetch all products
                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
                  const products = await response.json();
-                 productListStatus.classList.add('hidden');
+                 productListStatus.classList.add('hidden'); // Hide loading
 
                  if (!products || products.length === 0) {
-                     productListStatus.textContent = 'No products found.';
+                     productListStatus.textContent = 'No products found.'; // Show message if empty
                      productListStatus.classList.remove('hidden');
                      return;
                  }
 
+                 // Populate table rows
                  products.forEach(product => {
                      const row = productListTableBody.insertRow();
-                     // --- ADD data attributes ---
+                     // Store necessary data on the row itself for the listener
                      row.dataset.productId = product._id;
                      row.dataset.productName = product.name || 'Unnamed Product';
-                     // --- END ADD ---
+                     row.dataset.productTag = product.tag || ''; // Store the singular tag
+                     row.dataset.deviceType = product.device_type || ''; // Store the device type
+
                      row.innerHTML = `
                          <td>${product.name || 'N/A'}</td>
                          <td>$${product.price?.toFixed(2) || 'N/A'}</td>
-                         <td>${product.tag || '-'}</td>
+                         <td>${product.tag || '-'}</td> {/* Display the singular tag */}
                          <td class="actions">
                              <button class="edit-btn" data-product-id="${product._id}">Edit</button>
                              <button class="delete-btn" data-product-id="${product._id}">Delete</button>
                          </td>
                      `;
-                     row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product));
-                     row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name));
 
-                     // --- ADD Context Menu Listener ---
+                     const editButton = row.querySelector('.edit-btn');
+                     const deleteButton = row.querySelector('.delete-btn');
+
+                     // --- MODIFIED Edit Button Listener ---
+                     if (editButton) {
+                         editButton.addEventListener('click', async (event) => {
+                             const button = event.currentTarget;
+                             const productId = button.dataset.productId;
+                             // Get data stored on the row
+                             const parentRow = button.closest('tr');
+                             const productName = parentRow.dataset.productName;
+                             const productTag = parentRow.dataset.productTag;
+                             const deviceType = parentRow.dataset.deviceType;
+
+                             console.log(`Edit clicked for: ${productName}, Tag: ${productTag}, DeviceType: ${deviceType}`); // Debug log
+
+                             // Check if the tag is FIRMWARE (case-insensitive)
+                             if (productTag.trim().toUpperCase() === 'FIRMWARE') {
+                                 // --- Trigger Firmware Generation ---
+                                 console.log("FIRMWARE tag detected. Starting generation flow.");
+                                 // Check if deviceType is present
+                                 if (!deviceType) {
+                                     showPopupMessage(errorMessagePopup, `Cannot generate firmware: 'device_type' is not set for product '${productName}'. Please edit the product first.`, true, 5000);
+                                     // Optionally open the edit modal here to allow setting device_type
+                                     // openProductEditModal(product); // Requires fetching full product data first
+                                     return;
+                                 }
+                                 // Call the existing function to prompt for DNA and start generation
+                                 promptAndStartFirmwareGeneration(productId, productName, deviceType);
+
+                             } else {
+                                 // --- Open Standard Edit Modal ---
+                                 console.log("Not a FIRMWARE tag. Opening edit modal.");
+                                 // Fetch full product details first, as the 'product' object isn't directly available here
+                                 showPopupMessage(productMessagePopup, 'Fetching product details to edit...');
+                                 try {
+                                     const res = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+                                     if(!res.ok) throw new Error('Product not found or error fetching.');
+                                     const productData = await res.json();
+                                     openProductEditModal(productData); // Open modal with fetched data
+                                 } catch (err) {
+                                      showPopupMessage(errorMessagePopup, `Error fetching product to edit: ${err.message}`, true);
+                                 }
+                             }
+                         });
+                     }
+                     // --- END MODIFIED Listener ---
+
+                     // Delete button listener (remains the same)
+                     if (deleteButton) {
+                         deleteButton.addEventListener('click', () => handleDeleteProduct(product._id, product.name));
+                     }
+
+                     // Add context menu listener (remains the same)
                      row.addEventListener('contextmenu', showAdminProductContextMenu);
-                     // --- END ADD ---
                  });
              } catch (error) {
                  console.error("Error loading products for admin table:", error);
