@@ -188,6 +188,31 @@
         </div>
     </div>
 
+    <div id="firmware-generate-modal" class="modal">
+        <div class="modal-content max-w-lg">
+            <button id="firmware-modal-close-button" class="modal-close-button">
+                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+            <h3 class="text-lg font-semibold mb-4" id="firmware-modal-title">Generate Firmware</h3>
+            <form id="firmware-generate-form" class="admin-form space-y-4">
+                <input type="hidden" id="generate-product-id">
+                <div>
+                    <label for="generate-dna-id">DNA ID (16 Hex Characters)</label>
+                    <input type="text" id="generate-dna-id" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" title="Must be 16 hexadecimal characters (0-9, A-F)">
+                </div>
+                 <div>
+                    <label for="generate-device-type">Device Type</label>
+                    <select id="generate-device-type" required>
+                        <option value="" disabled selected>Loading device types...</option>
+                        </select>
+                </div>
+                <button type="submit" id="submit-firmware-generation" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Start Generation</button>
+                <div id="generate-status" class="text-sm text-center h-5 mt-2"></div>
+            </form>
+        </div>
+    </div>
+
+
     <div id="product-edit-modal" class="modal">
         <div class="modal-content max-w-lg">
             <button id="product-modal-close-button" class="modal-close-button">
@@ -725,6 +750,142 @@
         // --- Context Menu Button Listeners ---
         // (Keep existing listeners for adminDeleteProductButton, adminEditProductButton, etc.)
         const myProductViewOrderIdButton = document.getElementById('context-view-order-id'); // Get the new button
+                // --- Firmware Generation Modal Functions ---
+
+                const firmwareModal = document.getElementById('firmware-generate-modal');
+        const firmwareModalTitle = document.getElementById('firmware-modal-title');
+        const firmwareModalCloseButton = document.getElementById('firmware-modal-close-button');
+        const firmwareGenerateForm = document.getElementById('firmware-generate-form');
+        const generateProductIdInput = document.getElementById('generate-product-id');
+        const generateDnaIdInput = document.getElementById('generate-dna-id');
+        const generateDeviceTypeSelect = document.getElementById('generate-device-type');
+        const submitFirmwareButton = document.getElementById('submit-firmware-generation');
+        const generateStatus = document.getElementById('generate-status');
+
+        /** Fetches available device types and populates the select dropdown. */
+        async function populateDeviceTypes() {
+            if (!generateDeviceTypeSelect) return;
+            generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>Loading...</option>'; // Show loading
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/firmware/device_types`);
+                if (!response.ok) throw new Error('Failed to load device types');
+                const deviceTypes = await response.json();
+
+                generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>Select Device Type...</option>'; // Reset placeholder
+                if (deviceTypes && deviceTypes.length > 0) {
+                    deviceTypes.forEach(dtype => {
+                        const option = document.createElement('option');
+                        option.value = dtype;
+                        option.textContent = dtype.toUpperCase(); // Display uppercase for readability
+                        generateDeviceTypeSelect.appendChild(option);
+                    });
+                } else {
+                     generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>No types available</option>';
+                }
+            } catch (error) {
+                console.error("Error populating device types:", error);
+                generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>Error loading types</option>';
+            }
+        }
+
+
+        /** Opens the firmware generation modal. */
+        function openFirmwareGenerateModal(productId, productName) {
+            if (!firmwareModal || !productId || !productName) return;
+
+            // Reset form and status
+            firmwareGenerateForm.reset();
+            generateStatus.textContent = '';
+            generateStatus.className = 'text-sm text-center h-5 mt-2';
+            submitFirmwareButton.disabled = false;
+            submitFirmwareButton.textContent = 'Start Generation';
+
+
+            // Set modal title and product ID
+            firmwareModalTitle.textContent = `Generate Firmware for ${productName}`;
+            generateProductIdInput.value = productId;
+
+            // Populate device types
+            populateDeviceTypes();
+
+            // Show modal
+            firmwareModal.classList.add('active');
+        }
+
+        /** Closes the firmware generation modal. */
+        function closeFirmwareGenerateModal() {
+            if (firmwareModal) firmwareModal.classList.remove('active');
+        }
+
+        /** Handles the submission of the firmware generation modal form. */
+        async function handleFirmwareGenerateSubmit(event) {
+            event.preventDefault();
+            if (!firmwareGenerateForm || !submitFirmwareButton) return;
+
+            const productId = generateProductIdInput.value;
+            const dnaId = generateDnaIdInput.value.trim().toUpperCase();
+            const deviceType = generateDeviceTypeSelect.value;
+
+            // Basic validation
+            if (!productId || !dnaId || !deviceType) {
+                 generateStatus.textContent = 'Please fill out all fields.';
+                 generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                 return;
+            }
+             if (!/^[0-9A-F]{16}$/.test(dnaId)) {
+                 generateStatus.textContent = 'Invalid DNA ID format (16 hex chars).';
+                 generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                 return;
+            }
+
+            // Disable button, show status
+            submitFirmwareButton.disabled = true;
+            submitFirmwareButton.textContent = 'Queueing...';
+            generateStatus.textContent = 'Sending request...';
+            generateStatus.className = 'text-sm text-center h-5 mt-2 text-yellow-400';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/generate_firmware`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: productId,
+                        dna_id: dnaId,
+                        device_type: deviceType
+                    }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                // Success - backend queued the job
+                generateStatus.textContent = ''; // Clear modal status
+                showPopupMessage(productMessagePopup, result.message || "Generation queued. Check status area or DMs for updates.");
+                console.log("Build queued, Build ID:", result.build_id);
+                closeFirmwareGenerateModal(); // Close modal on successful queueing
+
+            } catch (error) {
+                console.error("Error starting firmware generation:", error);
+                generateStatus.textContent = `Error: ${error.message}`;
+                generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                // Re-enable button on error
+                submitFirmwareButton.disabled = false;
+                submitFirmwareButton.textContent = 'Start Generation';
+            }
+        }
+
+        // --- Add Modal Event Listeners ---
+        if (firmwareModalCloseButton) {
+            firmwareModalCloseButton.addEventListener('click', closeFirmwareGenerateModal);
+        }
+        if (firmwareModal) {
+            firmwareModal.addEventListener('click', (event) => {
+                if (event.target === firmwareModal) closeFirmwareGenerateModal();
+            });
+        }
+        if (firmwareGenerateForm) {
+            firmwareGenerateForm.addEventListener('submit', handleFirmwareGenerateSubmit);
+        }
 
         // ... (existing listeners) ...
 
@@ -922,6 +1083,14 @@
                 container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
                 return;
             }
+            if (genButton) {
+                     genButton.addEventListener('click', (e) => {
+                         e.stopPropagation();
+                         // --- CALL NEW FUNCTION ---
+                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
+                         // --- END CALL ---
+                     });
+                 }
 
             productsToDisplay.forEach(product => {
                 console.log(`Displaying product: ${product.name}`, product); // Log the whole product object
@@ -1011,6 +1180,8 @@
                 // Hide if not firmware OR if deviceType is missing
                 generateFwButton.classList.toggle('hidden', !isFirmware || !contextMenuData.deviceType);
             }
+            
+            
 
             positionContextMenu(menuElement, event);
             currentContextMenu = menuElement;
@@ -1073,12 +1244,15 @@
         // ... (existing listeners) ...
         const generateFirmwareButton = document.getElementById('context-generate-firmware');
 
-        if (generateFirmwareButton) {
+        if (generateFirmwareButton) { // Assuming generateFirmwareButton = document.getElementById('context-generate-firmware');
             generateFirmwareButton.addEventListener('click', () => {
-                 promptAndStartFirmwareGeneration(contextMenuData.productId, contextMenuData.productName, contextMenuData.deviceType);
-                 hideContextMenu(); // Hide menu after initiating
+                 // --- CALL NEW FUNCTION ---
+                 openFirmwareGenerateModal(contextMenuData.productId, contextMenuData.productName);
+                 // --- END CALL ---
+                 hideContextMenu(); // Hide menu after opening modal
             });
         }
+
 
         /** Handles the user request to unregister a product from their account. */
         async function handleUnregisterProduct() {
@@ -2547,98 +2721,45 @@
             }
         }
 
-                /** Loads the product list into the admin management table. */
-                async function loadProductManagementTable() {
-             if (!productListTableBody || !productListStatus) return; // Ensure elements exist
-             productListTableBody.innerHTML = ''; productListStatus.textContent = 'Loading products...'; // Clear table, show loading
+        /** Loads the product list into the admin management table. */
+        async function loadProductManagementTable() {
+             if (!productListTableBody || !productListStatus) return;
+             productListTableBody.innerHTML = ''; productListStatus.textContent = 'Loading products...';
              productListStatus.classList.remove('hidden');
 
              try {
-                 const response = await fetch(`${API_BASE_URL}/api/products`); // Fetch all products
+                 const response = await fetch(`${API_BASE_URL}/api/products`);
                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
                  const products = await response.json();
-                 productListStatus.classList.add('hidden'); // Hide loading
+                 productListStatus.classList.add('hidden');
 
                  if (!products || products.length === 0) {
-                     productListStatus.textContent = 'No products found.'; // Show message if empty
+                     productListStatus.textContent = 'No products found.';
                      productListStatus.classList.remove('hidden');
                      return;
                  }
 
-                 // Populate table rows
                  products.forEach(product => {
                      const row = productListTableBody.insertRow();
-                     // Store necessary data on the row itself for the listener
+                     // --- ADD data attributes ---
                      row.dataset.productId = product._id;
                      row.dataset.productName = product.name || 'Unnamed Product';
-                     row.dataset.productTag = product.tag || ''; // Store the singular tag
-                     row.dataset.deviceType = product.device_type || ''; // Store the device type
-
+                     // --- END ADD ---
                      row.innerHTML = `
                          <td>${product.name || 'N/A'}</td>
                          <td>$${product.price?.toFixed(2) || 'N/A'}</td>
-                         <td>${product.tag || '-'}</td> {/* Display the singular tag */}
+                         <td>${product.tag || '-'}</td>
                          <td class="actions">
                              <button class="edit-btn" data-product-id="${product._id}">Edit</button>
                              <button class="delete-btn" data-product-id="${product._id}">Delete</button>
                          </td>
                      `;
+                     row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product));
+                     row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name));
 
-                     const editButton = row.querySelector('.edit-btn');
-                     const deleteButton = row.querySelector('.delete-btn');
-
-                     // --- MODIFIED Edit Button Listener ---
-                     if (editButton) {
-                         editButton.addEventListener('click', async (event) => {
-                             const button = event.currentTarget;
-                             const productId = button.dataset.productId;
-                             // Get data stored on the row
-                             const parentRow = button.closest('tr');
-                             const productName = parentRow.dataset.productName;
-                             const productTag = parentRow.dataset.productTag;
-                             const deviceType = parentRow.dataset.deviceType;
-
-                             console.log(`Edit clicked for: ${productName}, Tag: ${productTag}, DeviceType: ${deviceType}`); // Debug log
-
-                             // Check if the tag is FIRMWARE (case-insensitive)
-                             if (productTag.trim().toUpperCase() === 'FIRMWARE') {
-                                 // --- Trigger Firmware Generation ---
-                                 console.log("FIRMWARE tag detected. Starting generation flow.");
-                                 // Check if deviceType is present
-                                 if (!deviceType) {
-                                     showPopupMessage(errorMessagePopup, `Cannot generate firmware: 'device_type' is not set for product '${productName}'. Please edit the product first.`, true, 5000);
-                                     // Optionally open the edit modal here to allow setting device_type
-                                     // openProductEditModal(product); // Requires fetching full product data first
-                                     return;
-                                 }
-                                 // Call the existing function to prompt for DNA and start generation
-                                 promptAndStartFirmwareGeneration(productId, productName, deviceType);
-
-                             } else {
-                                 // --- Open Standard Edit Modal ---
-                                 console.log("Not a FIRMWARE tag. Opening edit modal.");
-                                 // Fetch full product details first, as the 'product' object isn't directly available here
-                                 showPopupMessage(productMessagePopup, 'Fetching product details to edit...');
-                                 try {
-                                     const res = await fetch(`${API_BASE_URL}/api/products/${productId}`);
-                                     if(!res.ok) throw new Error('Product not found or error fetching.');
-                                     const productData = await res.json();
-                                     openProductEditModal(productData); // Open modal with fetched data
-                                 } catch (err) {
-                                      showPopupMessage(errorMessagePopup, `Error fetching product to edit: ${err.message}`, true);
-                                 }
-                             }
-                         });
-                     }
-                     // --- END MODIFIED Listener ---
-
-                     // Delete button listener (remains the same)
-                     if (deleteButton) {
-                         deleteButton.addEventListener('click', () => handleDeleteProduct(product._id, product.name));
-                     }
-
-                     // Add context menu listener (remains the same)
+                     // --- ADD Context Menu Listener ---
                      row.addEventListener('contextmenu', showAdminProductContextMenu);
+                     // --- END ADD ---
                  });
              } catch (error) {
                  console.error("Error loading products for admin table:", error);
