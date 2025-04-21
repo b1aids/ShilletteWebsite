@@ -1065,6 +1065,7 @@
                 /**
          * Displays the user's registered products in the dashboard.
          * Reads product.tag (singular string) instead of product.tags (array).
+         * Ensures genButton is scoped correctly.
          * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
          */
          function displayRegisteredProducts(productsToDisplay) {
@@ -1083,14 +1084,6 @@
                 container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
                 return;
             }
-            if (genButton) {
-                     genButton.addEventListener('click', (e) => {
-                         e.stopPropagation();
-                         // --- CALL NEW FUNCTION ---
-                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
-                         // --- END CALL ---
-                     });
-                 }
 
             productsToDisplay.forEach(product => {
                 console.log(`Displaying product: ${product.name}`, product); // Log the whole product object
@@ -1100,15 +1093,13 @@
                 productElement.dataset.productId = product._id;
                 productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
                 productElement.dataset.orderId = product.order_id || '';
-                // --- Read singular 'tag' field ---
                 const tagString = product.tag || ''; // Read product.tag (string)
                 const deviceType = product.device_type || '';
-                productElement.dataset.tag = tagString; // Store the singular tag
-                // --- End Read singular 'tag' field ---
+                productElement.dataset.tag = tagString;
                 productElement.dataset.deviceType = deviceType;
 
                 const infoContainer = document.createElement('div');
-                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0';
+                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0'; // Allow shrinking
 
                 let thumbnailHtml = '';
                 if (product.thumbnailUrl) {
@@ -1123,22 +1114,26 @@
                 `;
                 productElement.appendChild(infoContainer);
 
-                // --- Check singular 'tag' for FIRMWARE ---
                 const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
                 console.log(`Product: ${productElement.dataset.productName}, Tag: ${tagString}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
-                // --- End Check singular 'tag' ---
 
+                // --- Button Creation and Listener are INSIDE this IF block ---
                 if (isFirmware && deviceType) {
+                    // Define genButton *only* if needed
                     const genButton = document.createElement('button');
                     genButton.className = "generate-fw-button flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded";
                     genButton.title = "Generate Firmware";
                     genButton.textContent = "Generate";
+                    // Add listener *directly* to the button we just created
                     genButton.addEventListener('click', (e) => {
                          e.stopPropagation();
-                         promptAndStartFirmwareGeneration(product._id, productElement.dataset.productName, productElement.dataset.deviceType);
+                         // Call the function to open the modal
+                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
                      });
+                    // Append the button
                     productElement.appendChild(genButton);
                 }
+                // --- genButton variable does not exist outside the IF block ---
 
                  productElement.style.cursor = 'pointer';
                  infoContainer.addEventListener('click', (e) => {
@@ -1148,9 +1143,11 @@
                  });
                  productElement.addEventListener('contextmenu', showMyProductContextMenu);
 
+                // Append the whole product element to the container
                 container.appendChild(productElement);
-            });
+            }); // End of forEach loop
         }
+
 
         /**
          * Shows the context menu for the user's "My Products" list.
