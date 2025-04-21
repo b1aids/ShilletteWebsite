@@ -643,13 +643,13 @@ document.addEventListener('DOMContentLoaded', () => {
                      // Navigate to product detail page
                      const productId = detailsButton.dataset.productId;
                      if (productId) {
-                         window.location.hash = `/#productDetail?id=${productId}`; // Use productDetail (lowercase p intentional)
+                         window.location.hash = `productDetail?id=${productId}`; // Use productDetail (lowercase p intentional)
                      }
                  } else {
                      // Click on card area *not* buttons - could also navigate to detail
                      // const productId = card.dataset.productId;
                      // if (productId) {
-                     //     window.location.hash = `/#productDetail?id=${productId}`;
+                     //     window.location.hash = `productDetail?id=${productId}`;
                      // }
                      console.log("Card area clicked (not a button)");
                  }
