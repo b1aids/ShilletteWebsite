@@ -2803,6 +2803,7 @@
 
                 /**
          * Opens the product edit/add modal.
+         * Includes null checks for elements before setting textContent.
          * @param {object | null} [product=null] - Product data to edit, or null to add a new product.
          */
          function openProductEditModal(product = null) {
@@ -2823,59 +2824,77 @@
              const descriptionInput = document.getElementById('product-edit-description');
              const featuresInput = document.getElementById('product-edit-features');
              const paymentLinkInput = document.getElementById('product-edit-paymentLink');
-             // --- Get new elements ---
              const deviceTypeInput = document.getElementById('product-edit-device-type');
              const firmwareSettingsInfoDiv = document.getElementById('firmware-settings-info');
-             // --- End Get new elements ---
 
-             if (!modal || !form) return; // Exit if modal elements don't exist
+             // --- Add Null Checks for required elements ---
+             if (!modal) { console.error("Edit Modal Error: Element with ID 'product-edit-modal' not found!"); return; }
+             if (!form) { console.error("Edit Modal Error: Element with ID 'product-edit-form' not found!"); return; }
+             if (!title) { console.error("Edit Modal Error: Element with ID 'product-modal-title' not found!"); /* Continue cautiously or return */ }
+             if (!status) { console.error("Edit Modal Error: Element with ID 'product-edit-status' not found!"); /* Continue cautiously or return */ }
+             if (!thumbnailFilename) { console.error("Edit Modal Error: Element with ID 'product-edit-thumbnail-filename' not found!"); /* Continue cautiously or return */ }
+             if (!firmwareSettingsInfoDiv) { console.error("Edit Modal Error: Element with ID 'firmware-settings-info' not found!"); /* Continue cautiously or return */ }
+             // Add checks for input elements too if needed, though error was on textContent
+             // --- End Null Checks ---
 
-             form.reset(); // Clear form fields
-             status.textContent = ''; // Clear status message
-             status.className = 'text-sm text-center h-5 mt-2'; // Reset status style
-             thumbnailFilename.textContent = 'No file selected'; // Reset file input display
-             firmwareSettingsInfoDiv.classList.add('hidden'); // Hide settings div by default
-             firmwareSettingsInfoDiv.textContent = ''; // Clear settings text
+
+             form.reset();
+             // Check before setting textContent
+             if (status) status.textContent = '';
+             if (thumbnailFilename) thumbnailFilename.textContent = 'No file selected';
+             if (firmwareSettingsInfoDiv) firmwareSettingsInfoDiv.textContent = '';
+
+             if (status) status.className = 'text-sm text-center h-5 mt-2';
+             if (firmwareSettingsInfoDiv) firmwareSettingsInfoDiv.classList.add('hidden');
 
              if (product) {
-                 // --- Editing existing product: Populate form ---
-                 title.textContent = 'Edit Product';
-                 idInput.value = product._id;
-                 nameInput.value = product.name || '';
-                 thumbnailInput.value = product.thumbnailUrl || '';
-                 priceInput.value = product.price || '';
-                 tagInput.value = product.tag || ''; // Populate singular tag
-                 deviceTypeInput.value = product.device_type || ''; // Populate device type
+                 // Editing existing product
+                 if (title) title.textContent = 'Edit Product'; // Check before setting
 
-                 const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
-                 tagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
-                 customHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
-                 descriptionInput.value = product.description || '';
-                 featuresInput.value = (product.features || []).join('\n');
-                 paymentLinkInput.value = product.paymentLink || '';
+                 // Populate inputs (add checks if needed)
+                 if(idInput) idInput.value = product._id;
+                 if(nameInput) nameInput.value = product.name || '';
+                 if(thumbnailInput) thumbnailInput.value = product.thumbnailUrl || '';
+                 if(priceInput) priceInput.value = product.price || '';
+                 if(tagInput) tagInput.value = product.tag || '';
+                 if(deviceTypeInput) deviceTypeInput.value = product.device_type || '';
+                 if(descriptionInput) descriptionInput.value = product.description || '';
+                 if(featuresInput) featuresInput.value = (product.features || []).join('\n');
+                 if(paymentLinkInput) paymentLinkInput.value = product.paymentLink || '';
 
-                 // --- Show Firmware Settings Info if applicable ---
+                 // Populate selects/complex fields (add checks if needed)
+                 if (tagColorSelect && customHexInput) {
+                    const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
+                    tagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
+                    customHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
+                 }
+
+
+                 // Show Firmware Settings Info if applicable
                  const productTag = product.tag || '';
                  if (productTag.trim().toUpperCase() === 'FIRMWARE') {
-                     // Assuming product.name is the directory name used by backend
-                     firmwareSettingsInfoDiv.textContent = `Firmware Settings: Directory = ${product.name || 'N/A'}`;
-                     firmwareSettingsInfoDiv.classList.remove('hidden'); // Show the div
+                     if (firmwareSettingsInfoDiv) { // Check before setting
+                         firmwareSettingsInfoDiv.textContent = `Firmware Settings: Directory = ${product.name || 'N/A'}`;
+                         firmwareSettingsInfoDiv.classList.remove('hidden');
+                     }
                  }
-                 // --- End Show Firmware Settings ---
 
              } else {
-                 // --- Adding new product: Set title, clear ID ---
-                 title.textContent = 'Add Product';
-                 idInput.value = ''; // Ensure ID is empty
-                 tagColorSelect.value = 'gray'; // Default color
-                 customHexInput.value = '';
-                 // Clear fields that might have values from previous edits
-                 tagInput.value = '';
-                 deviceTypeInput.value = '';
+                 // Adding new product
+                 if (title) title.textContent = 'Add Product'; // Check before setting
+
+                 // Clear potentially leftover values
+                 if(idInput) idInput.value = '';
+                 if(tagInput) tagInput.value = '';
+                 if(deviceTypeInput) deviceTypeInput.value = '';
+                 if(tagColorSelect) tagColorSelect.value = 'gray';
+                 if(customHexInput) customHexInput.value = '';
              }
-             toggleCustomHexInput(); // Show/hide custom hex input based on dropdown
-             modal.classList.add('active'); // Show the modal
+
+             toggleCustomHexInput(); // Assumes related elements exist or handles null internally
+             modal.classList.add('active');
         }
+
 
 
         /** Shows or hides the custom hex color input based on the tag color dropdown selection. */
