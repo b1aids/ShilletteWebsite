@@ -76,13 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = null; // Track the currently loaded page name (e.g., 'home', 'products')
 
     // --- Page Mapping (Map hash names to content file paths) ---
+    // Keys should be lowercase for case-insensitive matching
     const pageRoutes = {
         'home': 'pages/home.html',
         'products': 'pages/products.html',
         'tickets': 'pages/tickets.html',
         'dashboard': 'pages/dashboard.html',
-        'ticketDetail': 'pages/ticketDetail.html', // Needs ID param from hash
-        'productDetail': 'pages/productDetail.html' // Needs ID param from hash
+        'ticketdetail': 'pages/ticketDetail.html', // Use lowercase key
+        'productdetail': 'pages/productDetail.html' // Use lowercase key
     };
 
     // --- Utility Functions ---
@@ -161,26 +162,28 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Fetches HTML content for a given page name and injects it into the main container.
      * Also triggers page-specific initialization logic.
-     * @param {string} pageName - The key from pageRoutes (e.g., 'home', 'products').
+     * @param {string} pageKey - The lowercase key from pageRoutes (e.g., 'home', 'productdetail').
      * @param {object} [params={}] - Parameters extracted from the URL hash query string.
      */
-    async function loadPageContent(pageName, params = {}) {
-        console.log(`[loadPageContent] Attempting to load page: ${pageName} with params:`, params);
+    async function loadPageContent(pageKey, params = {}) {
+        console.log(`[loadPageContent] Attempting to load page for key: ${pageKey} with params:`, params);
         if (!pageContentContainer) {
-            console.error("CRITICAL: Page content container (page-content-container) not found!");
+            console.error("CRITICAL: Page content container (#page-content-container) not found!");
             return;
         }
-        const filePath = pageRoutes[pageName];
+        // Lookup file path using the lowercase pageKey
+        const filePath = pageRoutes[pageKey];
         if (!filePath) {
-            console.error(`No route found for page name: ${pageName}`);
-            pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Page not found (${pageName}). Please check the URL.</div>`;
+            console.error(`No route found for page key: ${pageKey}`);
+            // Display error message using the key that failed the lookup
+            pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Page not found (${pageKey}). Please check the URL.</div>`;
             currentPage = null; // Reset current page state
             return;
         }
 
         // Show loading indicator
-        pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-gray-400">Loading ${pageName}...</div>`;
-        currentPage = pageName; // Update current page state
+        pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-gray-400">Loading ${pageKey}...</div>`;
+        currentPage = pageKey; // Update current page state using the key
 
         try {
             // Fetch the HTML content from the corresponding file
@@ -193,12 +196,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Inject the fetched HTML into the container
             pageContentContainer.innerHTML = html;
-            console.log(`[loadPageContent] Successfully loaded and injected HTML for ${pageName} from ${filePath}`);
+            console.log(`[loadPageContent] Successfully loaded and injected HTML for ${pageKey} from ${filePath}`);
 
             // --- Execute Page-Specific Initialization ---
             window.scrollTo(0, 0); // Scroll to top after loading new content
 
-            switch (pageName) {
+            switch (pageKey) { // Use the lowercase pageKey for the switch
                 case 'home':
                     // No specific JS needed for static home page elements currently
                     break;
@@ -227,12 +230,12 @@ document.addEventListener('DOMContentLoaded', () => {
                          pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Please log in to view the dashboard.</div>`;
                     }
                     break;
-                case 'ticketDetail':
+                case 'ticketdetail': // Use lowercase key
                     currentTicketId = params.id; // Get ticket ID from URL parameters
                     if (currentTicketId) {
                          // Ensure the back button link is correct (might be redundant if static in HTML)
                          const backBtn = document.getElementById('back-to-tickets-button');
-                         if (backBtn) backBtn.href = '/tickets';
+                         if (backBtn) backBtn.href = '/#tickets';
                          await fetchTicketDetails(currentTicketId); // Fetch chat messages for this ticket
                          setupTicketDetailListeners(); // Add listeners for chat form
                     } else {
@@ -241,12 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
                          currentPage = null; // Reset page state
                     }
                     break;
-                case 'productDetail':
+                case 'productdetail': // Use lowercase key
                     const productId = params.id; // Get product ID from URL parameters
                      if (productId) {
                          // Ensure back button link
                          const backBtn = document.getElementById('back-to-products-button-detail');
-                         if (backBtn) backBtn.href = '/products';
+                         if (backBtn) backBtn.href = '/#products';
                          await fetchProductDetails(productId); // Fetch product data
                          setupProductDetailListeners(); // Add listeners for buy/basket/quantity buttons
                      } else {
@@ -256,11 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
                      }
                     break;
                 default:
-                    console.log(`No specific initialization logic defined for page: ${pageName}`);
+                    console.log(`No specific initialization logic defined for page key: ${pageKey}`);
             }
 
         } catch (error) {
-            console.error(`Error loading or initializing page ${pageName}:`, error);
+            console.error(`Error loading or initializing page ${pageKey}:`, error);
             pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error loading page content: ${error.message}</div>`;
             currentPage = null; // Reset page state on error
         }
@@ -348,9 +351,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = config?.siteTitle || "Shillette";
         const iconUrl = config?.siteIconUrl || "/images/icon.png"; // Default icon path
         const links = config?.headerLinks || [ // Default header links
-            {name: "Home", href: "/home"},
-            {name: "Products", href: "/products"},
-            {name: "Tickets", href: "/tickets"},
+            {name: "Home", href: "/#home"},
+            {name: "Products", href: "/#products"},
+            {name: "Tickets", href: "/#tickets"},
             {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
         ];
 
@@ -444,43 +447,46 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const hash = window.location.hash || 'home'; // Default to #home if hash is empty
+        const hash = window.location.hash || '#home'; // Default to #home if hash is empty
         const hashParts = hash.split('?'); // Separate path from query string
 
         // Extract page name from the hash path part (remove # and potential leading /)
-        let pageName = hashParts[0].substring(1); // Remove '#'
-        if (pageName.startsWith('/')) pageName = pageName.substring(1);
-        if (!pageName) pageName = 'home'; // Default to 'home' if path is empty
+        let rawPageName = hashParts[0].substring(1); // Remove '#'
+        if (rawPageName.startsWith('/')) rawPageName = rawPageName.substring(1);
+        if (!rawPageName) rawPageName = 'home'; // Default to 'home' if path is empty
+
+        // *** FIX: Convert to lowercase for case-insensitive routing ***
+        const pageKey = rawPageName.toLowerCase();
 
         // Parse query parameters
         const params = new URLSearchParams(hashParts[1] || '');
         const routeParams = {};
         params.forEach((value, key) => { routeParams[key] = value; });
 
-        console.log(`[runNavigation] Parsed page name: '${pageName}', Params:`, routeParams);
+        console.log(`[runNavigation] Raw page: '${rawPageName}', Parsed key: '${pageKey}', Params:`, routeParams);
 
         // --- Access Control ---
-        const protectedRoutes = ['dashboard', 'tickets', 'ticketDetail'];
-        if (protectedRoutes.includes(pageName) && !currentUser?.logged_in) {
-            console.warn(`[runNavigation] Access denied to protected route '${pageName}'. User not logged in.`);
+        const protectedRoutes = ['dashboard', 'tickets', 'ticketdetail']; // Use lowercase keys
+        if (protectedRoutes.includes(pageKey) && !currentUser?.logged_in) {
+            console.warn(`[runNavigation] Access denied to protected route '${pageKey}'. User not logged in.`);
             showPopupMessage(errorMessagePopup, "Please log in to view this page.", true);
             // Redirect to home page, but avoid infinite loops if already trying to access home
-            if (pageName !== 'home') {
+            if (pageKey !== 'home') {
                 console.log("[runNavigation] Redirecting to /#home.");
-                window.location.hash = '/home';
+                window.location.hash = '/#home';
             } else {
                 // If they were already trying to access #home, load it directly
-                console.log("[runNavigation] Already on home, loading content.");
+                console.log("[runNavigation] Already on #home, loading content.");
                 loadPageContent('home', {}); // Load home page content
             }
             return; // Stop further processing for this navigation attempt
         }
 
         // --- Load Page Content ---
-        console.log(`[runNavigation] Proceeding to load content for page: '${pageName}'`);
+        console.log(`[runNavigation] Proceeding to load content for page key: '${pageKey}'`);
 
         // Handle WebSocket connection based on page context
-        const isTicketRelated = ['tickets', 'ticketDetail'].includes(pageName);
+        const isTicketRelated = ['tickets', 'ticketdetail'].includes(pageKey); // Use lowercase key
         if (!isTicketRelated && socket) {
              console.log(`[runNavigation] Navigating away from ticket-related page, disconnecting socket.`);
              disconnectSocket();
@@ -490,1024 +496,1036 @@ document.addEventListener('DOMContentLoaded', () => {
              ensureSocketConnected(); // Connect or ensure connection for ticket pages
         }
 
-        // Load the actual page content and run its specific logic
-        loadPageContent(pageName, routeParams);
+        // Load the actual page content and run its specific logic using the lowercase key
+        loadPageContent(pageKey, routeParams);
     }
 
     // --- Page-Specific Functions (Fetching data, Rendering UI, Setting up Listeners) ---
+    // ... (fetchProducts, renderProductCard, handlePurchaseClick) ...
+    // ... (fetchTickets, createTicketListItem, setupTicketFormListener) ...
+    // ... (fetchTicketDetails, appendChatMessage, setupTicketDetailListeners) ...
+    // ... (displayDashboardUserInfo, displayUserRoles, loadAdminDashboardData, loadSiteConfigForm, addHeaderLinkInput, loadProductManagementTable, setupDashboardListeners, setupAdminDashboardListeners, handleSaveSiteConfig) ...
+    // ... (fetchProductDetails, renderProductDetails, setupProductDetailListeners) ...
+    // NOTE: Ensure all internal logic within these functions that might reference page names
+    //       also uses the lowercase keys ('home', 'products', 'tickets', 'dashboard', 'ticketdetail', 'productdetail')
+    //       if necessary for comparisons or state tracking. For example, in handleSaveProduct:
+    //       if (currentPage === 'dashboard') await loadProductManagementTable();
+    //       if (currentPage === 'products') await fetchProducts();
+    //       (currentPage is already set to the lowercase key in loadPageContent)
 
-    // Products Page Logic
-    async function fetchProducts() {
-        // Find elements within the currently loaded page content
-        const productGrid = document.getElementById('product-grid');
-        const productLoadingStatus = document.getElementById('product-loading-status');
-        if (!productGrid || !productLoadingStatus) {
-            console.warn("[fetchProducts] Product grid or status element not found in the loaded 'products' page content.");
-            return;
-        }
-        productGrid.innerHTML = ''; // Clear previous products
-        productLoadingStatus.textContent = 'Loading products...';
-        productLoadingStatus.classList.remove('hidden');
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/products`);
-            if (!response.ok) throw new Error(`HTTP error fetching products: ${response.status}`);
-            const products = await response.json();
-            productLoadingStatus.classList.add('hidden'); // Hide loading status
-
-            if (!products || products.length === 0) {
-                productGrid.innerHTML = `<p class="text-center text-gray-400 md:col-span-2 lg:col-span-3">No products available at this time.</p>`;
-            } else {
-                // Render each product card into the grid
-                products.forEach(product => renderProductCard(product, productGrid));
+        // Products Page Logic
+        async function fetchProducts() {
+            // Find elements within the currently loaded page content
+            const productGrid = document.getElementById('product-grid');
+            const productLoadingStatus = document.getElementById('product-loading-status');
+            if (!productGrid || !productLoadingStatus) {
+                console.warn("[fetchProducts] Product grid or status element not found in the loaded 'products' page content.");
+                return;
             }
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            productLoadingStatus.textContent = `Failed to load products: ${error.message}`;
-            productLoadingStatus.classList.remove('hidden'); // Ensure error message is visible
-            showPopupMessage(errorMessagePopup, `Error loading products: ${error.message}`, true);
+            productGrid.innerHTML = ''; // Clear previous products
+            productLoadingStatus.textContent = 'Loading products...';
+            productLoadingStatus.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/products`);
+                if (!response.ok) throw new Error(`HTTP error fetching products: ${response.status}`);
+                const products = await response.json();
+                productLoadingStatus.classList.add('hidden'); // Hide loading status
+
+                if (!products || products.length === 0) {
+                    productGrid.innerHTML = `<p class="text-center text-gray-400 md:col-span-2 lg:col-span-3">No products available at this time.</p>`;
+                } else {
+                    // Render each product card into the grid
+                    products.forEach(product => renderProductCard(product, productGrid));
+                }
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                productLoadingStatus.textContent = `Failed to load products: ${error.message}`;
+                productLoadingStatus.classList.remove('hidden'); // Ensure error message is visible
+                showPopupMessage(errorMessagePopup, `Error loading products: ${error.message}`, true);
+            }
         }
-    }
 
-    function renderProductCard(product, productGridElement) {
-         if (!productGridElement || !product) return;
+        function renderProductCard(product, productGridElement) {
+             if (!productGridElement || !product) return;
 
-         const card = document.createElement('div');
-         // Add base classes and product ID dataset
-         card.className = `product-card flex flex-col`;
-         card.dataset.productId = product._id;
+             const card = document.createElement('div');
+             // Add base classes and product ID dataset
+             card.className = `product-card flex flex-col`;
+             card.dataset.productId = product._id;
 
-         // Determine border style based on tagColor and customHex
-         const tagColor = product.tagColor || 'gray';
-         const customHex = product.customBorderHex;
-         let borderClasses = '';
-         let inlineStyle = '';
-         let hoverStyleVar = '';
+             // Determine border style based on tagColor and customHex
+             const tagColor = product.tagColor || 'gray';
+             const customHex = product.customBorderHex;
+             let borderClasses = '';
+             let inlineStyle = '';
+             let hoverStyleVar = '';
 
-         if (tagColor === 'custom' && customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
-             // Valid custom hex color
-             borderClasses = 'custom-border';
-             inlineStyle = `border-color: ${customHex};`;
-             // Generate hover shadow CSS variable based on hex
-             hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
-             card.style.cssText = inlineStyle + hoverStyleVar;
-             card.classList.add(borderClasses);
-         } else if (tagColor !== 'custom' && ['gray', 'orange', 'blue', 'green', 'red', 'purple', 'yellow', 'pink', 'teal'].includes(tagColor)) {
-             // Standard predefined color
-             borderClasses = `card-gradient-border ${tagColor}-border`;
-             card.classList.add(...borderClasses.split(' '));
-         } else {
-             // Fallback to gray border if color is invalid or 'custom' without valid hex
-              borderClasses = `card-gradient-border gray-border`;
-              card.classList.add(...borderClasses.split(' '));
-         }
+             if (tagColor === 'custom' && customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
+                 // Valid custom hex color
+                 borderClasses = 'custom-border';
+                 inlineStyle = `border-color: ${customHex};`;
+                 // Generate hover shadow CSS variable based on hex
+                 hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
+                 card.style.cssText = inlineStyle + hoverStyleVar;
+                 card.classList.add(borderClasses);
+             } else if (tagColor !== 'custom' && ['gray', 'orange', 'blue', 'green', 'red', 'purple', 'yellow', 'pink', 'teal'].includes(tagColor)) {
+                 // Standard predefined color
+                 borderClasses = `card-gradient-border ${tagColor}-border`;
+                 card.classList.add(...borderClasses.split(' '));
+             } else {
+                 // Fallback to gray border if color is invalid or 'custom' without valid hex
+                  borderClasses = `card-gradient-border gray-border`;
+                  card.classList.add(...borderClasses.split(' '));
+             }
 
-         // Determine tag background/text color (use gray if custom hex is invalid)
-         const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
-         const tagBgClass = `bg-${displayTagColor}-500/20`; // Use Tailwind opacity format
-         const tagTextClass = `text-${displayTagColor}-300`; // Adjust text color shade if needed
+             // Determine tag background/text color (use gray if custom hex is invalid)
+             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
+             const tagBgClass = `bg-${displayTagColor}-500/20`; // Use Tailwind opacity format
+             const tagTextClass = `text-${displayTagColor}-300`; // Adjust text color shade if needed
 
-         // Thumbnail Image Handling
-         let thumbnailElement = null;
-         const placeholderDiv = document.createElement('div');
-         placeholderDiv.className = 'product-thumbnail-placeholder';
-         placeholderDiv.style.display = 'none'; // Hide placeholder initially
-         placeholderDiv.innerHTML = '<span>Image not found</span>';
+             // Thumbnail Image Handling
+             let thumbnailElement = null;
+             const placeholderDiv = document.createElement('div');
+             placeholderDiv.className = 'product-thumbnail-placeholder';
+             placeholderDiv.style.display = 'none'; // Hide placeholder initially
+             placeholderDiv.innerHTML = '<span>Image not found</span>';
 
-         if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
-             thumbnailElement = document.createElement('img');
-             thumbnailElement.src = product.thumbnailUrl;
-             thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
-             thumbnailElement.className = 'product-thumbnail';
-             // Fallback to placeholder if image fails to load
-             thumbnailElement.onerror = () => {
-                 console.warn(`Failed to load image: ${product.thumbnailUrl}`);
-                 if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
-                 placeholderDiv.style.display = 'flex'; // Show placeholder
-             };
-         } else {
-             // No thumbnail URL provided, show placeholder immediately
-             placeholderDiv.style.display = 'flex';
-             thumbnailElement = null;
-         }
+             if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
+                 thumbnailElement = document.createElement('img');
+                 thumbnailElement.src = product.thumbnailUrl;
+                 thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
+                 thumbnailElement.className = 'product-thumbnail';
+                 // Fallback to placeholder if image fails to load
+                 thumbnailElement.onerror = () => {
+                     console.warn(`Failed to load image: ${product.thumbnailUrl}`);
+                     if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
+                     placeholderDiv.style.display = 'flex'; // Show placeholder
+                 };
+             } else {
+                 // No thumbnail URL provided, show placeholder immediately
+                 placeholderDiv.style.display = 'flex';
+                 thumbnailElement = null;
+             }
 
-         // Card Inner Content
-         const innerDiv = document.createElement('div');
-         innerDiv.className = 'product-card-inner'; // Includes padding and flex grow
-         innerDiv.innerHTML = `
-             <div class="flex justify-between items-center mb-4">
-                 <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
+             // Card Inner Content
+             const innerDiv = document.createElement('div');
+             innerDiv.className = 'product-card-inner'; // Includes padding and flex grow
+             innerDiv.innerHTML = `
+                 <div class="flex justify-between items-center mb-4">
+                     <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
+                     </div>
+                 <h3 class="text-xl font-semibold text-white mb-2 truncate">${product.name || 'Unnamed Product'}</h3>
+                 <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
+                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
+                     ${(product.features || []).map(feature => `<li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> <span>${feature}</span></li>`).join('')}
+                     ${!(product.features?.length > 0) ? '<li class="text-gray-500 italic">No features listed.</li>' : ''}
+                 </ul>
+                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
+                     ${product.paymentLink ? `<button class="purchase-button w-full" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button w-full" disabled>Purchase Unavailable</button>'}
+                     <button class="view-details-button w-full bg-gray-600 hover:bg-gray-500 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300" data-product-id="${product._id}">View Details</button>
                  </div>
-             <h3 class="text-xl font-semibold text-white mb-2 truncate">${product.name || 'Unnamed Product'}</h3>
-             <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
-             <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                 ${(product.features || []).map(feature => `<li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> <span>${feature}</span></li>`).join('')}
-                 ${!(product.features?.length > 0) ? '<li class="text-gray-500 italic">No features listed.</li>' : ''}
-             </ul>
-             <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                 ${product.paymentLink ? `<button class="purchase-button w-full" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button w-full" disabled>Purchase Unavailable</button>'}
-                 <button class="view-details-button w-full bg-gray-600 hover:bg-gray-500 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300" data-product-id="${product._id}">View Details</button>
-             </div>
-         `;
+             `;
 
-         // Append thumbnail/placeholder and inner content
-         if (thumbnailElement) card.appendChild(thumbnailElement);
-         card.appendChild(placeholderDiv); // Always append placeholder in case image fails
-         card.appendChild(innerDiv);
+             // Append thumbnail/placeholder and inner content
+             if (thumbnailElement) card.appendChild(thumbnailElement);
+             card.appendChild(placeholderDiv); // Always append placeholder in case image fails
+             card.appendChild(innerDiv);
 
-         // Add event listener to the card itself (delegation could also work)
-         card.addEventListener('click', (event) => {
-             const purchaseButton = event.target.closest('.purchase-button');
-             const detailsButton = event.target.closest('.view-details-button');
+             // Add event listener to the card itself (delegation could also work)
+             card.addEventListener('click', (event) => {
+                 const purchaseButton = event.target.closest('.purchase-button');
+                 const detailsButton = event.target.closest('.view-details-button');
 
-             if (purchaseButton) {
-                 handlePurchaseClick(event); // Handle purchase action
-             } else if (detailsButton) {
-                 // Navigate to product detail page
-                 const productId = detailsButton.dataset.productId;
-                 if (productId) {
-                     window.location.hash = `/productDetail?id=${productId}`;
-                 }
-             } else {
-                 // Click on card area *not* buttons - could also navigate to detail
-                 // const productId = card.dataset.productId;
-                 // if (productId) {
-                 //     window.location.hash = `/#productDetail?id=${productId}`;
-                 // }
-                 console.log("Card area clicked (not a button)");
-             }
-         });
-
-         productGridElement.appendChild(card);
-    }
-
-    function handlePurchaseClick(event) {
-         event.stopPropagation(); // Prevent card click listener if button is clicked
-         const button = event.target.closest('.purchase-button');
-         if (!button || button.disabled) return; // Ignore if not button or disabled
-
-         const productId = button.dataset.productId;
-         const paymentLink = button.dataset.paymentLink; // Could be a PayPal ID or a full URL
-         console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
-
-         if (paymentLink) {
-              // Basic placeholder - Replace with actual payment integration
-              showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration Required)`);
-              // Example: If paymentLink is a PayPal Button ID, you'd use the PayPal SDK here.
-              // Example: If paymentLink is a URL, you might redirect: window.location.href = paymentLink;
-         } else {
-              showPopupMessage(errorMessagePopup, 'Payment link is missing or invalid for this product.', true);
-         }
-    }
-
-    // Tickets Page Logic
-    async function fetchTickets() {
-        console.log("[fetchTickets] Fetching tickets...");
-        // Get references to elements within the currently loaded 'tickets' page content
-        const userTicketView = document.getElementById('user-ticket-view');
-        const moderatorManagementView = document.getElementById('moderator-management-view');
-        const ticketListDiv = document.getElementById('ticket-list');
-        const ticketListStatus = document.getElementById('ticket-list-status');
-        const moderatorActiveTicketListDiv = document.getElementById('moderator-active-ticket-list');
-        const moderatorActiveListStatus = document.getElementById('moderator-active-list-status');
-        const moderatorArchivedTicketListDiv = document.getElementById('moderator-archived-ticket-list');
-        const moderatorArchivedListStatus = document.getElementById('moderator-archived-list-status');
-
-        // Check if all required elements exist in the loaded HTML
-        if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
-            console.error("[fetchTickets] One or more ticket list elements not found in loaded content. Aborting fetch.");
-            // Optionally display an error in the main container
-            if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: UI elements missing for ticket display.</div>`;
-            return;
-        }
-
-        // Check login status (should be redundant due to router, but good practice)
-         if (!currentUser?.logged_in) {
-             console.log("[fetchTickets] User not logged in. Displaying login prompt.");
-             ticketListStatus.textContent = "Please log in to view tickets.";
-             moderatorActiveListStatus.textContent = ""; // Clear mod statuses
-             moderatorArchivedListStatus.textContent = "";
-             ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = '';
-             userTicketView.classList.remove('hidden'); // Show user view (which will contain the message)
-             moderatorManagementView.classList.add('hidden'); // Hide mod view
-             return;
-         }
-
-         // Set loading states
-         ticketListStatus.textContent = "Loading tickets...";
-         moderatorActiveListStatus.textContent = "Loading active tickets...";
-         moderatorArchivedListStatus.textContent = "Loading archived tickets...";
-         ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = ''; // Clear previous lists
-
-         // Toggle visibility based on moderator status
-         const isMod = currentUser.is_moderator === true;
-         console.log(`[fetchTickets] User moderator status: ${isMod}`);
-         userTicketView.classList.toggle('hidden', isMod);
-         moderatorManagementView.classList.toggle('hidden', !isMod);
-
-         try {
-             // Fetch tickets from the API
-             const response = await fetch(`${API_BASE_URL}/api/tickets`, { credentials: 'include' });
-             if (!response.ok) {
-                  if (response.status === 401 || response.status === 403) throw new Error("Authentication required to view tickets.");
-                  else throw new Error(`HTTP error fetching tickets: ${response.status}`);
-             }
-             const tickets = await response.json();
-             console.log(`[fetchTickets] Received ${tickets.length} tickets.`);
-
-             // Clear loading messages
-             ticketListStatus.textContent = ""; moderatorActiveListStatus.textContent = ""; moderatorArchivedListStatus.textContent = "";
-             let hasUserTickets = false; let hasActiveModTickets = false; let hasArchivedModTickets = false;
-
-             if (tickets.length === 0) {
-                 // Display 'no tickets' messages
-                 if (isMod) {
-                     moderatorActiveListStatus.textContent = "No active tickets found.";
-                     moderatorArchivedListStatus.textContent = "No archived tickets found.";
-                 } else {
-                     ticketListStatus.textContent = "You have no support tickets.";
-                 }
-             } else {
-                 // Populate ticket lists
-                 tickets.forEach(ticket => {
-                     const item = createTicketListItem(ticket); // Use helper function to create element
-                     if (isMod) {
-                         if (ticket.status === 'open') {
-                             moderatorActiveTicketListDiv.appendChild(item); hasActiveModTickets = true;
-                         } else {
-                             moderatorArchivedTicketListDiv.appendChild(item); hasArchivedModTickets = true;
-                         }
-                     } else {
-                         ticketListDiv.appendChild(item); hasUserTickets = true;
+                 if (purchaseButton) {
+                     handlePurchaseClick(event); // Handle purchase action
+                 } else if (detailsButton) {
+                     // Navigate to product detail page
+                     const productId = detailsButton.dataset.productId;
+                     if (productId) {
+                         window.location.hash = `/#productDetail?id=${productId}`; // Use productDetail (lowercase p intentional)
                      }
-                 });
-
-                 // Update status messages if lists ended up empty after filtering
-                 if (isMod) {
-                     if (!hasActiveModTickets) moderatorActiveListStatus.textContent = "No active tickets found.";
-                     if (!hasArchivedModTickets) moderatorArchivedListStatus.textContent = "No archived tickets found.";
                  } else {
-                     if (!hasUserTickets) ticketListStatus.textContent = "You have no support tickets.";
+                     // Click on card area *not* buttons - could also navigate to detail
+                     // const productId = card.dataset.productId;
+                     // if (productId) {
+                     //     window.location.hash = `/#productDetail?id=${productId}`;
+                     // }
+                     console.log("Card area clicked (not a button)");
                  }
-             }
-         } catch (error) {
-             console.error("[fetchTickets] Error fetching or processing tickets:", error);
-             const errorMsg = `Failed to load tickets: ${error.message}`;
-             // Display error in all relevant status areas
-             ticketListStatus.textContent = errorMsg; moderatorActiveListStatus.textContent = errorMsg; moderatorArchivedListStatus.textContent = errorMsg;
-             showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
-         }
-    }
+             });
 
-    function createTicketListItem(ticket) {
-        const item = document.createElement('div');
-        item.classList.add('ticket-list-item'); // Use global style
-        // Store essential data on the element for event handlers and context menus
-        item.dataset.ticketId = ticket._id;
-        item.dataset.ticketStatus = ticket.status;
-        item.dataset.ticketSubject = ticket.subject || 'No Subject';
-
-        // Determine status style and text
-        const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
-        const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
-        // Format date or use fallback
-        const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'Date N/A';
-        // Use last 6 chars for a shorter ID display
-        const shortId = ticket._id ? ticket._id.slice(-6) : 'ID N/A';
-        const subject = ticket.subject || 'No Subject';
-        const username = ticket.username || 'Unknown User'; // Display username if available
-
-        item.innerHTML = `
-            <div>
-                <p class="font-medium text-white">#${shortId}: ${subject}</p>
-                <p class="text-xs text-gray-400">User: ${username} | Opened: ${dateOpened}</p>
-            </div>
-            <span class="${statusClass}">${statusText}</span>`;
-
-        // Add click listener to navigate to the ticket detail page
-        item.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default link behavior if wrapped in <a>
-            const targetHash = `/ticketDetail?id=${ticket._id}`;
-            console.log(`[Ticket Item Click] Navigating to: ${targetHash}`);
-            window.location.hash = targetHash;
-        });
-
-        // Add context menu listener (handler function defined globally)
-        item.addEventListener('contextmenu', showTicketContextMenu);
-
-        return item;
-    }
-
-    function setupTicketFormListener() {
-        // Find form elements within the loaded 'tickets' page content
-        const createTicketForm = document.getElementById('create-ticket-form');
-        const ticketSubjectInput = document.getElementById('ticket-subject');
-        const ticketMessageInput = document.getElementById('ticket-message-input');
-        const createTicketStatus = document.getElementById('create-ticket-status');
-        const createTicketButton = document.getElementById('create-ticket-button');
-
-        if (!createTicketForm || !ticketSubjectInput || !ticketMessageInput || !createTicketStatus || !createTicketButton) {
-            console.warn("[setupTicketFormListener] Create ticket form elements not found in loaded content.");
-            return;
+             productGridElement.appendChild(card);
         }
 
-        // Add the submit event listener
-        createTicketForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Prevent default form submission
-            const subject = ticketSubjectInput.value.trim();
-            const message = ticketMessageInput.value.trim();
+        function handlePurchaseClick(event) {
+             event.stopPropagation(); // Prevent card click listener if button is clicked
+             const button = event.target.closest('.purchase-button');
+             if (!button || button.disabled) return; // Ignore if not button or disabled
 
-            // Clear previous status and reset style
-            createTicketStatus.textContent = '';
-            createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
+             const productId = button.dataset.productId;
+             const paymentLink = button.dataset.paymentLink; // Could be a PayPal ID or a full URL
+             console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
 
-            // Basic validation
-            if (!subject || !message) {
-                createTicketStatus.textContent = 'Please fill out both subject and message.';
-                createTicketStatus.classList.add('error', 'text-red-400');
+             if (paymentLink) {
+                  // Basic placeholder - Replace with actual payment integration
+                  showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration Required)`);
+                  // Example: If paymentLink is a PayPal Button ID, you'd use the PayPal SDK here.
+                  // Example: If paymentLink is a URL, you might redirect: window.location.href = paymentLink;
+             } else {
+                  showPopupMessage(errorMessagePopup, 'Payment link is missing or invalid for this product.', true);
+             }
+        }
+
+        // Tickets Page Logic
+        async function fetchTickets() {
+            console.log("[fetchTickets] Fetching tickets...");
+            // Get references to elements within the currently loaded 'tickets' page content
+            const userTicketView = document.getElementById('user-ticket-view');
+            const moderatorManagementView = document.getElementById('moderator-management-view');
+            const ticketListDiv = document.getElementById('ticket-list');
+            const ticketListStatus = document.getElementById('ticket-list-status');
+            const moderatorActiveTicketListDiv = document.getElementById('moderator-active-ticket-list');
+            const moderatorActiveListStatus = document.getElementById('moderator-active-list-status');
+            const moderatorArchivedTicketListDiv = document.getElementById('moderator-archived-ticket-list');
+            const moderatorArchivedListStatus = document.getElementById('moderator-archived-list-status');
+
+            // Check if all required elements exist in the loaded HTML
+            if (!userTicketView || !moderatorManagementView || !ticketListDiv || !ticketListStatus || !moderatorActiveTicketListDiv || !moderatorActiveListStatus || !moderatorArchivedTicketListDiv || !moderatorArchivedListStatus) {
+                console.error("[fetchTickets] One or more ticket list elements not found in loaded content. Aborting fetch.");
+                // Optionally display an error in the main container
+                if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: UI elements missing for ticket display.</div>`;
                 return;
             }
 
-            // Disable button and show loading state
-            createTicketButton.disabled = true;
-            createTicketButton.textContent = 'Submitting...';
+            // Check login status (should be redundant due to router, but good practice)
+             if (!currentUser?.logged_in) {
+                 console.log("[fetchTickets] User not logged in. Displaying login prompt.");
+                 ticketListStatus.textContent = "Please log in to view tickets.";
+                 moderatorActiveListStatus.textContent = ""; // Clear mod statuses
+                 moderatorArchivedListStatus.textContent = "";
+                 ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = '';
+                 userTicketView.classList.remove('hidden'); // Show user view (which will contain the message)
+                 moderatorManagementView.classList.add('hidden'); // Hide mod view
+                 return;
+             }
+
+             // Set loading states
+             ticketListStatus.textContent = "Loading tickets...";
+             moderatorActiveListStatus.textContent = "Loading active tickets...";
+             moderatorArchivedListStatus.textContent = "Loading archived tickets...";
+             ticketListDiv.innerHTML = ''; moderatorActiveTicketListDiv.innerHTML = ''; moderatorArchivedTicketListDiv.innerHTML = ''; // Clear previous lists
+
+             // Toggle visibility based on moderator status
+             const isMod = currentUser.is_moderator === true;
+             console.log(`[fetchTickets] User moderator status: ${isMod}`);
+             userTicketView.classList.toggle('hidden', isMod);
+             moderatorManagementView.classList.toggle('hidden', !isMod);
+
+             try {
+                 // Fetch tickets from the API
+                 const response = await fetch(`${API_BASE_URL}/api/tickets`, { credentials: 'include' });
+                 if (!response.ok) {
+                      if (response.status === 401 || response.status === 403) throw new Error("Authentication required to view tickets.");
+                      else throw new Error(`HTTP error fetching tickets: ${response.status}`);
+                 }
+                 const tickets = await response.json();
+                 console.log(`[fetchTickets] Received ${tickets.length} tickets.`);
+
+                 // Clear loading messages
+                 ticketListStatus.textContent = ""; moderatorActiveListStatus.textContent = ""; moderatorArchivedListStatus.textContent = "";
+                 let hasUserTickets = false; let hasActiveModTickets = false; let hasArchivedModTickets = false;
+
+                 if (tickets.length === 0) {
+                     // Display 'no tickets' messages
+                     if (isMod) {
+                         moderatorActiveListStatus.textContent = "No active tickets found.";
+                         moderatorArchivedListStatus.textContent = "No archived tickets found.";
+                     } else {
+                         ticketListStatus.textContent = "You have no support tickets.";
+                     }
+                 } else {
+                     // Populate ticket lists
+                     tickets.forEach(ticket => {
+                         const item = createTicketListItem(ticket); // Use helper function to create element
+                         if (isMod) {
+                             if (ticket.status === 'open') {
+                                 moderatorActiveTicketListDiv.appendChild(item); hasActiveModTickets = true;
+                             } else {
+                                 moderatorArchivedTicketListDiv.appendChild(item); hasArchivedModTickets = true;
+                             }
+                         } else {
+                             ticketListDiv.appendChild(item); hasUserTickets = true;
+                         }
+                     });
+
+                     // Update status messages if lists ended up empty after filtering
+                     if (isMod) {
+                         if (!hasActiveModTickets) moderatorActiveListStatus.textContent = "No active tickets found.";
+                         if (!hasArchivedModTickets) moderatorArchivedListStatus.textContent = "No archived tickets found.";
+                     } else {
+                         if (!hasUserTickets) ticketListStatus.textContent = "You have no support tickets.";
+                     }
+                 }
+             } catch (error) {
+                 console.error("[fetchTickets] Error fetching or processing tickets:", error);
+                 const errorMsg = `Failed to load tickets: ${error.message}`;
+                 // Display error in all relevant status areas
+                 ticketListStatus.textContent = errorMsg; moderatorActiveListStatus.textContent = errorMsg; moderatorArchivedListStatus.textContent = errorMsg;
+                 showPopupMessage(errorMessagePopup, `Error fetching tickets: ${error.message}`, true);
+             }
+        }
+
+        function createTicketListItem(ticket) {
+            const item = document.createElement('div');
+            item.classList.add('ticket-list-item'); // Use global style
+            // Store essential data on the element for event handlers and context menus
+            item.dataset.ticketId = ticket._id;
+            item.dataset.ticketStatus = ticket.status;
+            item.dataset.ticketSubject = ticket.subject || 'No Subject';
+
+            // Determine status style and text
+            const statusClass = ticket.status === 'open' ? 'status-open' : 'status-closed';
+            const statusText = ticket.status ? ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1) : 'N/A';
+            // Format date or use fallback
+            const dateOpened = ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : 'Date N/A';
+            // Use last 6 chars for a shorter ID display
+            const shortId = ticket._id ? ticket._id.slice(-6) : 'ID N/A';
+            const subject = ticket.subject || 'No Subject';
+            const username = ticket.username || 'Unknown User'; // Display username if available
+
+            item.innerHTML = `
+                <div>
+                    <p class="font-medium text-white">#${shortId}: ${subject}</p>
+                    <p class="text-xs text-gray-400">User: ${username} | Opened: ${dateOpened}</p>
+                </div>
+                <span class="${statusClass}">${statusText}</span>`;
+
+            // Add click listener to navigate to the ticket detail page
+            item.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior if wrapped in <a>
+                const targetHash = `/#ticketDetail?id=${ticket._id}`; // Use ticketDetail (lowercase t intentional)
+                console.log(`[Ticket Item Click] Navigating to: ${targetHash}`);
+                window.location.hash = targetHash;
+            });
+
+            // Add context menu listener (handler function defined globally)
+            item.addEventListener('contextmenu', showTicketContextMenu);
+
+            return item;
+        }
+
+        function setupTicketFormListener() {
+            // Find form elements within the loaded 'tickets' page content
+            const createTicketForm = document.getElementById('create-ticket-form');
+            const ticketSubjectInput = document.getElementById('ticket-subject');
+            const ticketMessageInput = document.getElementById('ticket-message-input');
+            const createTicketStatus = document.getElementById('create-ticket-status');
+            const createTicketButton = document.getElementById('create-ticket-button');
+
+            if (!createTicketForm || !ticketSubjectInput || !ticketMessageInput || !createTicketStatus || !createTicketButton) {
+                console.warn("[setupTicketFormListener] Create ticket form elements not found in loaded content.");
+                return;
+            }
+
+            // Add the submit event listener
+            createTicketForm.addEventListener('submit', async (event) => {
+                event.preventDefault(); // Prevent default form submission
+                const subject = ticketSubjectInput.value.trim();
+                const message = ticketMessageInput.value.trim();
+
+                // Clear previous status and reset style
+                createTicketStatus.textContent = '';
+                createTicketStatus.className = 'h-6 text-sm mt-4 mb-4 text-center';
+
+                // Basic validation
+                if (!subject || !message) {
+                    createTicketStatus.textContent = 'Please fill out both subject and message.';
+                    createTicketStatus.classList.add('error', 'text-red-400');
+                    return;
+                }
+
+                // Disable button and show loading state
+                createTicketButton.disabled = true;
+                createTicketButton.textContent = 'Submitting...';
+
+                try {
+                    // Send POST request to create ticket API endpoint
+                    const response = await fetch(`${API_BASE_URL}/api/tickets`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ subject, message }),
+                        credentials: 'include' // Send cookies for authentication
+                    });
+
+                    // Check for errors
+                    if (!response.ok) {
+                        let errorData = { error: `HTTP error! status: ${response.status}` };
+                        try { errorData = await response.json(); } catch (e) {} // Try to parse error response
+                        throw new Error(errorData.error || `Failed to create ticket.`);
+                    }
+
+                    // const result = await response.json(); // Process result if needed
+                    createTicketStatus.textContent = 'Ticket submitted successfully!';
+                    createTicketStatus.classList.add('success', 'text-green-400');
+                    createTicketForm.reset(); // Clear the form fields
+
+                    // Refresh the ticket list immediately if still on the tickets page
+                    if (currentPage === 'tickets') {
+                       console.log("Ticket created, refreshing ticket list.");
+                       await fetchTickets();
+                    }
+
+                } catch (error) {
+                    console.error('Error creating ticket:', error);
+                    createTicketStatus.textContent = `Error: ${error.message}`;
+                    createTicketStatus.classList.add('error', 'text-red-400');
+                } finally {
+                    // Re-enable button and restore text
+                    createTicketButton.disabled = false;
+                    createTicketButton.textContent = 'Submit Ticket';
+                }
+            });
+        }
+
+        // Ticket Detail Page Logic
+        async function fetchTicketDetails(ticketId) {
+             console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`);
+             // Find elements within the currently loaded 'ticketDetail' page content
+             const chatMessagesDiv = document.getElementById('chat-messages');
+             const ticketDetailSubject = document.getElementById('ticket-detail-subject');
+
+             if (!chatMessagesDiv || !ticketDetailSubject) {
+                 console.error("[fetchTicketDetails] Chat messages div or subject header not found in loaded content.");
+                 if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Could not display ticket details. UI elements missing.</div>`;
+                 return;
+             }
+             // Ensure user is logged in (redundant check)
+             if (!currentUser?.logged_in) {
+                 console.warn("[fetchTicketDetails] User not logged in, cannot fetch details.");
+                 window.location.hash = '/#tickets'; // Redirect if somehow accessed while logged out
+                 return;
+             }
+             ensureSocketConnected(); // Make sure socket is ready for chat
+
+             // Set loading state
+             chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
+             ticketDetailSubject.textContent = `Loading Ticket #${ticketId.slice(-6)}...`; // Show partial ID while loading
+
+             try {
+                 // Fetch ticket details and messages from API
+                 const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
+                 if (!response.ok) {
+                     if (response.status === 401 || response.status === 403) throw new Error("Access Denied: You may not have permission to view this ticket.");
+                     if (response.status === 404) throw new Error("Ticket not found.");
+                     throw new Error(`HTTP error fetching ticket details: ${response.status}`);
+                 }
+                 const ticket = await response.json();
+                 console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`, ticket);
+
+                 // Update ticket subject header
+                 ticketDetailSubject.textContent = ticket.subject || `Ticket #${ticketId.slice(-6)}`;
+                 chatMessagesDiv.innerHTML = ''; // Clear loading message
+
+                 // Render existing messages
+                 if (ticket.messages && ticket.messages.length > 0) {
+                     ticket.messages.forEach(msg => appendChatMessage(msg, chatMessagesDiv));
+                 } else {
+                     chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet. Type below to start the conversation.</p>';
+                 }
+
+                 // Join the corresponding socket room *after* successfully fetching details
+                 if (socket?.connected) {
+                     console.log(`[fetchTicketDetails] Emitting join_ticket_room for ticket: ${ticketId}`);
+                     socket.emit('join_ticket_room', { ticket_id: ticketId });
+                 } else {
+                     console.warn("[fetchTicketDetails] Socket not connected when attempting to join ticket room.");
+                     // Consider attempting connection again here if needed
+                 }
+
+             } catch (error) {
+                 console.error("[fetchTicketDetails] Error fetching ticket details:", error);
+                 // Display error message in the chat area
+                 chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
+                 ticketDetailSubject.textContent = `Error Loading Ticket`; // Update header on error
+                 showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
+                 // Redirect back to tickets list if ticket not found or forbidden
+                 if (error.message.includes("not found") || error.message.includes("Access Denied")) {
+                     setTimeout(() => { window.location.hash = '/#tickets'; }, 3000); // Redirect after a short delay
+                 }
+             }
+        }
+
+        function appendChatMessage(data, chatMessagesDivElement) {
+             if (!chatMessagesDivElement) {
+                 console.warn("Attempted to append chat message, but container element not found.");
+                 return;
+             }
+             // Remove placeholder messages if they exist
+             const placeholderMsg = chatMessagesDivElement.querySelector('p.text-gray-500, p.text-red-400');
+             if (placeholderMsg) placeholderMsg.remove();
+
+             const messageElement = document.createElement('div');
+             messageElement.classList.add('chat-message');
+             // Store data attributes for context menu actions
+             messageElement.dataset.timestamp = data.timestamp;
+             messageElement.dataset.senderId = data.sender_id; // Crucial for user info/delete checks
+
+             // Format timestamp
+             const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+             // Sanitize username and text to prevent XSS
+             const username = data.sender_username || data.username || 'System';
+             const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+             const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+             // Create username span (clickable for user info modal)
+             const usernameSpan = document.createElement('span');
+             usernameSpan.classList.add('username');
+             usernameSpan.textContent = `${safeUsername}:`;
+             usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername)); // showUserInfoModal is global
+
+             // Assemble the message element
+             messageElement.appendChild(usernameSpan);
+             messageElement.append(` ${safeText} `); // Use text node for message content
+
+             // Create and append timestamp span
+             const timestampSpan = document.createElement('span');
+             timestampSpan.classList.add('timestamp');
+             timestampSpan.textContent = timestamp;
+             messageElement.appendChild(timestampSpan);
+
+             // Add context menu listener ONLY if the current user is a moderator
+             if (currentUser?.is_moderator) {
+                messageElement.addEventListener('contextmenu', showChatContextMenu); // showChatContextMenu is global
+             }
+
+             // Append the new message and scroll to bottom
+             chatMessagesDivElement.appendChild(messageElement);
+             chatMessagesDivElement.scrollTop = chatMessagesDivElement.scrollHeight;
+        }
+
+        function setupTicketDetailListeners() {
+            // Find chat form elements within the loaded 'ticketDetail' content
+            const chatInputForm = document.getElementById('chat-input-form');
+            const chatInput = document.getElementById('chat-input');
+
+            if (!chatInputForm || !chatInput) {
+                console.warn("[setupTicketDetailListeners] Chat form elements not found in loaded content.");
+                return;
+            }
+
+            // Add submit listener for sending chat messages
+            chatInputForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent page reload
+                const messageText = chatInput.value.trim();
+
+                // Check if message is not empty, socket is connected, and we have a ticket ID
+                if (messageText && socket?.connected && currentTicketId) {
+                    console.log(`[Chat Submit] Sending message to ticket ${currentTicketId}: "${messageText}"`);
+                    // Emit the message via WebSocket
+                    socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
+                    chatInput.value = ''; // Clear the input field
+                } else if (!socket?.connected) {
+                    showPopupMessage(errorMessagePopup, 'Cannot send message: Not connected to chat server.', true);
+                } else if (!currentTicketId) {
+                    showPopupMessage(errorMessagePopup, 'Cannot send message: No active ticket selected.', true);
+                } else if (!messageText) {
+                     showPopupMessage(errorMessagePopup, 'Cannot send an empty message.', true);
+                }
+            });
+
+            // Note: Context menu listeners for individual messages are added in `appendChatMessage`
+        }
+
+        // Dashboard Page Logic
+        function displayDashboardUserInfo() {
+            // Find elements within the loaded 'dashboard' content
+            const nameEl = document.getElementById('dashboard-user-name');
+            const avatarEl = document.getElementById('dashboard-user-avatar');
+            if (nameEl && avatarEl && currentUser?.logged_in) {
+                 nameEl.textContent = currentUser.username || 'User';
+                 avatarEl.src = currentUser.user_id && currentUser.avatar
+                    ? `https://cdn.discordapp.com/avatars/${currentUser.user_id}/${currentUser.avatar}.png?size=64`
+                    : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+            } else if (!nameEl || !avatarEl) {
+                 console.warn("[displayDashboardUserInfo] Name or Avatar element not found in dashboard content.");
+            }
+        }
+
+        function displayUserRoles(roles) {
+            // Find the roles container within the loaded 'dashboard' content
+            const rolesContainer = document.getElementById('dashboard-user-roles');
+            if (!rolesContainer) {
+                console.warn('[displayUserRoles] Container #dashboard-user-roles not found in loaded dashboard content!');
+                return;
+            }
+            rolesContainer.innerHTML = ''; // Clear previous roles/loading message
+
+            if (roles && Array.isArray(roles) && roles.length > 0) {
+                roles.forEach(role => {
+                    const roleElement = document.createElement('span');
+                    roleElement.classList.add('role-span'); // Use global style
+
+                    // Determine background color from role data or default
+                    let hexColor = '#9CA3AF'; // Default gray
+                    if (role.color && role.color !== 0) {
+                        hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                    }
+
+                    // Calculate luminance to set contrasting text color (black/white)
+                    const r = parseInt(hexColor.slice(1, 3), 16);
+                    const g = parseInt(hexColor.slice(3, 5), 16);
+                    const b = parseInt(hexColor.slice(5, 7), 16);
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                    const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
+
+                    roleElement.textContent = role.name || `Role ${role.id}`; // Display role name or ID
+                    roleElement.style.backgroundColor = hexColor;
+                    roleElement.classList.add(textColorClass); // Apply text color class
+                    rolesContainer.appendChild(roleElement);
+                });
+            } else {
+                // Display message if no roles found
+                rolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">No specific roles assigned.</p>';
+            }
+        }
+
+        async function loadAdminDashboardData() {
+            console.log("[loadAdminDashboardData] Loading admin-specific sections into dashboard...");
+            // Find the container for admin sections within the loaded 'dashboard' content
+            const adminSectionsContainer = document.getElementById('admin-dashboard-sections');
+            if (!adminSectionsContainer) {
+                console.warn("[loadAdminDashboardData] Admin sections container not found in dashboard content.");
+                return;
+            }
+            // Double-check moderator status (should be redundant)
+            if (!currentUser?.is_moderator) {
+                 adminSectionsContainer.classList.add('hidden');
+                 return;
+            }
+            // Ensure the container is visible
+            adminSectionsContainer.classList.remove('hidden');
+
+            // Load data into the forms/tables within the admin container
+            await loadSiteConfigForm(); // Populate site config form
+            await loadProductManagementTable(); // Populate product management table
+
+            // Attach event listeners specific to the admin controls AFTER loading their data
+            setupAdminDashboardListeners();
+        }
+
+        async function loadSiteConfigForm() {
+            // Find form elements within the loaded 'dashboard' admin section
+            const siteConfigForm = document.getElementById('site-config-form');
+            const configSiteTitleInput = document.getElementById('config-site-title');
+            const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
+            const configHeaderLinksContainer = document.getElementById('config-header-links-container');
+            const configSaveStatus = document.getElementById('config-save-status');
+
+            if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) {
+                 console.warn("[loadSiteConfigForm] Site config form elements not found in loaded dashboard content."); return;
+            }
+            // Ensure siteConfig state is loaded
+            if (!siteConfig) {
+                console.warn("[loadSiteConfigForm] Global siteConfig state not available. Cannot populate form.");
+                configSaveStatus.textContent = "Error: Config data not loaded.";
+                configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                return; // Cannot proceed without config data
+            }
+            // Populate the form fields with current config values
+            configSiteTitleInput.value = siteConfig.siteTitle || '';
+            configSiteIconUrlInput.value = siteConfig.siteIconUrl || '';
+            configHeaderLinksContainer.innerHTML = ''; // Clear any existing link inputs
+            // Add input fields for each existing header link
+            (siteConfig.headerLinks || []).forEach((link) => {
+                addHeaderLinkInput(link.name, link.href, link.target); // addHeaderLinkInput adds to the container
+            });
+            // Reset status message
+            configSaveStatus.textContent = '';
+            configSaveStatus.className = 'text-sm text-center h-5 mt-2';
+        }
+
+        function addHeaderLinkInput(name = '', href = '', target = '') {
+            // Find the container within the loaded 'dashboard' admin section
+            const configHeaderLinksContainer = document.getElementById('config-header-links-container');
+            if (!configHeaderLinksContainer) {
+                 console.warn("[addHeaderLinkInput] Header links container not found."); return;
+            }
+
+            const linkGroup = document.createElement('div');
+            linkGroup.className = 'link-group flex items-center space-x-2 mb-2'; // Use classes for layout
+            // Use specific classes for easier selection if needed later
+            linkGroup.innerHTML = `
+                 <input type="text" placeholder="Link Name" value="${name}" class="link-name config-link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+                 <input type="text" placeholder="Link Href (e.g., /#page)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
+                 <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target config-link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
+                 <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
+             `;
+             // Add event listener to the remove button for this specific link group
+             linkGroup.querySelector('.remove-link-button').addEventListener('click', () => linkGroup.remove());
+             configHeaderLinksContainer.appendChild(linkGroup);
+        }
+
+        async function loadProductManagementTable() {
+             // Find table elements within the loaded 'dashboard' admin section
+             const productListTableBody = document.getElementById('product-list-tbody');
+             const productListStatus = document.getElementById('product-list-status');
+             if (!productListTableBody || !productListStatus) {
+                 console.warn("[loadProductManagementTable] Product list table elements not found in loaded content."); return;
+             }
+             // Set loading state
+             productListTableBody.innerHTML = ''; // Clear previous rows
+             productListStatus.textContent = 'Loading products...';
+             productListStatus.classList.remove('hidden');
+
+             try {
+                 // Fetch all products (admin view needs all)
+                 const response = await fetch(`${API_BASE_URL}/api/products`);
+                 if (!response.ok) throw new Error(`HTTP error fetching products for admin: ${response.status}`);
+                 const products = await response.json();
+                 productListStatus.classList.add('hidden'); // Hide loading status
+
+                 if (!products || products.length === 0) {
+                     productListStatus.textContent = 'No products found.';
+                     productListStatus.classList.remove('hidden');
+                 } else {
+                     // Populate the table body with product rows
+                     products.forEach(product => {
+                         const row = productListTableBody.insertRow();
+                         row.innerHTML = `
+                             <td class="px-4 py-3">${product.name || 'N/A'}</td>
+                             <td class="px-4 py-3">$${product.price?.toFixed(2) || 'N/A'}</td>
+                             <td class="px-4 py-3">${product.tag || '-'}</td>
+                             <td class="px-4 py-3 actions">
+                                 <button class="edit-btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200" data-product-id="${product._id}">Edit</button>
+                                 <button class="delete-btn bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-2 py-1 rounded transition duration-200" data-product-id="${product._id}">Delete</button>
+                             </td>
+                         `;
+                         // Add event listeners to the Edit/Delete buttons in this row
+                         row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product)); // openProductEditModal is global
+                         row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name)); // handleDeleteProduct is global
+                     });
+                 }
+             } catch (error) {
+                 console.error("Error loading products for admin table:", error);
+                 productListStatus.textContent = `Failed to load products: ${error.message}`;
+                 productListStatus.classList.remove('hidden');
+                 showPopupMessage(errorMessagePopup, `Error loading products for admin: ${error.message}`, true);
+             }
+        }
+
+        function setupDashboardListeners() {
+            // Add listener for the dashboard-specific logout button (if it exists)
+            const dbLogoutButton = document.getElementById('dashboard-logout-button');
+            if (dbLogoutButton) {
+                // Ensure listener isn't added multiple times if dashboard is reloaded
+                dbLogoutButton.removeEventListener('click', handleLogout); // Remove previous if any
+                dbLogoutButton.addEventListener('click', handleLogout); // Add fresh listener
+            } else {
+                console.warn("[setupDashboardListeners] Dashboard logout button not found in loaded content.");
+            }
+            // Add listeners for other dashboard-specific controls here if needed
+        }
+
+        function setupAdminDashboardListeners() {
+            console.log("[setupAdminDashboardListeners] Setting up listeners for admin controls...");
+            // Site Config Form Listener
+            const siteConfigForm = document.getElementById('site-config-form');
+            if (siteConfigForm) {
+                siteConfigForm.removeEventListener('submit', handleSaveSiteConfig); // Prevent duplicates
+                siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
+            } else { console.warn("Site config form not found for listener setup."); }
+
+            // Add Header Link Button Listener
+            const addLinkBtn = document.getElementById('add-header-link-button');
+            if (addLinkBtn) {
+                addLinkBtn.removeEventListener('click', handleAddHeaderLinkButtonClick); // Prevent duplicates
+                addLinkBtn.addEventListener('click', handleAddHeaderLinkButtonClick);
+            } else { console.warn("Add header link button not found for listener setup."); }
+
+            // Add New Product Button Listener
+            const addProductBtn = document.getElementById('add-product-button');
+            if (addProductBtn) {
+                addProductBtn.removeEventListener('click', handleAddProductButtonClick); // Prevent duplicates
+                addProductBtn.addEventListener('click', handleAddProductButtonClick);
+            } else { console.warn("Add product button not found for listener setup."); }
+
+            // Note: Edit/Delete listeners for product table rows are added dynamically
+            // in `loadProductManagementTable` when the rows are created.
+        }
+        // Named handlers for button clicks to allow removal
+        function handleAddHeaderLinkButtonClick() { addHeaderLinkInput(); }
+        function handleAddProductButtonClick() { openProductEditModal(); }
+
+
+        async function handleSaveSiteConfig(event) {
+             event.preventDefault(); // Prevent default form submission
+             // Find form elements again within the current context
+             const siteConfigForm = document.getElementById('site-config-form');
+             const saveConfigButton = document.getElementById('save-config-button');
+             const configSaveStatus = document.getElementById('config-save-status');
+             const configSiteTitleInput = document.getElementById('config-site-title');
+             const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
+             const configHeaderLinksContainer = document.getElementById('config-header-links-container');
+
+             // Validate that all elements were found
+             if (!siteConfigForm || !saveConfigButton || !configSaveStatus || !configSiteTitleInput || !configSiteIconUrlInput || !configHeaderLinksContainer) {
+                  console.error("Cannot save site config, one or more form elements missing in the current DOM.");
+                  showPopupMessage(errorMessagePopup, "Error saving config: UI elements missing.", true);
+                  return;
+             }
+
+             // Disable button and set loading state
+             saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
+             configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
+
+             // Construct the updated configuration object from form values
+             const updatedConfig = {
+                  siteTitle: configSiteTitleInput.value.trim(),
+                  siteIconUrl: configSiteIconUrlInput.value.trim() || null, // Use null if empty
+                  headerLinks: []
+              };
+             // Iterate over link groups to build the headerLinks array
+             configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
+                 const nameInput = group.querySelector('.link-name');
+                 const hrefInput = group.querySelector('.link-href');
+                 const targetInput = group.querySelector('.link-target');
+                 // Ensure inputs exist and have values before adding
+                 if (nameInput?.value.trim() && hrefInput?.value.trim()) {
+                     updatedConfig.headerLinks.push({
+                         name: nameInput.value.trim(),
+                         href: hrefInput.value.trim(),
+                         target: targetInput?.value.trim() || null // Use null if target is empty
+                     });
+                 }
+             });
+
+             console.log("Saving site config:", updatedConfig);
+
+             try {
+                 // Send PUT request to the API
+                 const response = await fetch(`${API_BASE_URL}/api/config`, {
+                     method: 'PUT',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(updatedConfig),
+                     credentials: 'include' // Important for authentication cookies
+                 });
+                 const result = await response.json(); // Attempt to parse JSON response
+                 if (!response.ok) {
+                     // Throw error with message from API response or default HTTP status
+                     throw new Error(result.error || `HTTP error! status: ${response.status}`);
+                 }
+
+                 // --- Success ---
+                 siteConfig = result; // Update the global config state with the saved data
+                 applySiteConfig(siteConfig); // Re-apply the config to update header, title, etc.
+                 configSaveStatus.textContent = 'Configuration saved successfully!';
+                 configSaveStatus.classList.add('text-green-400');
+                 showPopupMessage(configMessagePopup, 'Site configuration saved!'); // Show global success popup
+
+             } catch (error) {
+                 // --- Error Handling ---
+                 console.error("Error saving site config:", error);
+                 configSaveStatus.textContent = `Error: ${error.message}`;
+                 configSaveStatus.classList.add('text-red-400');
+                 showPopupMessage(errorMessagePopup, `Failed to save config: ${error.message}`, true); // Show global error popup
+             } finally {
+                 // --- Cleanup ---
+                 // Re-enable the save button regardless of success or failure
+                 saveConfigButton.disabled = false;
+                 saveConfigButton.textContent = 'Save Configuration';
+             }
+        }
+
+        // Product Detail Page Logic
+        async function fetchProductDetails(productId) {
+            console.log(`[fetchProductDetails] Fetching details for product ID: ${productId}`);
+            // Find elements within the loaded 'productDetail' content
+            const productDetailLoading = document.getElementById('product-detail-loading');
+            const productDetailContainer = document.getElementById('product-detail-container');
+
+            if (!productDetailLoading || !productDetailContainer) {
+                 console.error("[fetchProductDetails] Loading indicator or detail container not found in loaded content.");
+                 if(pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error displaying product details: UI elements missing.</div>`;
+                 return;
+            }
+
+            // Show loading state
+            productDetailLoading.classList.remove('hidden');
+            productDetailContainer.classList.add('hidden'); // Hide main content area
 
             try {
-                // Send POST request to create ticket API endpoint
-                const response = await fetch(`${API_BASE_URL}/api/tickets`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ subject, message }),
-                    credentials: 'include' // Send cookies for authentication
-                });
-
-                // Check for errors
+                // Fetch specific product data from API
+                const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
                 if (!response.ok) {
-                    let errorData = { error: `HTTP error! status: ${response.status}` };
-                    try { errorData = await response.json(); } catch (e) {} // Try to parse error response
-                    throw new Error(errorData.error || `Failed to create ticket.`);
+                    if (response.status === 404) throw new Error("Product not found.");
+                    throw new Error(`HTTP error fetching product details: ${response.status}`);
                 }
+                const productData = await response.json();
+                console.log("[fetchProductDetails] Received product data:", productData);
 
-                // const result = await response.json(); // Process result if needed
-                createTicketStatus.textContent = 'Ticket submitted successfully!';
-                createTicketStatus.classList.add('success', 'text-green-400');
-                createTicketForm.reset(); // Clear the form fields
+                // Render the fetched data into the UI elements
+                renderProductDetails(productData);
 
-                // Refresh the ticket list immediately if still on the tickets page
-                if (currentPage === 'tickets') {
-                   console.log("Ticket created, refreshing ticket list.");
-                   await fetchTickets();
-                }
+                // Hide loading, show content
+                productDetailLoading.classList.add('hidden');
+                productDetailContainer.classList.remove('hidden');
 
             } catch (error) {
-                console.error('Error creating ticket:', error);
-                createTicketStatus.textContent = `Error: ${error.message}`;
-                createTicketStatus.classList.add('error', 'text-red-400');
-            } finally {
-                // Re-enable button and restore text
-                createTicketButton.disabled = false;
-                createTicketButton.textContent = 'Submit Ticket';
-            }
-        });
-    }
-
-    // Ticket Detail Page Logic
-    async function fetchTicketDetails(ticketId) {
-         console.log(`[fetchTicketDetails] Fetching details for ticket: ${ticketId}`);
-         // Find elements within the currently loaded 'ticketDetail' page content
-         const chatMessagesDiv = document.getElementById('chat-messages');
-         const ticketDetailSubject = document.getElementById('ticket-detail-subject');
-
-         if (!chatMessagesDiv || !ticketDetailSubject) {
-             console.error("[fetchTicketDetails] Chat messages div or subject header not found in loaded content.");
-             if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error: Could not display ticket details. UI elements missing.</div>`;
-             return;
-         }
-         // Ensure user is logged in (redundant check)
-         if (!currentUser?.logged_in) {
-             console.warn("[fetchTicketDetails] User not logged in, cannot fetch details.");
-             window.location.hash = '/tickets'; // Redirect if somehow accessed while logged out
-             return;
-         }
-         ensureSocketConnected(); // Make sure socket is ready for chat
-
-         // Set loading state
-         chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">Loading messages...</p>';
-         ticketDetailSubject.textContent = `Loading Ticket #${ticketId.slice(-6)}...`; // Show partial ID while loading
-
-         try {
-             // Fetch ticket details and messages from API
-             const response = await fetch(`${API_BASE_URL}/api/tickets/${ticketId}`, { credentials: 'include' });
-             if (!response.ok) {
-                 if (response.status === 401 || response.status === 403) throw new Error("Access Denied: You may not have permission to view this ticket.");
-                 if (response.status === 404) throw new Error("Ticket not found.");
-                 throw new Error(`HTTP error fetching ticket details: ${response.status}`);
-             }
-             const ticket = await response.json();
-             console.log(`[fetchTicketDetails] Received details for ticket: ${ticketId}`, ticket);
-
-             // Update ticket subject header
-             ticketDetailSubject.textContent = ticket.subject || `Ticket #${ticketId.slice(-6)}`;
-             chatMessagesDiv.innerHTML = ''; // Clear loading message
-
-             // Render existing messages
-             if (ticket.messages && ticket.messages.length > 0) {
-                 ticket.messages.forEach(msg => appendChatMessage(msg, chatMessagesDiv));
-             } else {
-                 chatMessagesDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No messages in this ticket yet. Type below to start the conversation.</p>';
-             }
-
-             // Join the corresponding socket room *after* successfully fetching details
-             if (socket?.connected) {
-                 console.log(`[fetchTicketDetails] Emitting join_ticket_room for ticket: ${ticketId}`);
-                 socket.emit('join_ticket_room', { ticket_id: ticketId });
-             } else {
-                 console.warn("[fetchTicketDetails] Socket not connected when attempting to join ticket room.");
-                 // Consider attempting connection again here if needed
-             }
-
-         } catch (error) {
-             console.error("[fetchTicketDetails] Error fetching ticket details:", error);
-             // Display error message in the chat area
-             chatMessagesDiv.innerHTML = `<p class="text-red-400 text-center py-4">Error loading messages: ${error.message}</p>`;
-             ticketDetailSubject.textContent = `Error Loading Ticket`; // Update header on error
-             showPopupMessage(errorMessagePopup, `Error loading ticket: ${error.message}`, true);
-             // Redirect back to tickets list if ticket not found or forbidden
-             if (error.message.includes("not found") || error.message.includes("Access Denied")) {
-                 setTimeout(() => { window.location.hash = '/tickets'; }, 3000); // Redirect after a short delay
-             }
-         }
-    }
-
-    function appendChatMessage(data, chatMessagesDivElement) {
-         if (!chatMessagesDivElement) {
-             console.warn("Attempted to append chat message, but container element not found.");
-             return;
-         }
-         // Remove placeholder messages if they exist
-         const placeholderMsg = chatMessagesDivElement.querySelector('p.text-gray-500, p.text-red-400');
-         if (placeholderMsg) placeholderMsg.remove();
-
-         const messageElement = document.createElement('div');
-         messageElement.classList.add('chat-message');
-         // Store data attributes for context menu actions
-         messageElement.dataset.timestamp = data.timestamp;
-         messageElement.dataset.senderId = data.sender_id; // Crucial for user info/delete checks
-
-         // Format timestamp
-         const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-         // Sanitize username and text to prevent XSS
-         const username = data.sender_username || data.username || 'System';
-         const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-         const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-         // Create username span (clickable for user info modal)
-         const usernameSpan = document.createElement('span');
-         usernameSpan.classList.add('username');
-         usernameSpan.textContent = `${safeUsername}:`;
-         usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername)); // showUserInfoModal is global
-
-         // Assemble the message element
-         messageElement.appendChild(usernameSpan);
-         messageElement.append(` ${safeText} `); // Use text node for message content
-
-         // Create and append timestamp span
-         const timestampSpan = document.createElement('span');
-         timestampSpan.classList.add('timestamp');
-         timestampSpan.textContent = timestamp;
-         messageElement.appendChild(timestampSpan);
-
-         // Add context menu listener ONLY if the current user is a moderator
-         if (currentUser?.is_moderator) {
-            messageElement.addEventListener('contextmenu', showChatContextMenu); // showChatContextMenu is global
-         }
-
-         // Append the new message and scroll to bottom
-         chatMessagesDivElement.appendChild(messageElement);
-         chatMessagesDivElement.scrollTop = chatMessagesDivElement.scrollHeight;
-    }
-
-    function setupTicketDetailListeners() {
-        // Find chat form elements within the loaded 'ticketDetail' content
-        const chatInputForm = document.getElementById('chat-input-form');
-        const chatInput = document.getElementById('chat-input');
-
-        if (!chatInputForm || !chatInput) {
-            console.warn("[setupTicketDetailListeners] Chat form elements not found in loaded content.");
-            return;
-        }
-
-        // Add submit listener for sending chat messages
-        chatInputForm.addEventListener('submit', (event) => {
-            event.preventDefault(); // Prevent page reload
-            const messageText = chatInput.value.trim();
-
-            // Check if message is not empty, socket is connected, and we have a ticket ID
-            if (messageText && socket?.connected && currentTicketId) {
-                console.log(`[Chat Submit] Sending message to ticket ${currentTicketId}: "${messageText}"`);
-                // Emit the message via WebSocket
-                socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                chatInput.value = ''; // Clear the input field
-            } else if (!socket?.connected) {
-                showPopupMessage(errorMessagePopup, 'Cannot send message: Not connected to chat server.', true);
-            } else if (!currentTicketId) {
-                showPopupMessage(errorMessagePopup, 'Cannot send message: No active ticket selected.', true);
-            } else if (!messageText) {
-                 showPopupMessage(errorMessagePopup, 'Cannot send an empty message.', true);
-            }
-        });
-
-        // Note: Context menu listeners for individual messages are added in `appendChatMessage`
-    }
-
-    // Dashboard Page Logic
-    function displayDashboardUserInfo() {
-        // Find elements within the loaded 'dashboard' content
-        const nameEl = document.getElementById('dashboard-user-name');
-        const avatarEl = document.getElementById('dashboard-user-avatar');
-        if (nameEl && avatarEl && currentUser?.logged_in) {
-             nameEl.textContent = currentUser.username || 'User';
-             avatarEl.src = currentUser.user_id && currentUser.avatar
-                ? `https://cdn.discordapp.com/avatars/${currentUser.user_id}/${currentUser.avatar}.png?size=64`
-                : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
-        } else if (!nameEl || !avatarEl) {
-             console.warn("[displayDashboardUserInfo] Name or Avatar element not found in dashboard content.");
-        }
-    }
-
-    function displayUserRoles(roles) {
-        // Find the roles container within the loaded 'dashboard' content
-        const rolesContainer = document.getElementById('dashboard-user-roles');
-        if (!rolesContainer) {
-            console.warn('[displayUserRoles] Container #dashboard-user-roles not found in loaded dashboard content!');
-            return;
-        }
-        rolesContainer.innerHTML = ''; // Clear previous roles/loading message
-
-        if (roles && Array.isArray(roles) && roles.length > 0) {
-            roles.forEach(role => {
-                const roleElement = document.createElement('span');
-                roleElement.classList.add('role-span'); // Use global style
-
-                // Determine background color from role data or default
-                let hexColor = '#9CA3AF'; // Default gray
-                if (role.color && role.color !== 0) {
-                    hexColor = '#' + role.color.toString(16).padStart(6, '0');
+                console.error("Error fetching product details:", error);
+                // Display error message in the loading area
+                productDetailLoading.textContent = `Error loading product: ${error.message}`;
+                productDetailLoading.classList.remove('hidden'); // Ensure error is visible
+                productDetailContainer.classList.add('hidden'); // Keep content hidden
+                showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
+                // Optionally redirect if product not found
+                if (error.message.includes("not found")) {
+                     setTimeout(() => { window.location.hash = '/#products'; }, 3000);
                 }
-
-                // Calculate luminance to set contrasting text color (black/white)
-                const r = parseInt(hexColor.slice(1, 3), 16);
-                const g = parseInt(hexColor.slice(3, 5), 16);
-                const b = parseInt(hexColor.slice(5, 7), 16);
-                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-                const textColorClass = luminance > 0.5 ? 'text-black' : 'text-white';
-
-                roleElement.textContent = role.name || `Role ${role.id}`; // Display role name or ID
-                roleElement.style.backgroundColor = hexColor;
-                roleElement.classList.add(textColorClass); // Apply text color class
-                rolesContainer.appendChild(roleElement);
-            });
-        } else {
-            // Display message if no roles found
-            rolesContainer.innerHTML = '<p class="text-gray-400 text-sm w-full">No specific roles assigned.</p>';
-        }
-    }
-
-    async function loadAdminDashboardData() {
-        console.log("[loadAdminDashboardData] Loading admin-specific sections into dashboard...");
-        // Find the container for admin sections within the loaded 'dashboard' content
-        const adminSectionsContainer = document.getElementById('admin-dashboard-sections');
-        if (!adminSectionsContainer) {
-            console.warn("[loadAdminDashboardData] Admin sections container not found in dashboard content.");
-            return;
-        }
-        // Double-check moderator status (should be redundant)
-        if (!currentUser?.is_moderator) {
-             adminSectionsContainer.classList.add('hidden');
-             return;
-        }
-        // Ensure the container is visible
-        adminSectionsContainer.classList.remove('hidden');
-
-        // Load data into the forms/tables within the admin container
-        await loadSiteConfigForm(); // Populate site config form
-        await loadProductManagementTable(); // Populate product management table
-
-        // Attach event listeners specific to the admin controls AFTER loading their data
-        setupAdminDashboardListeners();
-    }
-
-    async function loadSiteConfigForm() {
-        // Find form elements within the loaded 'dashboard' admin section
-        const siteConfigForm = document.getElementById('site-config-form');
-        const configSiteTitleInput = document.getElementById('config-site-title');
-        const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
-        const configHeaderLinksContainer = document.getElementById('config-header-links-container');
-        const configSaveStatus = document.getElementById('config-save-status');
-
-        if (!siteConfigForm || !configSiteTitleInput || !configHeaderLinksContainer || !configSaveStatus || !configSiteIconUrlInput) {
-             console.warn("[loadSiteConfigForm] Site config form elements not found in loaded dashboard content."); return;
-        }
-        // Ensure siteConfig state is loaded
-        if (!siteConfig) {
-            console.warn("[loadSiteConfigForm] Global siteConfig state not available. Cannot populate form.");
-            configSaveStatus.textContent = "Error: Config data not loaded.";
-            configSaveStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
-            return; // Cannot proceed without config data
-        }
-        // Populate the form fields with current config values
-        configSiteTitleInput.value = siteConfig.siteTitle || '';
-        configSiteIconUrlInput.value = siteConfig.siteIconUrl || '';
-        configHeaderLinksContainer.innerHTML = ''; // Clear any existing link inputs
-        // Add input fields for each existing header link
-        (siteConfig.headerLinks || []).forEach((link) => {
-            addHeaderLinkInput(link.name, link.href, link.target); // addHeaderLinkInput adds to the container
-        });
-        // Reset status message
-        configSaveStatus.textContent = '';
-        configSaveStatus.className = 'text-sm text-center h-5 mt-2';
-    }
-
-    function addHeaderLinkInput(name = '', href = '', target = '') {
-        // Find the container within the loaded 'dashboard' admin section
-        const configHeaderLinksContainer = document.getElementById('config-header-links-container');
-        if (!configHeaderLinksContainer) {
-             console.warn("[addHeaderLinkInput] Header links container not found."); return;
+            }
         }
 
-        const linkGroup = document.createElement('div');
-        linkGroup.className = 'link-group flex items-center space-x-2 mb-2'; // Use classes for layout
-        // Use specific classes for easier selection if needed later
-        linkGroup.innerHTML = `
-             <input type="text" placeholder="Link Name" value="${name}" class="link-name config-link-name flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
-             <input type="text" placeholder="Link Href (e.g., /page)" value="${href}" class="link-href config-link-href flex-1 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400" required>
-             <input type="text" placeholder="Target (e.g., _blank)" value="${target || ''}" class="link-target config-link-target flex-none w-32 bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
-             <button type="button" class="remove-link-button bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0" title="Remove Link">X</button>
-         `;
-         // Add event listener to the remove button for this specific link group
-         linkGroup.querySelector('.remove-link-button').addEventListener('click', () => linkGroup.remove());
-         configHeaderLinksContainer.appendChild(linkGroup);
-    }
+        function renderProductDetails(product) {
+             if (!product) {
+                 console.warn("renderProductDetails called with null product data.");
+                 return;
+             }
+             // Find all necessary elements within the loaded 'productDetail' content
+             const elements = {
+                 image: document.getElementById('product-detail-image'),
+                 name: document.getElementById('product-detail-name'),
+                 price: document.getElementById('product-detail-price'),
+                 rating: document.getElementById('product-detail-rating'),
+                 stock: document.getElementById('product-detail-stock'),
+                 descContainer: document.getElementById('product-detail-description-container'),
+                 description: document.getElementById('product-detail-description'),
+                 sellerAvatar: document.getElementById('seller-avatar'),
+                 sellerName: document.getElementById('seller-name'),
+                 sellerEstablished: document.getElementById('seller-established'),
+                 sellerReviewScore: document.getElementById('seller-review-score'),
+                 reviewsList: document.getElementById('product-reviews-list')
+             };
 
-    async function loadProductManagementTable() {
-         // Find table elements within the loaded 'dashboard' admin section
-         const productListTableBody = document.getElementById('product-list-tbody');
-         const productListStatus = document.getElementById('product-list-status');
-         if (!productListTableBody || !productListStatus) {
-             console.warn("[loadProductManagementTable] Product list table elements not found in loaded content."); return;
-         }
-         // Set loading state
-         productListTableBody.innerHTML = ''; // Clear previous rows
-         productListStatus.textContent = 'Loading products...';
-         productListStatus.classList.remove('hidden');
+             // Check if all elements were found
+             const missingElements = Object.entries(elements).filter(([key, el]) => !el);
+             if (missingElements.length > 0) {
+                 console.error(`Error rendering product details: Missing elements - ${missingElements.map(([key]) => key).join(', ')}`);
+                 if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error displaying product details: UI structure mismatch.</div>`;
+                 return;
+             }
 
-         try {
-             // Fetch all products (admin view needs all)
-             const response = await fetch(`${API_BASE_URL}/api/products`);
-             if (!response.ok) throw new Error(`HTTP error fetching products for admin: ${response.status}`);
-             const products = await response.json();
-             productListStatus.classList.add('hidden'); // Hide loading status
+             // Populate elements with product data (provide defaults)
+             elements.image.src = product.thumbnailUrl || 'https://placehold.co/600x400/374151/9ca3af?text=No+Image';
+             elements.image.alt = product.name ? `${product.name} Image` : 'Product Image';
+             elements.name.textContent = product.name || 'Product Name Unavailable';
+             elements.price.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Price unavailable';
 
-             if (!products || products.length === 0) {
-                 productListStatus.textContent = 'No products found.';
-                 productListStatus.classList.remove('hidden');
+             // Rating and Stock (with defaults)
+             const ratingValue = product.averageRating ?? 5; // Default to 5 stars if null/undefined
+             const stockValue = product.stock ?? 6; // Default to 6 if null/undefined
+             elements.rating.innerHTML = `${'★'.repeat(ratingValue)}${'☆'.repeat(5 - ratingValue)}`;
+             elements.stock.textContent = `${stockValue} in stock`;
+
+             // Description
+             if (product.description) {
+                elements.description.textContent = product.description;
+                elements.descContainer.classList.remove('hidden');
              } else {
-                 // Populate the table body with product rows
-                 products.forEach(product => {
-                     const row = productListTableBody.insertRow();
-                     row.innerHTML = `
-                         <td class="px-4 py-3">${product.name || 'N/A'}</td>
-                         <td class="px-4 py-3">$${product.price?.toFixed(2) || 'N/A'}</td>
-                         <td class="px-4 py-3">${product.tag || '-'}</td>
-                         <td class="px-4 py-3 actions">
-                             <button class="edit-btn bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200" data-product-id="${product._id}">Edit</button>
-                             <button class="delete-btn bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-2 py-1 rounded transition duration-200" data-product-id="${product._id}">Delete</button>
-                         </td>
+                elements.description.textContent = 'No description provided.';
+                // Optionally hide the container if you prefer: elements.descContainer.classList.add('hidden');
+             }
+
+             // Seller Info (with defaults)
+             elements.sellerName.textContent = product.sellerName || 'ShilletteFN'; // Default seller name
+             elements.sellerEstablished.textContent = product.sellerEstablishedDate
+                 ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}`
+                 : 'Established several months ago'; // Default established text
+             elements.sellerReviewScore.textContent = `The seller has an average review score of ${ratingValue} stars out of 5`;
+             // elements.sellerAvatar.src = product.sellerAvatarUrl || 'https://placehold.co/40x40/7f8c8d/ecf0f1?text=S'; // Default avatar
+
+             // Reviews (with defaults)
+             elements.reviewsList.innerHTML = ''; // Clear loading/previous reviews
+             const reviews = product.reviews || [];
+             if (reviews.length > 0) {
+                 reviews.forEach(review => {
+                     const reviewCard = document.createElement('div');
+                     reviewCard.className = 'review-card'; // Use global style
+                     const reviewRating = review.rating ?? 5; // Default review rating
+                     const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'recently';
+                     const reviewerName = review.reviewerName || 'Verified customer'; // Default reviewer name
+
+                     reviewCard.innerHTML = `
+                         <div class="flex justify-between items-center mb-2">
+                             <span class="text-xs text-green-400 font-medium">Verified purchase</span>
+                             <span class="star-rating text-sm">${'★'.repeat(reviewRating)}${'☆'.repeat(5 - reviewRating)}</span>
+                         </div>
+                         <p class="text-sm text-gray-300 mb-1 italic">${review.text || 'No review text provided.'}</p>
+                         <p class="text-xs text-gray-500">Reviewed by ${reviewerName} on ${reviewDate}</p>
                      `;
-                     // Add event listeners to the Edit/Delete buttons in this row
-                     row.querySelector('.edit-btn').addEventListener('click', () => openProductEditModal(product)); // openProductEditModal is global
-                     row.querySelector('.delete-btn').addEventListener('click', () => handleDeleteProduct(product._id, product.name)); // handleDeleteProduct is global
+                     elements.reviewsList.appendChild(reviewCard);
                  });
+             } else {
+                 elements.reviewsList.innerHTML = '<p class="text-gray-400 md:col-span-2 lg:col-span-3">No reviews available for this product yet.</p>';
              }
-         } catch (error) {
-             console.error("Error loading products for admin table:", error);
-             productListStatus.textContent = `Failed to load products: ${error.message}`;
-             productListStatus.classList.remove('hidden');
-             showPopupMessage(errorMessagePopup, `Error loading products for admin: ${error.message}`, true);
-         }
-    }
-
-    function setupDashboardListeners() {
-        // Add listener for the dashboard-specific logout button (if it exists)
-        const dbLogoutButton = document.getElementById('dashboard-logout-button');
-        if (dbLogoutButton) {
-            // Ensure listener isn't added multiple times if dashboard is reloaded
-            dbLogoutButton.removeEventListener('click', handleLogout); // Remove previous if any
-            dbLogoutButton.addEventListener('click', handleLogout); // Add fresh listener
-        } else {
-            console.warn("[setupDashboardListeners] Dashboard logout button not found in loaded content.");
-        }
-        // Add listeners for other dashboard-specific controls here if needed
-    }
-
-    function setupAdminDashboardListeners() {
-        console.log("[setupAdminDashboardListeners] Setting up listeners for admin controls...");
-        // Site Config Form Listener
-        const siteConfigForm = document.getElementById('site-config-form');
-        if (siteConfigForm) {
-            siteConfigForm.removeEventListener('submit', handleSaveSiteConfig); // Prevent duplicates
-            siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
-        } else { console.warn("Site config form not found for listener setup."); }
-
-        // Add Header Link Button Listener
-        const addLinkBtn = document.getElementById('add-header-link-button');
-        if (addLinkBtn) {
-            addLinkBtn.removeEventListener('click', handleAddHeaderLinkButtonClick); // Prevent duplicates
-            addLinkBtn.addEventListener('click', handleAddHeaderLinkButtonClick);
-        } else { console.warn("Add header link button not found for listener setup."); }
-
-        // Add New Product Button Listener
-        const addProductBtn = document.getElementById('add-product-button');
-        if (addProductBtn) {
-            addProductBtn.removeEventListener('click', handleAddProductButtonClick); // Prevent duplicates
-            addProductBtn.addEventListener('click', handleAddProductButtonClick);
-        } else { console.warn("Add product button not found for listener setup."); }
-
-        // Note: Edit/Delete listeners for product table rows are added dynamically
-        // in `loadProductManagementTable` when the rows are created.
-    }
-    // Named handlers for button clicks to allow removal
-    function handleAddHeaderLinkButtonClick() { addHeaderLinkInput(); }
-    function handleAddProductButtonClick() { openProductEditModal(); }
-
-
-    async function handleSaveSiteConfig(event) {
-         event.preventDefault(); // Prevent default form submission
-         // Find form elements again within the current context
-         const siteConfigForm = document.getElementById('site-config-form');
-         const saveConfigButton = document.getElementById('save-config-button');
-         const configSaveStatus = document.getElementById('config-save-status');
-         const configSiteTitleInput = document.getElementById('config-site-title');
-         const configSiteIconUrlInput = document.getElementById('config-site-icon-url');
-         const configHeaderLinksContainer = document.getElementById('config-header-links-container');
-
-         // Validate that all elements were found
-         if (!siteConfigForm || !saveConfigButton || !configSaveStatus || !configSiteTitleInput || !configSiteIconUrlInput || !configHeaderLinksContainer) {
-              console.error("Cannot save site config, one or more form elements missing in the current DOM.");
-              showPopupMessage(errorMessagePopup, "Error saving config: UI elements missing.", true);
-              return;
-         }
-
-         // Disable button and set loading state
-         saveConfigButton.disabled = true; saveConfigButton.textContent = 'Saving...';
-         configSaveStatus.textContent = ''; configSaveStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status
-
-         // Construct the updated configuration object from form values
-         const updatedConfig = {
-              siteTitle: configSiteTitleInput.value.trim(),
-              siteIconUrl: configSiteIconUrlInput.value.trim() || null, // Use null if empty
-              headerLinks: []
-          };
-         // Iterate over link groups to build the headerLinks array
-         configHeaderLinksContainer.querySelectorAll('.link-group').forEach(group => {
-             const nameInput = group.querySelector('.link-name');
-             const hrefInput = group.querySelector('.link-href');
-             const targetInput = group.querySelector('.link-target');
-             // Ensure inputs exist and have values before adding
-             if (nameInput?.value.trim() && hrefInput?.value.trim()) {
-                 updatedConfig.headerLinks.push({
-                     name: nameInput.value.trim(),
-                     href: hrefInput.value.trim(),
-                     target: targetInput?.value.trim() || null // Use null if target is empty
-                 });
-             }
-         });
-
-         console.log("Saving site config:", updatedConfig);
-
-         try {
-             // Send PUT request to the API
-             const response = await fetch(`${API_BASE_URL}/api/config`, {
-                 method: 'PUT',
-                 headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify(updatedConfig),
-                 credentials: 'include' // Important for authentication cookies
-             });
-             const result = await response.json(); // Attempt to parse JSON response
-             if (!response.ok) {
-                 // Throw error with message from API response or default HTTP status
-                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
-             }
-
-             // --- Success ---
-             siteConfig = result; // Update the global config state with the saved data
-             applySiteConfig(siteConfig); // Re-apply the config to update header, title, etc.
-             configSaveStatus.textContent = 'Configuration saved successfully!';
-             configSaveStatus.classList.add('text-green-400');
-             showPopupMessage(configMessagePopup, 'Site configuration saved!'); // Show global success popup
-
-         } catch (error) {
-             // --- Error Handling ---
-             console.error("Error saving site config:", error);
-             configSaveStatus.textContent = `Error: ${error.message}`;
-             configSaveStatus.classList.add('text-red-400');
-             showPopupMessage(errorMessagePopup, `Failed to save config: ${error.message}`, true); // Show global error popup
-         } finally {
-             // --- Cleanup ---
-             // Re-enable the save button regardless of success or failure
-             saveConfigButton.disabled = false;
-             saveConfigButton.textContent = 'Save Configuration';
-         }
-    }
-
-    // Product Detail Page Logic
-    async function fetchProductDetails(productId) {
-        console.log(`[fetchProductDetails] Fetching details for product ID: ${productId}`);
-        // Find elements within the loaded 'productDetail' content
-        const productDetailLoading = document.getElementById('product-detail-loading');
-        const productDetailContainer = document.getElementById('product-detail-container');
-
-        if (!productDetailLoading || !productDetailContainer) {
-             console.error("[fetchProductDetails] Loading indicator or detail container not found in loaded content.");
-             if(pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error displaying product details: UI elements missing.</div>`;
-             return;
         }
 
-        // Show loading state
-        productDetailLoading.classList.remove('hidden');
-        productDetailContainer.classList.add('hidden'); // Hide main content area
+        function setupProductDetailListeners() {
+            // Find buttons within the loaded 'productDetail' content
+            const buyNowButton = document.getElementById('product-detail-buy-now');
+            const addBasketButton = document.getElementById('product-detail-add-basket');
+            const quantityDecrease = document.getElementById('quantity-decrease');
+            const quantityIncrease = document.getElementById('quantity-increase');
+            const quantityInput = document.getElementById('quantity-input');
 
-        try {
-            // Fetch specific product data from API
-            const response = await fetch(`${API_BASE_URL}/api/products/${productId}`);
-            if (!response.ok) {
-                if (response.status === 404) throw new Error("Product not found.");
-                throw new Error(`HTTP error fetching product details: ${response.status}`);
-            }
-            const productData = await response.json();
-            console.log("[fetchProductDetails] Received product data:", productData);
+            // Add listeners if elements exist
+            if (buyNowButton) {
+                buyNowButton.addEventListener('click', () => {
+                    console.log("Buy Now clicked");
+                    showPopupMessage(paymentMessage, "Buy Now functionality not yet implemented.");
+                    // TODO: Implement Buy Now logic (e.g., redirect to checkout, PayPal SDK)
+                });
+            } else { console.warn("Buy Now button not found."); }
 
-            // Render the fetched data into the UI elements
-            renderProductDetails(productData);
+            if (addBasketButton) {
+                addBasketButton.addEventListener('click', () => {
+                    console.log("Add to Basket clicked");
+                    const qty = parseInt(quantityInput?.value) || 1;
+                    showPopupMessage(paymentMessage, `Added ${qty} item(s) to basket (feature not fully implemented).`);
+                    // TODO: Implement Add to Basket logic (e.g., update cart state, API call)
+                });
+            } else { console.warn("Add Basket button not found."); }
 
-            // Hide loading, show content
-            productDetailLoading.classList.add('hidden');
-            productDetailContainer.classList.remove('hidden');
+            if (quantityDecrease && quantityInput) {
+                quantityDecrease.addEventListener('click', () => {
+                    let currentQuantity = parseInt(quantityInput.value) || 1;
+                    if (currentQuantity > 1) { // Prevent quantity from going below 1
+                        quantityInput.value = currentQuantity - 1;
+                    }
+                });
+            } else { console.warn("Quantity decrease button or input not found."); }
 
-        } catch (error) {
-            console.error("Error fetching product details:", error);
-            // Display error message in the loading area
-            productDetailLoading.textContent = `Error loading product: ${error.message}`;
-            productDetailLoading.classList.remove('hidden'); // Ensure error is visible
-            productDetailContainer.classList.add('hidden'); // Keep content hidden
-            showPopupMessage(errorMessagePopup, `Error loading product: ${error.message}`, true);
-            // Optionally redirect if product not found
-            if (error.message.includes("not found")) {
-                 setTimeout(() => { window.location.hash = '/products'; }, 3000);
+            if (quantityIncrease && quantityInput) {
+                 quantityIncrease.addEventListener('click', () => {
+                     let currentQuantity = parseInt(quantityInput.value) || 0;
+                     // TODO: Add check against available stock if needed
+                     // const maxStock = parseInt(document.getElementById('product-detail-stock')?.textContent) || Infinity;
+                     // if (currentQuantity < maxStock) {
+                         quantityInput.value = currentQuantity + 1;
+                     // }
+                 });
+            } else { console.warn("Quantity increase button or input not found."); }
+
+            // Add listener for the "Open a ticket" link if needed
+            const openTicketLink = document.getElementById('product-detail-open-ticket');
+            if (openTicketLink) {
+                openTicketLink.addEventListener('click', (e) => {
+                    // Could pre-fill ticket subject based on product
+                    console.log("Open ticket link clicked from product detail.");
+                    // Navigation will be handled by the href="/#tickets"
+                });
             }
         }
-    }
 
-    function renderProductDetails(product) {
-         if (!product) {
-             console.warn("renderProductDetails called with null product data.");
-             return;
-         }
-         // Find all necessary elements within the loaded 'productDetail' content
-         const elements = {
-             image: document.getElementById('product-detail-image'),
-             name: document.getElementById('product-detail-name'),
-             price: document.getElementById('product-detail-price'),
-             rating: document.getElementById('product-detail-rating'),
-             stock: document.getElementById('product-detail-stock'),
-             descContainer: document.getElementById('product-detail-description-container'),
-             description: document.getElementById('product-detail-description'),
-             sellerAvatar: document.getElementById('seller-avatar'),
-             sellerName: document.getElementById('seller-name'),
-             sellerEstablished: document.getElementById('seller-established'),
-             sellerReviewScore: document.getElementById('seller-review-score'),
-             reviewsList: document.getElementById('product-reviews-list')
-         };
-
-         // Check if all elements were found
-         const missingElements = Object.entries(elements).filter(([key, el]) => !el);
-         if (missingElements.length > 0) {
-             console.error(`Error rendering product details: Missing elements - ${missingElements.map(([key]) => key).join(', ')}`);
-             if (pageContentContainer) pageContentContainer.innerHTML = `<div class="container mx-auto px-6 py-10 text-center text-red-400">Error displaying product details: UI structure mismatch.</div>`;
-             return;
-         }
-
-         // Populate elements with product data (provide defaults)
-         elements.image.src = product.thumbnailUrl || 'https://placehold.co/600x400/374151/9ca3af?text=No+Image';
-         elements.image.alt = product.name ? `${product.name} Image` : 'Product Image';
-         elements.name.textContent = product.name || 'Product Name Unavailable';
-         elements.price.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Price unavailable';
-
-         // Rating and Stock (with defaults)
-         const ratingValue = product.averageRating ?? 5; // Default to 5 stars if null/undefined
-         const stockValue = product.stock ?? 6; // Default to 6 if null/undefined
-         elements.rating.innerHTML = `${'★'.repeat(ratingValue)}${'☆'.repeat(5 - ratingValue)}`;
-         elements.stock.textContent = `${stockValue} in stock`;
-
-         // Description
-         if (product.description) {
-            elements.description.textContent = product.description;
-            elements.descContainer.classList.remove('hidden');
-         } else {
-            elements.description.textContent = 'No description provided.';
-            // Optionally hide the container if you prefer: elements.descContainer.classList.add('hidden');
-         }
-
-         // Seller Info (with defaults)
-         elements.sellerName.textContent = product.sellerName || 'ShilletteFN'; // Default seller name
-         elements.sellerEstablished.textContent = product.sellerEstablishedDate
-             ? `Established ${formatTimeAgo(product.sellerEstablishedDate)}`
-             : 'Established several months ago'; // Default established text
-         elements.sellerReviewScore.textContent = `The seller has an average review score of ${ratingValue} stars out of 5`;
-         // elements.sellerAvatar.src = product.sellerAvatarUrl || 'https://placehold.co/40x40/7f8c8d/ecf0f1?text=S'; // Default avatar
-
-         // Reviews (with defaults)
-         elements.reviewsList.innerHTML = ''; // Clear loading/previous reviews
-         const reviews = product.reviews || [];
-         if (reviews.length > 0) {
-             reviews.forEach(review => {
-                 const reviewCard = document.createElement('div');
-                 reviewCard.className = 'review-card'; // Use global style
-                 const reviewRating = review.rating ?? 5; // Default review rating
-                 const reviewDate = review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'recently';
-                 const reviewerName = review.reviewerName || 'Verified customer'; // Default reviewer name
-
-                 reviewCard.innerHTML = `
-                     <div class="flex justify-between items-center mb-2">
-                         <span class="text-xs text-green-400 font-medium">Verified purchase</span>
-                         <span class="star-rating text-sm">${'★'.repeat(reviewRating)}${'☆'.repeat(5 - reviewRating)}</span>
-                     </div>
-                     <p class="text-sm text-gray-300 mb-1 italic">${review.text || 'No review text provided.'}</p>
-                     <p class="text-xs text-gray-500">Reviewed by ${reviewerName} on ${reviewDate}</p>
-                 `;
-                 elements.reviewsList.appendChild(reviewCard);
-             });
-         } else {
-             elements.reviewsList.innerHTML = '<p class="text-gray-400 md:col-span-2 lg:col-span-3">No reviews available for this product yet.</p>';
-         }
-    }
-
-    function setupProductDetailListeners() {
-        // Find buttons within the loaded 'productDetail' content
-        const buyNowButton = document.getElementById('product-detail-buy-now');
-        const addBasketButton = document.getElementById('product-detail-add-basket');
-        const quantityDecrease = document.getElementById('quantity-decrease');
-        const quantityIncrease = document.getElementById('quantity-increase');
-        const quantityInput = document.getElementById('quantity-input');
-
-        // Add listeners if elements exist
-        if (buyNowButton) {
-            buyNowButton.addEventListener('click', () => {
-                console.log("Buy Now clicked");
-                showPopupMessage(paymentMessage, "Buy Now functionality not yet implemented.");
-                // TODO: Implement Buy Now logic (e.g., redirect to checkout, PayPal SDK)
-            });
-        } else { console.warn("Buy Now button not found."); }
-
-        if (addBasketButton) {
-            addBasketButton.addEventListener('click', () => {
-                console.log("Add to Basket clicked");
-                const qty = parseInt(quantityInput?.value) || 1;
-                showPopupMessage(paymentMessage, `Added ${qty} item(s) to basket (feature not fully implemented).`);
-                // TODO: Implement Add to Basket logic (e.g., update cart state, API call)
-            });
-        } else { console.warn("Add Basket button not found."); }
-
-        if (quantityDecrease && quantityInput) {
-            quantityDecrease.addEventListener('click', () => {
-                let currentQuantity = parseInt(quantityInput.value) || 1;
-                if (currentQuantity > 1) { // Prevent quantity from going below 1
-                    quantityInput.value = currentQuantity - 1;
-                }
-            });
-        } else { console.warn("Quantity decrease button or input not found."); }
-
-        if (quantityIncrease && quantityInput) {
-             quantityIncrease.addEventListener('click', () => {
-                 let currentQuantity = parseInt(quantityInput.value) || 0;
-                 // TODO: Add check against available stock if needed
-                 // const maxStock = parseInt(document.getElementById('product-detail-stock')?.textContent) || Infinity;
-                 // if (currentQuantity < maxStock) {
-                     quantityInput.value = currentQuantity + 1;
-                 // }
-             });
-        } else { console.warn("Quantity increase button or input not found."); }
-
-        // Add listener for the "Open a ticket" link if needed
-        const openTicketLink = document.getElementById('product-detail-open-ticket');
-        if (openTicketLink) {
-            openTicketLink.addEventListener('click', (e) => {
-                // Could pre-fill ticket subject based on product
-                console.log("Open ticket link clicked from product detail.");
-                // Navigation will be handled by the href="/#tickets"
-            });
-        }
-    }
 
     // --- Socket.IO Logic ---
 
@@ -1519,7 +1537,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function connectSocket(ticketIdToJoin = null) {
          // If already connected, potentially just rejoin the room if needed
          if (socket?.connected) {
-             if (ticketIdToJoin && currentPage === 'ticketDetail' && currentTicketId === ticketIdToJoin) {
+             if (ticketIdToJoin && currentPage === 'ticketdetail' && currentTicketId === ticketIdToJoin) { // Use lowercase key
                  console.log(`[connectSocket] Socket already connected, re-joining room: ${ticketIdToJoin}`);
                  socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
              } else {
@@ -1542,7 +1560,7 @@ document.addEventListener('DOMContentLoaded', () => {
          socket.on('connect', () => {
              console.log('[Socket Connect] WebSocket connected successfully. Socket ID:', socket.id);
              // Join the ticket room *only* if connection is successful AND we are on the detail page for that ticket
-             if (ticketIdToJoin && currentPage === 'ticketDetail' && currentTicketId === ticketIdToJoin) {
+             if (ticketIdToJoin && currentPage === 'ticketdetail' && currentTicketId === ticketIdToJoin) { // Use lowercase key
                  console.log(`[Socket Connect] Joining room post-connect: ${ticketIdToJoin}`);
                  socket.emit('join_ticket_room', { ticket_id: ticketIdToJoin });
              }
@@ -1574,7 +1592,7 @@ document.addEventListener('DOMContentLoaded', () => {
          } else {
              console.log("[ensureSocketConnected] Socket is already connected.");
              // If already connected, ensure we are in the correct room if on ticket detail page
-             if (currentPage === 'ticketDetail' && currentTicketId) {
+             if (currentPage === 'ticketdetail' && currentTicketId) { // Use lowercase key
                  console.log(`[ensureSocketConnected] Re-joining room: ${currentTicketId}`);
                  socket.emit('join_ticket_room', { ticket_id: currentTicketId });
              }
@@ -1607,7 +1625,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  data.sender_id = currentUser.user_id;
              }
              // Only append the message if the user is currently viewing the correct ticket detail page
-             if (currentPage === 'ticketDetail' && data.ticket_id === currentTicketId) {
+             if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
                  const chatMessagesDiv = document.getElementById('chat-messages'); // Find div in current content
                  if (chatMessagesDiv) {
                      appendChatMessage(data, chatMessagesDiv); // Append the message UI
@@ -1636,7 +1654,7 @@ document.addEventListener('DOMContentLoaded', () => {
          socket.on('message_deleted', (data) => {
              console.log("[Socket Event] Received 'message_deleted':", data);
              // If viewing the correct ticket, remove the message element
-             if (currentPage === 'ticketDetail' && data.ticket_id === currentTicketId) {
+             if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
                  const chatMessagesDiv = document.getElementById('chat-messages');
                  // Find the specific message element using its timestamp data attribute
                  const messageToRemove = chatMessagesDiv?.querySelector(`.chat-message[data-timestamp="${data.timestamp}"]`);
@@ -1658,7 +1676,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   fetchTickets(); // Re-fetch the list
               }
               // If viewing the specific ticket that was updated, show a notification
-              if (currentPage === 'ticketDetail' && data.ticket_id === currentTicketId) {
+              if (currentPage === 'ticketdetail' && data.ticket_id === currentTicketId) { // Use lowercase key
                   showPopupMessage(ticketMessagePopup, `Ticket status successfully updated to ${data.status}.`);
                   // Optionally, update any status indicator directly on the detail page UI
                   // const statusIndicator = document.getElementById('ticket-detail-status');
@@ -1679,7 +1697,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   fetchTickets();
               }
               // If viewing a ticket detail that might have just been deleted, consider redirecting
-              if (currentPage === 'ticketDetail' && currentTicketId) {
+              if (currentPage === 'ticketdetail' && currentTicketId) { // Use lowercase key
                   // A simple approach is to just redirect, as the current ticket might be gone.
                   // A more robust approach would be to try fetching the current ticket again
                   // and redirecting only if it fails with a 404.
@@ -2132,9 +2150,9 @@ document.addEventListener('DOMContentLoaded', () => {
              if (currentPage === 'dashboard') await loadProductManagementTable(); // Refresh admin table
              if (currentPage === 'products') await fetchProducts(); // Refresh product grid
              // If the user was viewing the detail page of the deleted product, redirect them
-             if (currentPage === 'productDetail' && window.location.hash.includes(`id=${productId}`)) {
+             if (currentPage === 'productdetail' && window.location.hash.includes(`id=${productId}`)) { // Use lowercase key
                  console.log("Deleted product was being viewed, redirecting to products list.");
-                 window.location.hash = '/products';
+                 window.location.hash = '/#products';
              }
 
          } catch (error) {
@@ -2181,9 +2199,9 @@ document.addEventListener('DOMContentLoaded', () => {
               updateHeaderUI(null); // Update header to show login button
               // Clear the main content area (optional, as navigation will reload)
               // if (pageContentContainer) pageContentContainer.innerHTML = '';
-              console.log("[handleLogout] Client-side cleanup complete. Redirecting to /home.");
+              console.log("[handleLogout] Client-side cleanup complete. Redirecting to /#home.");
               // loadingOverlay.classList.remove('active'); // Hide loading state
-              window.location.hash = '/home'; // Navigate to home page
+              window.location.hash = '/#home'; // Navigate to home page
               // Force reload if navigation doesn't trigger content update reliably
               // window.location.reload();
          }
