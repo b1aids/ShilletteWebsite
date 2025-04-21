@@ -2499,13 +2499,16 @@
                 // **Placeholder:** Replace this section with your actual API call
                 // This simulates an API call with a delay
                 try {
-                    // Example API call structure:
-                    /*
-                    const response = await fetch(`${API_BASE_URL}/api/register-product`, { // Your actual endpoint
+                    // Get the selected product ID (assuming you add a dropdown later)
+                    // const productId = document.getElementById('register-product-select').value; // Example ID for dropdown
+                    // if (!productId) { throw new Error("Please select a product to register."); }
+
+                    const response = await fetch(`${API_BASE_URL}/api/register_product`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ orderId, email }),
-                        credentials: 'include' // If your endpoint requires authentication cookies
+                        // Include product_id in the body
+                        body: JSON.stringify({ order_id: orderId, email: email, product_id: "PLACEHOLDER_PRODUCT_ID" }), // <<< SEE NOTE BELOW
+                        credentials: 'include'
                     });
                     const result = await response.json();
 
@@ -2513,35 +2516,22 @@
                         throw new Error(result.error || `HTTP error ${response.status}`);
                     }
 
-                    registrationStatus.textContent = 'Registration successful!';
+                    registrationStatus.textContent = result.message || 'Registration successful!';
                     registrationStatus.classList.add('text-green-400');
-                    showPopupMessage(productMessagePopup, 'Product registered successfully!'); // Show global popup
+                    showPopupMessage(productMessagePopup, result.message || 'Product registered successfully!');
+                    // Refresh user data to show newly registered product in dashboard (if needed)
+                    checkLoginStatus(); // Re-fetches user data including registered products
                     // Optionally close the modal after success
                     setTimeout(() => registerProductModal.classList.remove('active'), 1500);
-                    */
-
-                    // --- Start of Placeholder Simulation ---
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-                    // Simulate success for now
-                    registrationStatus.textContent = 'Registration submitted (Placeholder).';
-                    registrationStatus.classList.add('text-green-400'); // Use green for simulated success
-                    showPopupMessage(productMessagePopup, 'Product registration submitted (Placeholder).');
-                    // registerProductModal.classList.remove('active'); // Keep modal open in placeholder
-                    // --- End of Placeholder Simulation ---
 
                 } catch (error) {
-                    // This block would run if the actual API call fails
                     console.error('Registration failed:', error);
                     registrationStatus.textContent = `Error: ${error.message}`;
                     registrationStatus.classList.add('text-red-400');
                     showPopupMessage(errorMessagePopup, `Registration failed: ${error.message}`, true);
-                } finally {
-                    // Re-enable the button after the process finishes (success or fail)
-                     submitRegistrationButton.disabled = false;
-                     submitRegistrationButton.textContent = 'Submit Registration';
                 }
-            });
-        }
+            })
+        };
         // --- End of Product Registration Listeners ---
 
 
