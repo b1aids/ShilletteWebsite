@@ -903,6 +903,7 @@
 
                 /**
          * Displays the user's registered products in the dashboard.
+         * Reads product.tag (singular string) instead of product.tags (array).
          * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
          */
          function displayRegisteredProducts(productsToDisplay) {
@@ -923,24 +924,22 @@
             }
 
             productsToDisplay.forEach(product => {
-                // --- Add Logging ---
                 console.log(`Displaying product: ${product.name}`, product); // Log the whole product object
-                // --- End Logging ---
 
                 const productElement = document.createElement('div');
-                // Use flex to align items easily
                 productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center justify-between space-x-2 hover:bg-slate-600/50 transition-colors';
                 productElement.dataset.productId = product._id;
                 productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
                 productElement.dataset.orderId = product.order_id || '';
-                const tags = product.tags || [];
+                // --- Read singular 'tag' field ---
+                const tagString = product.tag || ''; // Read product.tag (string)
                 const deviceType = product.device_type || '';
-                productElement.dataset.tags = JSON.stringify(tags);
+                productElement.dataset.tag = tagString; // Store the singular tag
+                // --- End Read singular 'tag' field ---
                 productElement.dataset.deviceType = deviceType;
 
-                // --- Thumbnail and Name container ---
                 const infoContainer = document.createElement('div');
-                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0'; // Allow shrinking
+                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0';
 
                 let thumbnailHtml = '';
                 if (product.thumbnailUrl) {
@@ -953,46 +952,74 @@
                     ${thumbnailHtml}
                     <span class="text-white font-medium pointer-events-none truncate">${productElement.dataset.productName}</span>
                 `;
-                // --- End Thumbnail/Name ---
-
-                // Append info part first
                 productElement.appendChild(infoContainer);
 
-                // --- Check for FIRMWARE tag and Add Button ---
-                const isFirmware = tags.some(tag => String(tag).trim().toUpperCase() === 'FIRMWARE');
-                // --- Add Logging ---
-                console.log(`Product: ${productElement.dataset.productName}, Tags: ${JSON.stringify(tags)}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
-                // --- End Logging ---
+                // --- Check singular 'tag' for FIRMWARE ---
+                const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
+                console.log(`Product: ${productElement.dataset.productName}, Tag: ${tagString}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
+                // --- End Check singular 'tag' ---
 
-                if (isFirmware && deviceType) { // Only add button if it's firmware AND deviceType is known
+                if (isFirmware && deviceType) {
                     const genButton = document.createElement('button');
                     genButton.className = "generate-fw-button flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded";
                     genButton.title = "Generate Firmware";
-                    genButton.textContent = "Generate"; // Shorter text
+                    genButton.textContent = "Generate";
                     genButton.addEventListener('click', (e) => {
-                         e.stopPropagation(); // Prevent card navigation
+                         e.stopPropagation();
                          promptAndStartFirmwareGeneration(product._id, productElement.dataset.productName, productElement.dataset.deviceType);
                      });
-                    // Append button directly to the productElement (flex will handle alignment)
                     productElement.appendChild(genButton);
                 }
-                // --- End Button Add ---
-
 
                  productElement.style.cursor = 'pointer';
-                 // Click listener for navigation (now on the infoContainer)
                  infoContainer.addEventListener('click', (e) => {
-                    // Navigate only if the click is not on the button itself (though button has stopPropagation now)
                     if (!e.target.closest('.generate-fw-button')) {
                        window.location.hash = `/#productDetail?id=${product._id}`;
                     }
                  });
-                 // Context Menu Listener (on the whole element)
                  productElement.addEventListener('contextmenu', showMyProductContextMenu);
 
                 container.appendChild(productElement);
             });
         }
+
+        /**
+         * Shows the context menu for the user's "My Products" list.
+         * Reads productElement.dataset.tag (singular string).
+         * @param {MouseEvent} event - The contextmenu event object.
+         */
+        function showMyProductContextMenu(event) {
+            event.preventDefault(); hideContextMenu();
+            const menuElement = document.getElementById('my-product-context-menu');
+            if (!currentUser?.logged_in || !menuElement) return;
+
+            const productElement = event.target.closest('[data-product-id]');
+            if (!productElement || !productElement.dataset.productId) return;
+
+            contextMenuData.productId = productElement.dataset.productId;
+            contextMenuData.productName = productElement.dataset.productName;
+            contextMenuData.orderId = productElement.dataset.orderId;
+            contextMenuData.deviceType = productElement.dataset.deviceType;
+
+            // --- Check singular tag from dataset ---
+            const tagString = productElement.dataset.tag || '';
+            const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
+            // --- End Check singular tag ---
+
+            const generateFwButton = document.getElementById('context-generate-firmware');
+            if (generateFwButton) {
+                // Hide if not firmware OR if deviceType is missing
+                generateFwButton.classList.toggle('hidden', !isFirmware || !contextMenuData.deviceType);
+            }
+
+            positionContextMenu(menuElement, event);
+            currentContextMenu = menuElement;
+            setTimeout(() => {
+                 document.addEventListener('click', hideContextMenuOnClickOutside);
+                 window.addEventListener('scroll', hideContextMenu, { once: true });
+            }, 0);
+        }
+
 
 
 
