@@ -1900,109 +1900,137 @@
         }
 
         /**
-         * Renders a single product card HTML element.
-         * @param {object} product - The product data object.
+         * Renders a single product card HTML element. (MODIFIED FOR SELLSN EMBED)
+         * Appends the card to the productGrid element.
+         * @param {object} product - The product data object (MUST include sellsnSid and sellsnPid for SellSN button).
          */
         function renderProductCard(product) {
-             if (!productGrid || !product) return; // Ensure grid and product data exist
+            // Ensure the product grid element exists in the DOM
+            const productGrid = document.getElementById('product-grid');
+            if (!productGrid || !product) {
+                console.error("Product grid element not found or product data missing.");
+                return;
+            }
 
-             const card = document.createElement('div');
-             card.className = `product-card flex flex-col`; // Base classes
-             card.dataset.productId = product._id; // Store product ID for later use
+            const card = document.createElement('div');
+            card.className = `product-card flex flex-col`; // Base classes
+            card.dataset.productId = product._id; // Store product ID for potential non-purchase interactions
 
-             // Determine border style based on tagColor and customBorderHex
-             const tagColor = product.tagColor || 'gray';
-             const customHex = product.customBorderHex;
-             let borderClasses = '';
-             let inlineStyle = '';
-             let hoverStyleVar = '';
+            // --- Determine Border Style ---
+            const tagColor = product.tagColor || 'gray';
+            const customHex = product.customBorderHex;
+            let borderClasses = '';
+            let inlineStyle = '';
+            let hoverStyleVar = '';
 
-             // Check for valid custom hex color
-             if (customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
-                 borderClasses = 'custom-border'; // Use custom border class
-                 inlineStyle = `border-color: ${customHex};`; // Set border color directly
-                 // Define CSS variable for custom hover effect shadow
-                 hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
-                 card.style.cssText = inlineStyle + hoverStyleVar; // Apply inline styles
-                 card.classList.add(borderClasses);
-             } else if (tagColor !== 'custom') {
-                 // Use predefined gradient border class
-                 borderClasses = `card-gradient-border ${tagColor}-border`;
-                 card.classList.add(...borderClasses.split(' '));
-             } else {
-                  // Fallback to gray gradient if 'custom' is selected but hex is invalid/missing
-                  borderClasses = `card-gradient-border gray-border`;
-                  card.classList.add(...borderClasses.split(' '));
-             }
+            if (customHex && /^#[0-9A-F]{6}$/i.test(customHex)) {
+                borderClasses = 'custom-border';
+                inlineStyle = `border-color: ${customHex};`;
+                hoverStyleVar = `--custom-hover-shadow: 0 0 8px 1px ${customHex}99, 0 0 16px 4px ${customHex}66, 0 0 32px 8px ${customHex}33;`;
+                card.style.cssText = inlineStyle + hoverStyleVar;
+                card.classList.add(borderClasses);
+            } else if (tagColor !== 'custom') {
+                borderClasses = `card-gradient-border ${tagColor}-border`;
+                card.classList.add(...borderClasses.split(' '));
+            } else {
+                borderClasses = `card-gradient-border gray-border`; // Fallback
+                card.classList.add(...borderClasses.split(' '));
+            }
 
-             // Determine tag background and text color (fallback to gray if custom hex is invalid)
-             const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
-             const tagBgClass = `bg-${displayTagColor}-500/20`; // Tailwind class for background
-             const tagTextClass = `text-${displayTagColor}-300`; // Tailwind class for text
+            // Determine tag display color (fallback to gray if custom hex is invalid)
+            const displayTagColor = (tagColor === 'custom' && !customHex) ? 'gray' : tagColor;
+            const tagBgClass = `bg-${displayTagColor}-500/20`;
+            const tagTextClass = `text-${displayTagColor}-300`; // Adjust text color based on your theme if needed
 
-             // Create thumbnail image or placeholder
-             let thumbnailElement = null;
-             const placeholderDiv = document.createElement('div');
-             placeholderDiv.className = 'product-thumbnail-placeholder';
-             placeholderDiv.style.display = 'none'; // Hide initially
-             placeholderDiv.innerHTML = '<span>Image not found</span>';
+            // --- Create Thumbnail or Placeholder ---
+            let thumbnailElement = null;
+            const placeholderDiv = document.createElement('div');
+            placeholderDiv.className = 'product-thumbnail-placeholder';
+            placeholderDiv.style.display = 'none'; // Hide initially
+            placeholderDiv.innerHTML = '<span class="text-xs">Image not found</span>'; // Placeholder text
 
-             if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
-                 thumbnailElement = document.createElement('img');
-                 thumbnailElement.src = product.thumbnailUrl;
-                 thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
-                 thumbnailElement.className = 'product-thumbnail';
-                 // Add error handler to show placeholder if image fails to load
-                 thumbnailElement.onerror = () => {
-                     if (thumbnailElement) thumbnailElement.style.display = 'none'; // Hide broken image
-                     placeholderDiv.style.display = 'flex'; // Show placeholder
-                 };
-             } else {
-                 // No thumbnail URL provided, show placeholder immediately
-                 placeholderDiv.style.display = 'flex';
-                 thumbnailElement = null;
-             }
+            if (product.thumbnailUrl && product.thumbnailUrl.trim() !== '') {
+                thumbnailElement = document.createElement('img');
+                thumbnailElement.src = product.thumbnailUrl;
+                thumbnailElement.alt = `${product.name || 'Product'} thumbnail`;
+                thumbnailElement.className = 'product-thumbnail';
+                thumbnailElement.loading = 'lazy'; // Add lazy loading
+                thumbnailElement.onerror = () => {
+                    if (thumbnailElement) thumbnailElement.style.display = 'none';
+                    placeholderDiv.style.display = 'flex'; // Show placeholder on error
+                };
+            } else {
+                placeholderDiv.style.display = 'flex'; // Show placeholder if no URL
+            }
 
-             // Create the inner content div
-             const innerDiv = document.createElement('div');
-             innerDiv.className = 'product-card-inner'; // Inner padding and flex layout
-             innerDiv.innerHTML = `
-                 <div class="flex justify-between items-center mb-4">
-                     <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded">${product.tag || 'PRODUCT'}</span>
-                 </div>
-                 <h3 class="text-xl font-semibold text-white mb-2">${product.name || 'Unnamed Product'}</h3>
-                 <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
-                 <ul class="text-sm text-gray-400 space-y-2 mb-6 flex-grow">
-                     ${(product.features || []).map(feature => `<li class="flex items-center"><svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${feature}</li>`).join('')}
-                     ${!(product.features && product.features.length > 0) ? '<li class="text-gray-500">No features listed.</li>' : ''}
-                 </ul>
-                 <div class="mt-auto space-y-3 pt-4 border-t border-slate-700/50">
-                     ${product.paymentLink ? `<button class="purchase-button" data-product-id="${product._id}" data-payment-link="${product.paymentLink}">Pay with PayPal</button>` : '<button class="purchase-button" disabled>Purchase Unavailable</button>'}
-                 </div>
-             `;
+            // --- Create Inner Content Div ---
+            const innerDiv = document.createElement('div');
+            innerDiv.className = 'product-card-inner'; // Inner padding and flex layout
 
-             // Append thumbnail/placeholder and inner content to the card
-             if (thumbnailElement) {
-                 card.appendChild(thumbnailElement);
-             }
-             card.appendChild(placeholderDiv);
-             card.appendChild(innerDiv);
+            innerDiv.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <span class="${tagBgClass} ${tagTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full">${product.tag || 'PRODUCT'}</span>
+                    </div>
+                <h3 class="text-xl font-semibold text-white mb-2 truncate" title="${product.name || ''}">${product.name || 'Unnamed Product'}</h3>
+                <p class="text-3xl font-bold text-white mb-4">$${product.price?.toFixed(2) || 'N/A'}</p>
+                <ul class="text-sm text-gray-400 space-y-1.5 mb-6 flex-grow min-h-[50px]"> ${(product.features || []).slice(0, 3).map(feature => `<li class="flex items-start"><svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> <span class="break-words">${feature}</span></li>`).join('')}
+                    ${(product.features?.length || 0) > 3 ? '<li class="text-xs text-gray-500 mt-1">... and more</li>' : ''}
+                    ${!(product.features && product.features.length > 0) ? '<li class="text-gray-500 text-xs italic">No features listed.</li>' : ''}
+                </ul>
+            `; // Limited features display for brevity
 
-             // Add click listener to the card (navigate to detail page)
-             // Ignore clicks on the purchase button itself
-             card.addEventListener('click', (event) => {
-                 if (event.target.closest('.purchase-button')) {
-                     handlePurchaseClick(event); // Handle purchase separately
-                     return;
-                 }
-                 const productId = card.dataset.productId;
-                 if (productId) {
-                     window.location.hash = `/#productDetail?id=${productId}`; // Navigate
-                 }
-             });
+            // --- Button Generation (Using SellSN Embed) ---
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'mt-auto space-y-3 pt-4 border-t border-slate-700/50';
 
-             // Append the completed card to the product grid
-             productGrid.appendChild(card);
+            // Check if SellSN IDs are available for this product from your API data
+            if (product.sellsnSid && product.sellsnPid) {
+                // Create the SellSN button
+                const sellsnButton = document.createElement('button');
+                // Use consistent styling, assuming 'purchase-button' is defined in your CSS/Tailwind
+                sellsnButton.className = 'purchase-button w-full bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed';
+                sellsnButton.textContent = 'Purchase Now'; // Or 'View Options', 'Buy Now', etc.
+                sellsnButton.dataset.sellsnSid = product.sellsnSid; // Add Store ID from product data
+                sellsnButton.dataset.sellsnPid = product.sellsnPid; // Add Product ID from product data
+                // DO NOT add your custom handlePurchaseClick listener here - SellSN's script handles it
+                buttonContainer.appendChild(sellsnButton);
+            } else {
+                // Fallback: Show unavailable button if SellSN IDs are missing
+                const unavailableButton = document.createElement('button');
+                unavailableButton.className = 'purchase-button w-full bg-gray-600 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed';
+                unavailableButton.textContent = 'Purchase Unavailable';
+                unavailableButton.disabled = true;
+                buttonContainer.appendChild(unavailableButton);
+                // Optionally log a warning if IDs are expected but missing
+                // console.warn(`SellSN IDs missing for product: ${product.name || product._id}`);
+            }
+
+            innerDiv.appendChild(buttonContainer); // Add button container to inner content
+
+            // --- Append Thumbnail/Placeholder and Inner Content ---
+            if (thumbnailElement) {
+                card.appendChild(thumbnailElement);
+            }
+            card.appendChild(placeholderDiv); // Add placeholder (might be hidden if image loads)
+            card.appendChild(innerDiv);
+
+            // --- Add Click Listener for Navigation (Optional, avoid if clicking button is primary action) ---
+            // This listener navigates to the detail page when clicking the card itself (but not the button)
+            card.addEventListener('click', (event) => {
+                // Check if the click target is the button itself or inside it
+                if (event.target.closest('button[data-sellsn-sid]')) {
+                    // Click was on the SellSN button, let SellSN's script handle it.
+                    return;
+                }
+                // Otherwise, navigate to the product detail page
+                const productId = card.dataset.productId;
+                if (productId) {
+                    window.location.hash = `/#productDetail?id=${productId}`; // Navigate
+                }
+            });
+
+            // --- Append the completed card to the product grid ---
+            productGrid.appendChild(card);
         }
 
 
