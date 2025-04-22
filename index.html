@@ -2010,17 +2010,50 @@
          * Handles clicks on the purchase button within a product card.
          * @param {Event} event - The click event object.
          */
-        function handlePurchaseClick(event) {
+        /**
+         * Handles clicks on the purchase button within a product card. (MODIFIED)
+         * Redirects the user to the payment link.
+         * @param {Event} event - The click event object.
+         */
+         function handlePurchaseClick(event) {
             event.stopPropagation(); // Prevent card click listener from firing
             const button = event.target.closest('.purchase-button');
-            if (!button) return; // Should always find the button, but safety check
+            if (!button || button.disabled) return; // Ignore clicks on disabled buttons
+
             const productId = button.dataset.productId;
-            const paymentLink = button.dataset.paymentLink;
-            console.log(`Purchase clicked for product ID: ${productId}, Link/ID: ${paymentLink}`);
+            const paymentLink = button.dataset.paymentLink; // Get the link stored from the admin panel
+
+            console.log(`Purchase clicked for product ID: ${productId}, Payment Link/ID: ${paymentLink}`);
+
             if (paymentLink) {
-                 // Placeholder: In a real app, you'd integrate with PayPal SDK or redirect
-                 showPopupMessage(paymentMessage, `Initiating purchase for product ${productId}... (Integration needed)`);
-                 // Example: window.location.href = paymentLink; // If it's a direct link
+                // --- Redirect the user to the payment platform ---
+                try {
+                    // Basic check if it looks like a full URL
+                    if (paymentLink.startsWith('http://') || paymentLink.startsWith('https://')) {
+                        // Show a brief message before redirecting
+                        showPopupMessage(paymentMessage, `Redirecting to payment for product ${productId}...`);
+                        // Redirect the main window
+                        window.location.href = paymentLink;
+                    } else {
+                        // If it's not a full URL, it might be an ID needing specific handling
+                        // (e.g., for PayPal SDK, Stripe Checkout JS).
+                        // This example assumes it's a direct link.
+                        // You might need platform-specific JS here.
+                        console.warn("Payment link does not look like a full URL:", paymentLink);
+                        showPopupMessage(errorMessagePopup, 'Invalid payment configuration for this product.', true);
+                        // Example for a platform needing JS (replace with actual platform code):
+                        // if (typeof platformCheckout !== 'undefined') {
+                        //     platformCheckout.open({ product: paymentLink });
+                        // } else {
+                        //     showPopupMessage(errorMessagePopup, 'Payment integration not loaded.', true);
+                        // }
+                    }
+                } catch (error) {
+                     console.error("Error during payment redirect:", error);
+                     showPopupMessage(errorMessagePopup, 'Could not initiate payment.', true);
+                }
+                // ----------------------------------------------------
+
             } else {
                  showPopupMessage(errorMessagePopup, 'Payment link is missing for this product.', true);
             }
