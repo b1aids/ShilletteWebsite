@@ -2958,9 +2958,7 @@
 			     const featuresInput = document.getElementById('product-edit-features');
 			     const paymentLinkInput = document.getElementById('product-edit-paymentLink');
 			     const deviceTypeInput = document.getElementById('product-edit-device-type');
-			     // --- Get firmware directory input ---
 			     const firmwareDirInput = document.getElementById('product-edit-firmware-dir');
-			     // --- End Get ---
 			
 			     if (!form || !saveButton || !firmwareDirInput) return; // Added check for new input
 			
@@ -3451,12 +3449,89 @@
 			
 			
 			// --- Initial Load ---
-			document.addEventListener('DOMContentLoaded', () => {
-			    console.log("DOM fully loaded.");
-			    createSnowflakes(); // Initialize background effect
-			    checkLoginStatus(); // Start the process: Check login -> Load Config -> Navigate
-			    // Note: runNavigation() is called inside loadSiteConfigAndNavigate after both checks are complete
-			});
+			// --- Initial Load ---
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log("DOM fully loaded.");
+                createSnowflakes(); // Initialize background effect
+
+                // --- MOVE EVENT LISTENERS SETUP INSIDE HERE ---
+
+                // Login/Logout
+                if (loginButton) { // Add null checks for safety
+                    loginButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = loginButton.href; });
+                }
+                if (logoutButton) logoutButton.addEventListener('click', handleLogout);
+                if (dashboardLogoutButton) dashboardLogoutButton.addEventListener('click', handleLogout);
+
+                // Navigation
+                window.addEventListener('hashchange', runNavigation);
+
+                // Ticket Creation Form
+                if (createTicketForm) createTicketForm.addEventListener('submit', async (event) => { /* ... existing code ... */ });
+
+                // Chat Input Form
+                if (chatInputForm) chatInputForm.addEventListener('submit', (event) => { /* ... existing code ... */ });
+
+                // Modals
+                if (modalCloseButton) modalCloseButton.addEventListener('click', hideUserInfoModal);
+                if (userInfoModal) userInfoModal.addEventListener('click', (event) => { if (event.target === userInfoModal) hideUserInfoModal(); });
+                if (firmwareModalCloseButton) firmwareModalCloseButton.addEventListener('click', closeFirmwareGenerateModal);
+                if (firmwareModal) firmwareModal.addEventListener('click', (event) => { if (event.target === firmwareModal) closeFirmwareGenerateModal(); });
+                if (productModalCloseButton) productModalCloseButton.addEventListener('click', closeProductEditModal);
+                if (productEditModal) productEditModal.addEventListener('click', (event) => { if (event.target === productEditModal) closeProductEditModal(); });
+                if (registerModalCloseButton) registerModalCloseButton.addEventListener('click', () => { if (registerProductModal) registerProductModal.classList.remove('active'); });
+                if (registerProductModal) registerProductModal.addEventListener('click', (event) => { if (event.target === registerProductModal) registerProductModal.classList.remove('active'); });
+
+                // Context Menus Actions
+                if (contextDeleteButton) contextDeleteButton.addEventListener('click', deleteChatMessage);
+                if (contextUserInfoButton) contextUserInfoButton.addEventListener('click', () => { /* ... existing code ... */ });
+                if (contextCloseTicketButton) contextCloseTicketButton.addEventListener('click', closeTicket);
+                if (contextReopenTicketButton) contextReopenTicketButton.addEventListener('click', reopenTicket);
+                if (contextDeleteTicketButton) contextDeleteTicketButton.addEventListener('click', deleteTicket);
+                if (myProductViewOrderIdButton) myProductViewOrderIdButton.addEventListener('click', handleViewOrderId);
+                if (adminDeleteProductButton) adminDeleteProductButton.addEventListener('click', () => { /* ... existing code ... */ });
+                if (adminEditProductButton) adminEditProductButton.addEventListener('click', () => { /* ... existing code ... */ });
+                if (myProductUnregisterButton) myProductUnregisterButton.addEventListener('click', handleUnregisterProduct);
+                if (myProductGotoButton) myProductGotoButton.addEventListener('click', () => { /* ... existing code ... */ });
+                if (generateFirmwareButton) generateFirmwareButton.addEventListener('click', () => { /* ... existing code ... */ });
+
+                // Mobile Menu
+                if (mobileMenuButton && mobileMenuNav) mobileMenuButton.addEventListener('click', () => mobileMenuNav.classList.toggle('hidden'));
+
+                // Admin: Site Config Form
+                if (siteConfigForm) siteConfigForm.addEventListener('submit', handleSaveSiteConfig);
+                if (addHeaderLinkButton) addHeaderLinkButton.addEventListener('click', () => addHeaderLinkInput());
+
+                // Admin: Product Management
+                if (addProductButton) addProductButton.addEventListener('click', () => openProductEditModal());
+                if (productEditForm) {
+                    productEditForm.addEventListener('submit', handleSaveProduct); // Save product on submit
+                    console.log("Event listener for handleSaveProduct attached to productEditForm."); // Confirm attachment
+                } else {
+                    console.error("Could not find productEditForm to attach listener!");
+                }
+                if (productEditTagColorSelect) productEditTagColorSelect.addEventListener('change', toggleCustomHexInput);
+                if (firmwareGenerateForm) firmwareGenerateForm.addEventListener('submit', handleFirmwareGenerateSubmit);
+
+                // Admin: Product Thumbnail File Input
+                if (productEditThumbnailButton && productEditThumbnailFileInput) {
+                    productEditThumbnailButton.addEventListener('click', () => productEditThumbnailFileInput.click());
+                }
+                if (productEditThumbnailFileInput && productEditThumbnailFilename) {
+                    productEditThumbnailFileInput.addEventListener('change', (event) => { /* ... existing code ... */ });
+                }
+
+                // Product Registration Modal Listeners
+                if (registerProductButton) registerProductButton.addEventListener('click', () => { /* ... existing code ... */ });
+                if (registerProductForm) registerProductForm.addEventListener('submit', async (event) => { /* ... existing code ... */ });
+
+                // --- END MOVED EVENT LISTENERS ---
+
+                // Now run the initial logic that depends on the DOM and potentially user state
+                checkLoginStatus(); // Start the process: Check login -> Load Config -> Navigate
+                // Note: runNavigation() is called inside loadSiteConfigAndNavigate after both checks are complete
+
+            }); // End of DOMContentLoaded
 			
 		</script>
 	</body>
