@@ -250,29 +250,30 @@
                                 <input type="number" id="product-edit-stock" step="1" min="0" placeholder="e.g., 100" class="admin-input-field">
                             </div>
                         </div>
-                        <div>
-                            <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
-                            <input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
-                        </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label for="product-edit-tagColor" class="block text-sm font-medium text-gray-300 mb-1">Tag/Border Color</label>
-                                <select id="product-edit-tagColor" class="admin-input-field">
-                                    <option value="gray">Gray</option>
-                                    <option value="orange">Orange</option>
-                                    <option value="blue">Blue</option>
-                                    <option value="green">Green</option>
-                                    <option value="red">Red</option>
-                                    <option value="purple">Purple</option>
-                                    <option value="yellow">Yellow</option>
-                                    <option value="pink">Pink</option>
-                                    <option value="teal">Teal</option>
-                                    <option value="custom">Custom HEX</option>
-                                </select>
+                                <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
+                                <input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
                             </div>
-                            <div id="custom-hex-input-container" class="hidden">
-                                <label for="product-edit-customHex" class="block text-sm font-medium text-gray-300 mb-1">Custom HEX Color</label>
-                                <input type="text" id="product-edit-customHex" placeholder="#RRGGBB" class="admin-input-field">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-1">Tag/Border Color</label>
+                                 <div class="grid grid-cols-1 @[600px]:grid-cols-2 gap-2">
+                                     <select id="product-edit-tagColor" class="admin-input-field">
+                                         <option value="gray">Gray</option>
+                                         <option value="orange">Orange</option>
+                                         <option value="blue">Blue</option>
+                                         <option value="green">Green</option>
+                                         <option value="red">Red</option>
+                                         <option value="purple">Purple</option>
+                                         <option value="yellow">Yellow</option>
+                                         <option value="pink">Pink</option>
+                                         <option value="teal">Teal</option>
+                                         <option value="custom">Custom HEX</option>
+                                     </select>
+                                     <div id="custom-hex-input-container" class="hidden">
+                                         <input type="text" id="product-edit-customHex" placeholder="#RRGGBB" class="admin-input-field">
+                                     </div>
+                                 </div>
                             </div>
                         </div>
                         <div>
