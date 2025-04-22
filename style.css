@@ -1,0 +1,339 @@
+/* Tailwind Directives and Custom CSS */
+@keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
+@keyframes scaleUpDown { 0%, 100% { transform: scaleY(0.4); } 20% { transform: scaleY(1.0); } }
+
+body {
+    font-family: 'Inter', sans-serif;
+    /* Apply Tailwind classes via @apply */
+    @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
+    background-size: 200% 200%;
+    animation: animateGradient 25s ease infinite;
+    overflow-x: hidden; position: relative; z-index: 0;
+}
+body::before {
+    content: ''; position: fixed; inset: 0; background-image: url('images/background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; opacity: 0.2; z-index: -1;
+}
+
+#snow-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; overflow: hidden;
+}
+.snowflake {
+    position: absolute; background-color: white; border-radius: 50%; pointer-events: none; animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+
+/* Card Gradient Border */
+.card-gradient-border::before {
+    content: ''; position: absolute; inset: 0; border-radius: 0.5rem; /* Corresponds to rounded-lg */ padding: 2px; background-size: 300% 300%; animation: spinBorder 5s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1;
+}
+.card-gradient-border.orange-border::before { background-image: linear-gradient(145deg, #f97316, #9a3412, #000000); }
+.card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; }
+.card-gradient-border.blue-border::before { background-image: linear-gradient(145deg, #3b82f6, #1e40af, #000000); animation-duration: 5.5s; }
+.card-gradient-border.green-border::before { background-image: linear-gradient(145deg, #22c55e, #15803d, #000000); animation-duration: 6.5s; }
+.card-gradient-border.red-border::before { background-image: linear-gradient(145deg, #ef4444, #991b1b, #000000); animation-duration: 4.5s; }
+.card-gradient-border.purple-border::before { background-image: linear-gradient(145deg, #a855f7, #6b21a8, #000000); animation-duration: 5.8s; }
+.card-gradient-border.yellow-border::before { background-image: linear-gradient(145deg, #eab308, #a16207, #000000); animation-duration: 5.2s; }
+.card-gradient-border.pink-border::before { background-image: linear-gradient(145deg, #ec4899, #be185d, #000000); animation-duration: 5.6s; }
+.card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; }
+.card-gradient-border.custom-border { border-width: 2px; border-style: solid; }
+
+/* Product Card Styling */
+.product-card {
+    @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0;
+    overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; cursor: pointer;
+}
+.product-card:not(.custom-border) { @apply p-0; } /* Ensure no padding on the card itself */
+.product-card.custom-border { @apply p-0; } /* Ensure no padding on the card itself */
+.product-card-inner { @apply p-6 flex flex-col flex-grow; } /* Apply padding to inner container */
+.product-card:hover { transform: scale(1.03); }
+
+/* Hover effects for different border colors */
+.product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); }
+.product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175, 0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); }
+.product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); }
+.product-card.card-gradient-border.green-border:hover { box-shadow: 0 0 8px 1px rgba(34, 197, 94, 0.6), 0 0 16px 4px rgba(34, 197, 94, 0.4), 0 0 32px 8px rgba(34, 197, 94, 0.2); }
+.product-card.card-gradient-border.red-border:hover { box-shadow: 0 0 8px 1px rgba(239, 68, 68, 0.6), 0 0 16px 4px rgba(239, 68, 68, 0.4), 0 0 32px 8px rgba(239, 68, 68, 0.2); }
+.product-card.card-gradient-border.purple-border:hover { box-shadow: 0 0 8px 1px rgba(168, 85, 247, 0.6), 0 0 16px 4px rgba(168, 85, 247, 0.4), 0 0 32px 8px rgba(168, 85, 247, 0.2); }
+.product-card.card-gradient-border.yellow-border:hover { box-shadow: 0 0 8px 1px rgba(234, 179, 8, 0.6), 0 0 16px 4px rgba(234, 179, 8, 0.4), 0 0 32px 8px rgba(234, 179, 8, 0.2); }
+.product-card.card-gradient-border.pink-border:hover { box-shadow: 0 0 8px 1px rgba(236, 72, 153, 0.6), 0 0 16px 4px rgba(236, 72, 153, 0.4), 0 0 32px 8px rgba(236, 72, 153, 0.2); }
+.product-card.card-gradient-border.teal-border:hover { box-shadow: 0 0 8px 1px rgba(20, 184, 166, 0.6), 0 0 16px 4px rgba(20, 184, 166, 0.4), 0 0 32px 8px rgba(20, 184, 166, 0.2); }
+.product-card.custom-border:hover {
+     box-shadow: var(--custom-hover-shadow, 0 0 8px 1px rgba(255, 255, 255, 0.6), 0 0 16px 4px rgba(255, 255, 255, 0.4), 0 0 32px 8px rgba(255, 255, 255, 0.2));
+}
+
+.product-thumbnail {
+    @apply w-full h-40 object-cover rounded-t-lg;
+}
+.product-thumbnail-placeholder {
+    @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500;
+}
+
+/* Page Titles */
+#dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2, #product-detail-page-content h2 {
+    @apply text-3xl md:text-4xl font-bold text-white text-center mb-12;
+}
+/* General Card Styles */
+#dashboard-content .dashboard-card,
+#tickets-page-content .ticket-card,
+#ticket-detail-content .ticket-card,
+.admin-section,
+.product-detail-card { /* Added .product-detail-card for consistency */
+    @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6;
+}
+
+/* Buttons */
+.paypal-button, .purchase-button {
+    @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.buy-now-button {
+    @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md;
+}
+.add-basket-button {
+    @apply bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md;
+}
+
+/* Popup Messages */
+#payment-message, #ticket-message, #error-message, #config-message, #product-message {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
+}
+#payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show {
+    opacity: 1;
+}
+#payment-message, #ticket-message, #config-message, #product-message {
+    @apply bg-green-600;
+}
+#error-message {
+    @apply bg-red-600;
+}
+
+/* Loading Overlay */
+#loading-overlay {
+    position: fixed; inset: 0;
+    @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none;
+}
+#loading-overlay.active {
+    @apply opacity-100 pointer-events-auto;
+}
+.loader {
+    display: flex; align-items: center; justify-content: space-between; width: 50px; height: 25px;
+}
+.loader-bar {
+    display: block; width: 8px; height: 100%; background-color: #f97316; border-radius: 4px; animation: scaleUpDown 1.2s infinite ease-in-out;
+}
+.loader-bar:nth-child(2) { animation-delay: 0.2s; }
+.loader-bar:nth-child(3) { animation-delay: 0.4s; }
+
+/* Page Section Visibility */
+.page-section {
+    display: none;
+}
+.page-section.active {
+    display: block;
+}
+
+/* Ticket List Styles */
+.ticket-list-item {
+    @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors;
+}
+.status-open {
+    @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full;
+}
+.status-closed {
+    @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full;
+}
+#create-ticket-status {
+    @apply text-sm mt-4 mb-4 text-center h-6; /* Ensure height is consistent */
+}
+#create-ticket-status.success { @apply text-green-400; }
+#create-ticket-status.error { @apply text-red-400; }
+#moderator-management-view h3 { @apply text-xl font-semibold text-white mb-4; }
+#moderator-management-view details summary { @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors; }
+#moderator-management-view details[open] summary { @apply text-orange-400; }
+.ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2; } /* Added padding-right for scrollbar space */
+
+/* Chat Styles */
+#chat-messages {
+    @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2;
+}
+.chat-message {
+    @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors;
+}
+.chat-message .username {
+    @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline;
+}
+.chat-message .timestamp {
+    @apply text-xs text-gray-500 ml-2 whitespace-nowrap;
+}
+#chat-input-form {
+    @apply flex space-x-2;
+}
+#chat-input {
+    @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500;
+}
+#send-chat-button {
+    @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300;
+}
+
+/* Modal Styles */
+.modal {
+    @apply fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300;
+}
+.modal.active {
+    @apply opacity-100 pointer-events-auto;
+}
+.modal-content {
+    @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative;
+}
+#product-edit-modal .modal-content, #firmware-generate-modal .modal-content { /* Added firmware modal */
+    @apply max-w-lg;
+}
+.modal-close-button {
+    @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors;
+}
+#modal-user-roles {
+    @apply flex flex-wrap gap-1 mt-3;
+}
+
+/* Context Menu Styles */
+#chat-context-menu, #ticket-context-menu, #admin-product-context-menu, #my-product-context-menu { /* Added admin/my product menus */
+    @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden;
+}
+.context-menu-item {
+    @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left;
+}
+.context-menu-item.hidden { /* Class to hide specific items */
+    display: none;
+}
+.context-menu-item.delete { /* Specific styling for delete actions */
+    @apply hover:bg-red-600 text-red-400 hover:text-white;
+}
+/* Context Menu for Admin Product Table (Optional specific styles) */
+#admin-product-context-menu .edit { @apply hover:bg-blue-600; }
+
+/* Mobile Menu Styles */
+#mobile-menu {
+    @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden;
+}
+.mobile-menu-link {
+    @apply block text-gray-300 hover:text-white transition duration-200 py-1;
+}
+
+/* Admin Section Styles */
+.admin-section h3 {
+    @apply text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2;
+}
+.admin-form label {
+    @apply block text-sm font-medium text-gray-300 mb-1;
+}
+/* Common input styles for admin forms & registration modal */
+.admin-form > div > input[type="text"],
+.admin-form > div > input[type="number"],
+.admin-form > div > input[type="color"],
+.admin-form > div > input[type="email"], /* Added type email */
+.admin-form > div > textarea,
+.admin-form > div > select,
+.admin-form > .grid > div > input[type="text"], /* For grid layouts */
+.admin-form > .grid > div > select, /* For grid layouts */
+#register-product-form input[type="text"], /* Target registration modal */
+#register-product-form input[type="email"] { /* Target registration modal */
+     @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4;
+}
+/* Styles for Firmware modal inputs */
+#firmware-generate-form > div > input[type="text"],
+#firmware-generate-form > div > select {
+    @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4;
+}
+.admin-form .link-group { /* Specific style for header link inputs */
+    @apply flex items-center space-x-2 mb-2;
+}
+.admin-form .link-group button { /* Remove button for header links */
+    @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0;
+}
+/* Admin form submit buttons */
+.admin-form button[type="submit"] {
+    @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50;
+}
+/* Admin form utility buttons (like Add Link) */
+.admin-form button[type="button"] {
+    @apply bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300;
+}
+/* Style for Select PNG button in product edit */
+#product-edit-thumbnail-button {
+     @apply bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium py-1 px-3 rounded transition duration-300;
+}
+
+/* Admin Product List Table */
+#product-list-table {
+    @apply w-full text-sm text-left text-gray-400 mt-4;
+}
+#product-list-table thead {
+    @apply text-xs text-gray-300 uppercase bg-slate-700/50;
+}
+#product-list-table th, #product-list-table td {
+    @apply px-4 py-3;
+}
+#product-list-table tbody tr {
+    @apply border-b border-slate-700 hover:bg-slate-700/50;
+}
+#product-list-table .actions button {
+    @apply text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200;
+}
+#product-list-table .actions .edit-btn {
+    @apply bg-blue-600 hover:bg-blue-700 text-white;
+}
+#product-list-table .actions .delete-btn {
+    @apply bg-red-600 hover:bg-red-700 text-white;
+}
+#product-list-status {
+    @apply text-sm text-gray-500 mt-4 text-center; /* Status message below table */
+}
+
+/* Role Span Styling */
+.role-span {
+    @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block;
+}
+
+/* Product Detail Page Specific Styles */
+#product-detail-page-content .detail-card { /* Specific card style for detail page if needed, else covered by general card style */
+    @apply bg-slate-800/70 backdrop-blur-sm p-5 rounded-lg shadow-lg;
+}
+#product-detail-image {
+    @apply w-full aspect-video object-cover rounded-lg mb-6 shadow-lg;
+}
+.star-rating span { /* If using span wrappers for stars */
+    @apply text-yellow-400 text-lg;
+}
+.quantity-selector button {
+    @apply bg-slate-600 hover:bg-slate-500 text-white font-bold w-8 h-8 rounded-md transition duration-200;
+}
+.quantity-selector input {
+    @apply w-12 text-center bg-slate-700 border border-slate-600 rounded-md py-1 mx-2 text-white;
+}
+.review-card {
+    @apply bg-slate-700/50 p-4 rounded-md;
+}
+
+/* Style for My Products list items */
+#dashboard-my-products-list .my-product-item {
+    @apply bg-slate-700/50 p-3 rounded-md flex items-center justify-between space-x-3 hover:bg-slate-600/50 transition-colors cursor-pointer;
+}
+#dashboard-my-products-list .my-product-item img {
+    @apply w-10 h-10 rounded object-cover flex-shrink-0;
+}
+#dashboard-my-products-list .my-product-item .details {
+    @apply flex-grow;
+}
+#dashboard-my-products-list .my-product-item .product-name {
+    @apply text-white font-medium;
+}
+#dashboard-my-products-list .my-product-item .registration-info {
+    @apply text-xs text-gray-400;
+}
+#dashboard-my-products-list .my-product-item .action-button {
+    @apply ml-auto bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium py-1 px-3 rounded transition duration-300 flex-shrink-0;
+}
+#dashboard-my-products-list .my-product-item .action-button.generate-btn {
+    @apply bg-blue-600 hover:bg-blue-700; /* Different color for generate button */
+}
