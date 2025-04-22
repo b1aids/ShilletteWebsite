@@ -1458,29 +1458,51 @@
                  fetchProducts();
             // Inside navigateTo function...
             } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
-                console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
-                displayUserRoles(currentUser.roles); // Display roles
+                 console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
+                 displayUserRoles(currentUser.roles); // Display roles
 
-                const myRegisteredDetails = currentUser.registered_product_details || [];
-                console.log('[navigateTo Dashboard] myRegisteredDetails:', myRegisteredDetails); // <-- ADD LOG
+                 // --- MODIFY THIS BLOCK ---
+                 // Get detailed registration info from user object
+                 const myRegisteredDetails = currentUser.registered_product_details || [];
 
-                fetchAllProducts().then(allProducts => {
-                    console.log('[navigateTo Dashboard] allProducts:', allProducts); // <-- ADD LOG
-                    if (allProducts) {
-                        const productsToDisplay = allProducts
-                            .map(p => {
-                                const registration = myRegisteredDetails.find(reg => reg.product_id === p._id);
-                                return registration ? { ...p, order_id: registration.order_id, product_name: registration.product_name || p.name } : null;
-                            })
-                            .filter(p => p !== null);
+                 // Fetch all products to get full details like name, thumbnail
+                 fetchAllProducts().then(allProducts => {
+                     if (allProducts) {
+                         // Map through all products and add order_id if the user is registered
+                         const productsToDisplay = allProducts
+                             .map(p => {
+                                 // Find the corresponding registration detail for this product
+                                 const registration = myRegisteredDetails.find(reg => reg.product_id === p._id);
+                                 // If found, return the product object merged with the order_id
+                                 // Use the product name from the registration if needed, or from the product itself
+                                 return registration ? {
+                                     ...p, // Spread existing product details (name, price, thumbnail etc.)
+                                     order_id: registration.order_id, // Add the order_id from the registration
+                                     product_name: registration.product_name || p.name // Optionally use name from registration
+                                     } : null; // Return null if user hasn't registered this product
+                             })
+                             .filter(p => p !== null); // Remove null entries (non-registered products)
 
-                        console.log('[navigateTo Dashboard] productsToDisplay:', productsToDisplay); // <-- ADD LOG
-                        displayRegisteredProducts(productsToDisplay); // Pass filtered data
-                    } else {
-                        displayRegisteredProducts(null);
-                    }
-                });
+                         // Pass the combined & filtered data to the display function
+                         displayRegisteredProducts(productsToDisplay);
+                     } else {
+                         // Handle case where fetching all products failed
+                         displayRegisteredProducts(null); // Pass null to indicate error
+                     }
+                 });
+                 // --- END MODIFIED BLOCK ---
+
+                 if (currentUser.is_moderator === true) {
+                     console.log(`[navigateTo] User is moderator, loading admin data.`);
+                     loadAdminDashboardData();
+                 } else {
+                     console.log(`[navigateTo] User is NOT moderator, skipping admin data load.`);
+                 }
             }
+            // ... rest of navigateTo function
+            // ... rest of navigateTo function
+
+            // Ensure header UI is up-to-date
             updateHeaderUI(currentUser);
         }
 
