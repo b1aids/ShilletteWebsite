@@ -1070,7 +1070,7 @@
          * Fetches details for registered product IDs and displays them as banners.
          * @param {string[]} productIds - An array of registered product ObjectIDs (as strings).
          */
-         function displayRegisteredProducts(productsToDisplay) {
+         async function displayRegisteredProducts(productsToDisplay) {
             console.log('[displayRegisteredProducts] Called with:', productsToDisplay); // <-- ADD LOG
             const container = document.getElementById('dashboard-my-products-list');
             if (!container || !loadingIndicator) {
