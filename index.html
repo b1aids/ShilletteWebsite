@@ -1067,94 +1067,80 @@
 
 
                 /**
-         * Displays the user's registered products in the dashboard.
-         * Reads product.tag (singular string) instead of product.tags (array).
-         * @param {Array<object>|null} productsToDisplay - Array of product objects including registration details (like order_id), or null on error.
+         * Fetches details for registered product IDs and displays them as banners.
+         * @param {string[]} productIds - An array of registered product ObjectIDs (as strings).
          */
-         function displayRegisteredProducts(productsToDisplay) {
-            const container = document.getElementById('dashboard-my-products-list');
-            if (!container) {
-                console.error("Error: Could not find element with ID 'dashboard-my-products-list'");
-                return;
-            }
-            container.innerHTML = ''; // Clear loading/previous
-
-            if (productsToDisplay === null) {
-                 container.innerHTML = '<p class="text-red-400 text-sm">Could not load product details.</p>';
+         async function displayRegisteredProducts(productIds) {
+            const container = document.getElementById('dashboard-registered-products');
+            const loadingIndicator = document.getElementById('loading-registered-products');
+            if (!container || !loadingIndicator) {
+                 console.error("Registered products container or loading indicator not found.");
                  return;
             }
-            if (productsToDisplay.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-sm">You have not registered any products yet.</p>';
+
+            container.innerHTML = ''; // Clear previous content
+            loadingIndicator.classList.remove('hidden'); // Show loading indicator
+
+            if (!productIds || productIds.length === 0) {
+                loadingIndicator.textContent = 'You have no registered products.';
                 return;
             }
-            if (genButton) {
-                     genButton.addEventListener('click', (e) => {
-                         e.stopPropagation();
-                         // --- CALL NEW FUNCTION ---
-                         openFirmwareGenerateModal(product._id, productElement.dataset.productName);
-                         // --- END CALL ---
-                     });
-                 }
 
-            productsToDisplay.forEach(product => {
-                console.log(`Displaying product: ${product.name}`, product); // Log the whole product object
+            loadingIndicator.textContent = `Loading ${productIds.length} product(s)...`;
 
-                const productElement = document.createElement('div');
-                productElement.className = 'p-2 bg-slate-700/50 rounded-md text-sm flex items-center justify-between space-x-2 hover:bg-slate-600/50 transition-colors';
-                productElement.dataset.productId = product._id;
-                productElement.dataset.productName = product.product_name || product.name || 'Unnamed Product';
-                productElement.dataset.orderId = product.order_id || '';
-                // --- Read singular 'tag' field ---
-                const tagString = product.tag || ''; // Read product.tag (string)
-                const deviceType = product.device_type || '';
-                productElement.dataset.tag = tagString; // Store the singular tag
-                // --- End Read singular 'tag' field ---
-                productElement.dataset.deviceType = deviceType;
+            // Create an array of promises to fetch details for each product
+            const fetchPromises = productIds.map(id =>
+                fetch(`${API_BASE_URL}/api/products/${id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                             console.warn(`Failed to fetch details for product ${id}: ${response.status}`);
+                             return null; // Return null for failed fetches
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                         console.error(`Error fetching details for product ${id}:`, error);
+                         return null; // Return null on error
+                    })
+            );
 
-                const infoContainer = document.createElement('div');
-                infoContainer.className = 'flex items-center space-x-2 flex-grow min-w-0';
+            // Wait for all fetch requests to complete
+            const productDetails = await Promise.all(fetchPromises);
 
-                let thumbnailHtml = '';
-                if (product.thumbnailUrl) {
-                   thumbnailHtml = `<img src="${product.thumbnailUrl}" alt="${productElement.dataset.productName}" class="w-8 h-8 rounded object-cover flex-shrink-0 pointer-events-none" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                                    <div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 items-center justify-center text-xs text-gray-400 pointer-events-none" style="display: none;">N/A</div>`;
-                } else {
-                    thumbnailHtml = '<div class="w-8 h-8 rounded bg-slate-600 flex-shrink-0 flex items-center justify-center text-xs text-gray-400 pointer-events-none">N/A</div>';
-                }
-                infoContainer.innerHTML = `
-                    ${thumbnailHtml}
-                    <span class="text-white font-medium pointer-events-none truncate">${productElement.dataset.productName}</span>
+            // Filter out any null results (failed fetches)
+            const validProducts = productDetails.filter(p => p !== null);
+
+            loadingIndicator.classList.add('hidden'); // Hide loading indicator
+
+            if (validProducts.length === 0) {
+                 container.innerHTML = '<p class="text-gray-400 text-sm">Could not load product details.</p>';
+                 return;
+            }
+
+            // Render banners for valid products
+            validProducts.forEach(product => {
+                const banner = document.createElement('div');
+                banner.className = 'bg-slate-700/50 p-3 rounded-md flex items-center space-x-3 hover:bg-slate-600/50 transition-colors cursor-pointer';
+                // Add click listener to navigate to product detail page
+                banner.addEventListener('click', () => {
+                     window.location.hash = `/#productDetail?id=${product._id}`;
+                });
+
+                // Basic thumbnail or placeholder
+                const thumbSrc = product.thumbnailUrl || `https://placehold.co/40x40/7f8c8d/ecf0f1?text=${product.name?.charAt(0) || 'P'}`;
+                const thumbAlt = `${product.name || 'Product'} thumbnail`;
+
+                banner.innerHTML = `
+                    <img src="${thumbSrc}" alt="${thumbAlt}" class="w-10 h-10 rounded object-cover flex-shrink-0" onerror="this.src='https://placehold.co/40x40/7f8c8d/ecf0f1?text=?'; this.onerror=null;">
+                    <div>
+                        <p class="text-white font-medium">${product.name || 'Unnamed Product'}</p>
+                        <p class="text-xs text-gray-400">Registered</p> </div>
+                    ${product.config_url ? `<a href="${product.config_url}" target="_blank" rel="noopener noreferrer" class="ml-auto bg-orange-600 hover:bg-orange-700 text-white text-xs font-medium py-1 px-3 rounded transition duration-300">View Config</a>` : ''}
                 `;
-                productElement.appendChild(infoContainer);
-
-                // --- Check singular 'tag' for FIRMWARE ---
-                const isFirmware = tagString.trim().toUpperCase() === 'FIRMWARE';
-                console.log(`Product: ${productElement.dataset.productName}, Tag: ${tagString}, Is Firmware: ${isFirmware}, DeviceType: ${deviceType}`);
-                // --- End Check singular 'tag' ---
-
-                if (isFirmware && deviceType) {
-                    const genButton = document.createElement('button');
-                    genButton.className = "generate-fw-button flex-shrink-0 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold py-1 px-2 rounded";
-                    genButton.title = "Generate Firmware";
-                    genButton.textContent = "Generate";
-                    genButton.addEventListener('click', (e) => {
-                         e.stopPropagation();
-                         promptAndStartFirmwareGeneration(product._id, productElement.dataset.productName, productElement.dataset.deviceType);
-                     });
-                    productElement.appendChild(genButton);
-                }
-
-                 productElement.style.cursor = 'pointer';
-                 infoContainer.addEventListener('click', (e) => {
-                    if (!e.target.closest('.generate-fw-button')) {
-                       window.location.hash = `/#productDetail?id=${product._id}`;
-                    }
-                 });
-                 productElement.addEventListener('contextmenu', showMyProductContextMenu);
-
-                container.appendChild(productElement);
+                container.appendChild(banner);
             });
         }
+
 
         /**
          * Shows the context menu for the user's "My Products" list.
