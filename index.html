@@ -218,69 +218,108 @@
 
 
     <div id="product-edit-modal" class="modal">
-        <div class="modal-content max-w-lg">
-            <button id="product-modal-close-button" class="modal-close-button">
+        <div class="modal-content max-w-3xl"> <button id="product-modal-close-button" class="modal-close-button">
                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
             </button>
-            <h3 class="text-lg font-semibold mb-4" id="product-modal-title">Add Product</h3>
-            <form id="product-edit-form" class="admin-form space-y-4">
+            <h3 class="text-xl font-semibold mb-6" id="product-modal-title">Add Product</h3>
+
+            <form id="product-edit-form" class="admin-form space-y-6">
                 <input type="hidden" id="product-edit-id">
-                <div>
-                    <label for="product-edit-name">Product Name</label>
-                    <input type="text" id="product-edit-name" required>
-                </div>
-                 <div>
-                    <label for="product-edit-thumbnail">Thumbnail URL or Select File</label>
-                    <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL...">
-                    <div class="mt-2 flex items-center gap-x-3">
-                         <input type="file" id="product-edit-thumbnail-file" accept=".png" class="hidden">
-                         <button type="button" id="product-edit-thumbnail-button" class="text-sm">Select PNG File</button>
-                         <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"> <div class="space-y-4">
+                        <div>
+                            <label for="product-edit-name">Product Name</label>
+                            <input type="text" id="product-edit-name" required>
+                        </div>
+                        <div>
+                            <label for="product-edit-price">Price ($)</label>
+                            <input type="number" id="product-edit-price" step="0.01" required>
+                        </div>
+                         <div>
+                             <label for="product-edit-stock">Stock Quantity</label>
+                             <input type="number" id="product-edit-stock" step="1" min="0" placeholder="e.g., 100">
+                         </div>
+                        <div>
+                            <label for="product-edit-tag">Product Tag (e.g., SOFTWARE)</label>
+                            <input type="text" id="product-edit-tag" placeholder="Single concise tag">
+                        </div>
+                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                             <div>
+                                 <label for="product-edit-tagColor">Tag/Border Color</label>
+                                 <select id="product-edit-tagColor">
+                                    <option value="gray">Gray</option>
+                                    <option value="orange">Orange</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="green">Green</option>
+                                    <option value="red">Red</option>
+                                    <option value="purple">Purple</option>
+                                    <option value="yellow">Yellow</option>
+                                    <option value="pink">Pink</option>
+                                    <option value="teal">Teal</option>
+                                    <option value="custom">Custom HEX</option>
+                                 </select>
+                              </div>
+                              <div id="custom-hex-input-container" class="hidden">
+                                  <label for="product-edit-customHex">Custom HEX Color</label>
+                                  <input type="text" id="product-edit-customHex" placeholder="#RRGGBB">
+                              </div>
+                         </div>
+                         <div>
+                             <label for="product-edit-device-type">Device Type (for Firmware)</label>
+                             <input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)">
+                              <p class="text-xs text-gray-400 mt-1">Required if product tag is 'FIRMWARE'.</p>
+                         </div>
+                    </div> <div class="space-y-4">
+                        <div>
+                            <label for="product-edit-thumbnail">Thumbnail URL or Select File</label>
+                            <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL...">
+                            <div class="mt-2 flex items-center gap-x-3">
+                                 <input type="file" id="product-edit-thumbnail-file" accept="image/png, image/jpeg, image/gif, image/webp" class="hidden">
+                                 <button type="button" id="product-edit-thumbnail-button" class="text-sm bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition duration-200">Select Image File</button>
+                                 <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
+                            </div>
+                             <p class="text-xs text-gray-400 mt-1">Entering URL takes precedence over selected file.</p>
+                        </div>
+                        <div>
+                            <label for="product-edit-description">Description</label>
+                            <textarea id="product-edit-description" rows="4" placeholder="Detailed product description..."></textarea>
+                        </div>
+                        <div>
+                            <label for="product-edit-features">Features (One per line)</label>
+                            <textarea id="product-edit-features" rows="5" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..."></textarea>
+                        </div>
+                        <div>
+                            <label for="product-edit-paymentLink">Payment Provider Link/ID</label>
+                            <input type="text" id="product-edit-paymentLink" placeholder="e.g., PayPal Button ID, Stripe Link ID">
+                        </div>
+
+                    </div> </div> <fieldset class="border border-slate-600 p-4 rounded-md mt-6">
+                    <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mt-2">
+                        <div>
+                            <label for="product-edit-seller-name">Seller Name</label>
+                            <input type="text" id="product-edit-seller-name" placeholder="e.g., ShilletteFN">
+                        </div>
+                        <div>
+                            <label for="product-edit-seller-avatar">Seller Avatar URL</label>
+                            <input type="text" id="product-edit-seller-avatar" placeholder="URL for seller image">
+                        </div>
+                        <div>
+                            <label for="product-edit-seller-established">Seller Established Date</label>
+                            <input type="date" id="product-edit-seller-established" class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
+                            <p class="text-xs text-gray-400 mt-1">Used to calculate 'Established X months ago'.</p>
+                        </div>
+                        <div class="flex items-center mt-2 md:mt-6">
+                            <input type="checkbox" id="product-edit-reviews-enabled" class="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 bg-slate-700 border-slate-600">
+                            <label for="product-edit-reviews-enabled" class="ml-2 block text-sm text-gray-300">Enable Reviews Section</label>
+                        </div>
                     </div>
-                 </div>
-                <div>
-                    <label for="product-edit-price">Price ($)</label>
-                    <input type="number" id="product-edit-price" step="0.01" required>
+                </fieldset>
+
+                <div class="pt-4">
+                    <button type="submit" id="product-save-button" class="w-full">Save Product</button>
+                    <div id="product-edit-status" class="text-sm text-center h-5 mt-2"></div>
                 </div>
-                 <div>
-                    <label for="product-edit-tag">Tag (e.g., ALL IN ONE, SOFTWARE)</label>
-                    <input type="text" id="product-edit-tag">
-                </div>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                         <label for="product-edit-tagColor">Tag Border Color</label>
-                         <select id="product-edit-tagColor">
-                            <option value="gray">Gray</option>
-                            <option value="orange">Orange</option>
-                            <option value="blue">Blue</option>
-                            <option value="green">Green</option>
-                            <option value="red">Red</option>
-                            <option value="purple">Purple</option>
-                            <option value="yellow">Yellow</option>
-                            <option value="pink">Pink</option>
-                            <option value="teal">Teal</option>
-                            <option value="custom">Custom HEX</option>
-                         </select>
-                     </div>
-                     <div id="custom-hex-input-container" class="hidden">
-                         <label for="product-edit-customHex">Custom HEX Color</label>
-                         <input type="text" id="product-edit-customHex" placeholder="#RRGGBB">
-                     </div>
-                </div>
-                <div>
-                    <label for="product-edit-description">Description (Optional)</label>
-                    <textarea id="product-edit-description" rows="3"></textarea>
-                </div>
-                 <div>
-                    <label for="product-edit-features">Features (One per line)</label>
-                    <textarea id="product-edit-features" rows="5"></textarea>
-                </div>
-                 <div>
-                    <label for="product-edit-paymentLink">Payment Link/ID (e.g., PayPal button ID)</label>
-                    <input type="text" id="product-edit-paymentLink">
-                </div>
-                <button type="submit" id="product-save-button">Save Product</button>
-                <div id="product-edit-status" class="text-sm text-center h-5 mt-2"></div>
             </form>
         </div>
     </div>
@@ -771,6 +810,12 @@
         const generateDeviceTypeSelect = document.getElementById('generate-device-type');
         const submitFirmwareButton = document.getElementById('submit-firmware-generation');
         const generateStatus = document.getElementById('generate-status');
+        const productEditStockInput = document.getElementById('product-edit-stock');
+        const productEditDeviceTypeInput = document.getElementById('product-edit-device-type');
+        const productEditSellerNameInput = document.getElementById('product-edit-seller-name');
+        const productEditSellerAvatarInput = document.getElementById('product-edit-seller-avatar');
+        const productEditSellerEstablishedInput = document.getElementById('product-edit-seller-established');
+        const productEditReviewsEnabledInput = document.getElementById('product-edit-reviews-enabled');
 
         /** Fetches available device types and populates the select dropdown. */
         async function populateDeviceTypes() {
@@ -2915,40 +2960,165 @@
         }
 
         /**
-         * Opens the product edit/add modal.
-         * @param {object | null} [product=null] - Product data to edit, or null to add a new product.
+         * Opens the product edit/add modal. (MODIFIED)
+         * @param {object | null} [product=null] - Product data to edit, or null to add new.
          */
-        function openProductEditModal(product = null) {
-             if (!productEditModal || !productEditForm || !customHexInputContainer) return;
-             productEditForm.reset(); // Clear form fields
-             productEditStatus.textContent = ''; // Clear status message
-             productEditStatus.className = 'text-sm text-center h-5 mt-2'; // Reset status style
-             productEditThumbnailFilename.textContent = 'No file selected'; // Reset file input display
+         function openProductEditModal(product = null) {
+             // ... (existing checks and form reset) ...
+             if (!productEditModal || !productEditForm || !customHexInputContainer ||
+                 !productEditStockInput || !productEditDeviceTypeInput || !productEditSellerNameInput ||
+                 !productEditSellerAvatarInput || !productEditSellerEstablishedInput || !productEditReviewsEnabledInput) {
+                  console.error("One or more product modal elements not found!");
+                  return;
+             }
+
+             productEditForm.reset();
+             productEditStatus.textContent = '';
+             productEditStatus.className = 'text-sm text-center h-5 mt-2';
+             productEditThumbnailFilename.textContent = 'No file selected';
+             productEditReviewsEnabledInput.checked = true; // Default reviews to enabled
 
              if (product) {
-                 // Editing existing product: Populate form
+                 // Editing existing product
                  productModalTitle.textContent = 'Edit Product';
-                 productEditIdInput.value = product._id; // Store ID (hidden)
+                 productEditIdInput.value = product._id;
                  productEditNameInput.value = product.name || '';
                  productEditThumbnailInput.value = product.thumbnailUrl || '';
                  productEditPriceInput.value = product.price || '';
                  productEditTagInput.value = product.tag || '';
+
                  // Handle tag color and custom hex
                  const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
                  productEditTagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
                  productEditCustomHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
+
                  productEditDescriptionInput.value = product.description || '';
-                 productEditFeaturesInput.value = (product.features || []).join('\n'); // Join features array with newlines
+                 productEditFeaturesInput.value = (product.features || []).join('\n');
                  productEditPaymentLinkInput.value = product.paymentLink || '';
+
+                 // --- Populate NEW fields ---
+                 productEditStockInput.value = product.stock !== undefined ? product.stock : ''; // Handle 0 stock
+                 productEditDeviceTypeInput.value = product.deviceType || '';
+                 productEditSellerNameInput.value = product.sellerName || '';
+                 productEditSellerAvatarInput.value = product.sellerAvatarUrl || '';
+                 // Format date for input type="date" (YYYY-MM-DD)
+                 try {
+                     productEditSellerEstablishedInput.value = product.sellerEstablishedDate ? new Date(product.sellerEstablishedDate).toISOString().split('T')[0] : '';
+                 } catch (e) {
+                     productEditSellerEstablishedInput.value = ''; // Clear if date is invalid
+                 }
+                 productEditReviewsEnabledInput.checked = product.reviewsEnabled !== false; // Default to true if undefined
+
              } else {
-                 // Adding new product: Set title, clear ID
+                 // Adding new product
                  productModalTitle.textContent = 'Add Product';
-                 productEditIdInput.value = ''; // Ensure ID is empty
-                 productEditTagColorSelect.value = 'gray'; // Default color
+                 productEditIdInput.value = '';
+                 productEditTagColorSelect.value = 'gray';
                  productEditCustomHexInput.value = '';
+                 // Initialize new fields for Add mode if needed (most are fine empty)
+                 productEditReviewsEnabledInput.checked = true; // Default reviews on for new products
              }
-             toggleCustomHexInput(); // Show/hide custom hex input based on dropdown
-             productEditModal.classList.add('active'); // Show the modal
+             toggleCustomHexInput();
+             productEditModal.classList.add('active');
+        }
+
+
+        /**
+         * Handles the submission of the product add/edit form. (MODIFIED)
+         */
+        async function handleSaveProduct(event) {
+             event.preventDefault();
+             // ... (existing checks for form/button) ...
+             if (!productEditForm || !productSaveButton ||
+                 !productEditStockInput || !productEditDeviceTypeInput || !productEditSellerNameInput ||
+                 !productEditSellerAvatarInput || !productEditSellerEstablishedInput || !productEditReviewsEnabledInput) {
+                  console.error("One or more product save elements not found!");
+                  return;
+             }
+
+             // ... (existing button disabling, status clearing, URL/method determination) ...
+             productSaveButton.disabled = true; productSaveButton.textContent = 'Saving...';
+             productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2';
+             const productId = productEditIdInput.value;
+             const isEditing = !!productId;
+             const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
+             const method = isEditing ? 'PUT' : 'POST';
+
+             // ... (existing tag color / custom hex validation and determination) ...
+              let tagColorValue = productEditTagColorSelect.value;
+              let customHexValue = productEditCustomHexInput.value.trim();
+              let finalTagColor = 'gray';
+              let finalCustomHex = null;
+              if (tagColorValue === 'custom') {
+                  if (customHexValue && /^#[0-9A-F]{6}$/i.test(customHexValue)) {
+                      finalTagColor = 'custom';
+                      finalCustomHex = customHexValue;
+                  } else {
+                      productEditStatus.textContent = 'Invalid Custom HEX format (#RRGGBB).';
+                      productEditStatus.classList.add('text-red-400');
+                      productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+                  }
+              } else {
+                  finalTagColor = tagColorValue || 'gray';
+                  finalCustomHex = null;
+              }
+
+             // --- Gather product data including NEW fields ---
+             const productData = {
+                 name: productEditNameInput.value.trim(),
+                 thumbnailUrl: productEditThumbnailInput.value.trim() || null,
+                 price: parseFloat(productEditPriceInput.value),
+                 stock: productEditStockInput.value !== '' ? parseInt(productEditStockInput.value, 10) : null, // Parse int, allow null
+                 tag: productEditTagInput.value.trim() || null,
+                 tagColor: finalTagColor,
+                 customBorderHex: finalCustomHex,
+                 deviceType: productEditDeviceTypeInput.value.trim() || null, // Add device type
+                 description: productEditDescriptionInput.value.trim() || null,
+                 features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
+                 paymentLink: productEditPaymentLinkInput.value.trim() || null,
+                 // New Product Detail Fields
+                 sellerName: productEditSellerNameInput.value.trim() || null,
+                 sellerAvatarUrl: productEditSellerAvatarInput.value.trim() || null,
+                 sellerEstablishedDate: productEditSellerEstablishedInput.value || null, // Send as YYYY-MM-DD string or null
+                 reviewsEnabled: productEditReviewsEnabledInput.checked
+             };
+
+             // Basic validation (including new fields if necessary)
+             if (!productData.name || isNaN(productData.price) ) {
+                  productEditStatus.textContent = 'Name and valid Price are required.';
+                  productEditStatus.classList.add('text-red-400');
+                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+             }
+             if (productData.stock !== null && isNaN(productData.stock)) {
+                 productEditStatus.textContent = 'Stock must be a valid number.';
+                  productEditStatus.classList.add('text-red-400');
+                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+             }
+
+             // ... (rest of existing try/catch block for API call) ...
+              try {
+                  const response = await fetch(url, {
+                      method: method,
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(productData), // Send the extended productData
+                      credentials: 'include'
+                  });
+                  const result = await response.json();
+                  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+
+                  showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
+                  closeProductEditModal();
+                  await loadProductManagementTable(); // Refresh admin table
+                  if (activeSectionId === pageSections['#products']) await fetchProducts(); // Refresh public product list if visible
+
+              } catch (error) {
+                  console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
+                  productEditStatus.textContent = `Error: ${error.message}`;
+                  productEditStatus.classList.add('text-red-400');
+                  showPopupMessage(errorMessagePopup, `Failed to save product: ${error.message}`, true);
+              } finally {
+                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product';
+              }
         }
 
         /** Shows or hides the custom hex color input based on the tag color dropdown selection. */
