@@ -1696,13 +1696,107 @@
             footerYear.textContent = new Date().getFullYear();
         }
 
-        /**
-         * Fetches the list of products from the API and renders them.
-         */
+        // --- Product Filtering/Sorting Variables ---
+        let allProducts = []; // To store all fetched products
+        const productSearchInput = document.getElementById('product-search-input');
+        const productSortButton = document.getElementById('product-sort-button');
+        const productTagFilter = document.getElementById('product-tag-filter');
+        // Already defined: const productGrid = document.getElementById('product-grid');
+        // Already defined: const productLoadingStatus = document.getElementById('product-loading-status');
+
+        // --- Sort Options Configuration ---
+        const sortOptions = [
+            { key: 'default', label: 'Sort: Default', compareFn: (a, b) => 0 }, // No sorting, relies on original API order or maybe add one later
+            { key: 'name_asc', label: 'Sort: Name (A-Z)', compareFn: (a, b) => (a.name || '').localeCompare(b.name || '') },
+            { key: 'name_desc', label: 'Sort: Name (Z-A)', compareFn: (a, b) => (b.name || '').localeCompare(a.name || '') },
+            { key: 'price_asc', label: 'Sort: Price (Low-High)', compareFn: (a, b) => (a.price || 0) - (b.price || 0) },
+            { key: 'price_desc', label: 'Sort: Price (High-Low)', compareFn: (a, b) => (b.price || 0) - (a.price || 0) }
+        ];
+        let currentSortIndex = 0; // Start with 'default'
+
+        // --- Function to Display Filtered and Sorted Products ---
+        function displayFilteredProducts(productsToDisplay) {
+            if (!productGrid || !productLoadingStatus) return;
+            productGrid.innerHTML = ''; // Clear current grid
+
+            if (!productsToDisplay || productsToDisplay.length === 0) {
+                productLoadingStatus.textContent = 'No products match your criteria.';
+                productLoadingStatus.classList.remove('hidden');
+            } else {
+                productLoadingStatus.classList.add('hidden');
+                // Render each product card - renderProductCard should already exist
+                productsToDisplay.forEach(product => {
+                    // Assuming renderProductCard is defined elsewhere and appends to productGrid
+                    renderProductCard(product);
+                });
+            }
+        }
+
+        // --- Function to Apply All Filters and Sorting ---
+        function applyFiltersAndSort() {
+            if (!allProducts) return; // Don't run if products aren't loaded
+
+            const searchTerm = productSearchInput.value.toLowerCase().trim();
+            const selectedTag = productTagFilter.value;
+            const sortFunction = sortOptions[currentSortIndex].compareFn;
+
+            let filteredProducts = [...allProducts]; // Start with a copy of all products
+
+            // 1. Filter by Tag
+            if (selectedTag !== 'all') {
+                filteredProducts = filteredProducts.filter(product => product.tag === selectedTag);
+            }
+
+            // 2. Filter by Search Term (applies to name and description)
+            if (searchTerm) {
+                filteredProducts = filteredProducts.filter(product =>
+                    (product.name?.toLowerCase().includes(searchTerm)) ||
+                    (product.description?.toLowerCase().includes(searchTerm)) ||
+                    (product.features?.some(f => f.toLowerCase().includes(searchTerm))) // Also search features
+                );
+            }
+
+            // 3. Sort the results
+            filteredProducts.sort(sortFunction);
+
+            // 4. Display the final list
+            displayFilteredProducts(filteredProducts);
+        }
+
+        // --- Function to Populate Tag Filter Dropdown ---
+        function populateTagFilter(products) {
+            if (!productTagFilter) return;
+
+            // Extract unique tags
+            const tags = new Set(products.map(p => p.tag).filter(tag => tag)); // Get unique, non-empty tags
+            const currentSelectedValue = productTagFilter.value; // Preserve selection if possible
+
+            // Clear existing options (except the default 'All')
+            productTagFilter.innerHTML = '<option value="all" selected>Filter by Tag (All)</option>';
+
+            // Add options for each unique tag
+            tags.forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag; // You might want to format this better if needed
+                productTagFilter.appendChild(option);
+            });
+
+            // Try to restore previous selection
+            productTagFilter.value = currentSelectedValue;
+            // If the previously selected value is no longer valid, it defaults back to 'all'
+            if (productTagFilter.value !== currentSelectedValue) {
+                productTagFilter.value = 'all';
+            }
+        }
+
+
+        // --- Modify the existing fetchProducts function ---
+        // Make sure fetchProducts is declared async if not already
         async function fetchProducts() {
-             if (!productGrid || !productLoadingStatus) return; // Ensure elements exist
-             productGrid.innerHTML = ''; // Clear previous products
-             productLoadingStatus.textContent = 'Loading products...'; // Show loading state
+             if (!productGrid || !productLoadingStatus) return;
+             productGrid.innerHTML = '';
+             productLoadingStatus.textContent = 'Loading products...';
              productLoadingStatus.classList.remove('hidden');
 
              try {
@@ -1710,22 +1804,50 @@
                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
                  const products = await response.json();
 
-                 productLoadingStatus.classList.add('hidden'); // Hide loading state
+                 allProducts = products; // Store fetched products globally
 
-                 if (!products || products.length === 0) {
-                     // Display message if no products found
-                     productGrid.innerHTML = `<p class="text-center text-gray-400 md:col-span-2 lg:col-span-3">No products available at this time.</p>`;
-                     return;
-                 }
+                 populateTagFilter(allProducts); // Populate the tag dropdown
 
-                 // Render each product card
-                 products.forEach(renderProductCard);
+                 // Initial display
+                 applyFiltersAndSort(); // Apply default filters/sort and display
+
+                 // Hide loading status (already handled in displayFilteredProducts)
 
              } catch (error) {
                  console.error("Error fetching products:", error);
-                 productLoadingStatus.textContent = 'Failed to load products.'; // Show error state
+                 productLoadingStatus.textContent = 'Failed to load products.';
                  showPopupMessage(errorMessagePopup, `Error loading products: ${error.message}`, true);
+                 allProducts = []; // Clear products on error
              }
+        }
+
+        // --- Event Listeners for Controls ---
+
+        // Search Input
+        if (productSearchInput) {
+            productSearchInput.addEventListener('input', applyFiltersAndSort);
+        }
+
+        // Tag Filter Dropdown
+        if (productTagFilter) {
+            productTagFilter.addEventListener('change', applyFiltersAndSort);
+        }
+
+        // Sort Button (Click to Cycle)
+        if (productSortButton) {
+            // Set initial button text
+            productSortButton.textContent = sortOptions[currentSortIndex].label;
+
+            productSortButton.addEventListener('click', () => {
+                // Cycle to the next sort option
+                currentSortIndex = (currentSortIndex + 1) % sortOptions.length;
+
+                // Update button text
+                productSortButton.textContent = sortOptions[currentSortIndex].label;
+
+                // Re-apply filters and sort
+                applyFiltersAndSort();
+            });
         }
 
         /**
