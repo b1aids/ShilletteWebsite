@@ -233,14 +233,14 @@
             <h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3>
             <form id="product-edit-form" class="admin-form space-y-6">
                 <input type="hidden" id="product-edit-id">
-
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-x-8 gap-y-5">
+    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                     <div class="space-y-5">
                         <div>
                             <label for="product-edit-name" class="block text-sm font-medium text-gray-300 mb-1">Product Name</label>
                             <input type="text" id="product-edit-name" required class="admin-input-field">
                         </div>
-                        <div class="grid grid-cols-6 gap-4">
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-edit-price" class="block text-sm font-medium text-gray-300 mb-1">Price ($)</label>
                                 <input type="number" id="product-edit-price" step="0.01" required class="admin-input-field">
@@ -278,7 +278,7 @@
                         <div>
                             <label for="product-edit-device-type" class="block text-sm font-medium text-gray-300 mb-1">Device Type (for Firmware)</label>
                             <input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)" class="admin-input-field">
-                            <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
+                             <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
                         </div>
                         <div>
                             <label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
@@ -295,7 +295,6 @@
                                 <input type="text" id="product-edit-sellsn-pid" placeholder="If using SellSN embed" class="admin-input-field">
                             </div>
                         </div>
-
                     </div> <div class="space-y-5">
                         <div>
                             <label for="product-edit-thumbnail" class="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
@@ -306,16 +305,16 @@
                                 <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
                             </div>
                         </div>
-                        <div>
-                            <label for="product-edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                            <textarea id="product-edit-description" rows="5" placeholder="Detailed product description..." class="admin-input-field"></textarea>
-                        </div>
-                        <div>
-                            <label for="product-edit-features" class="block text-sm font-medium text-gray-300 mb-1">Features (One per line)</label>
-                            <textarea id="product-edit-features" rows="6" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..." class="admin-input-field"></textarea>
-                        </div>
-                    </div> </div> <fieldset class="border border-slate-600 p-5 rounded-md mt-6">
-                    <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
+                        </div> </div> <div>
+                    <label for="product-edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+                    <textarea id="product-edit-description" rows="8" placeholder="Detailed product description..." class="admin-input-field"></textarea> </div>
+    
+                <div>
+                    <label for="product-edit-features" class="block text-sm font-medium text-gray-300 mb-1">Features (One per line)</label>
+                    <textarea id="product-edit-features" rows="10" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..." class="admin-input-field"></textarea> </div>
+    
+                <fieldset class="border border-slate-600 p-5 rounded-md mt-6">
+                   <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-3">
                         <div>
                             <label for="product-edit-seller-name" class="block text-sm font-medium text-gray-300 mb-1">Seller Name</label>
@@ -336,8 +335,9 @@
                         </div>
                     </div>
                 </fieldset>
-
-                <div class="pt-6 space-y-3"> <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
+    
+                <div class="pt-6 space-y-3">
+                    <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
                     <button type="button" id="product-cancel-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300">Cancel</button>
                     <div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div>
                 </div>
