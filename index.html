@@ -2893,7 +2893,7 @@
                  if(tagInput) tagInput.value = product.tag || '';
                  if(deviceTypeInput) deviceTypeInput.value = product.device_type || '';
                  // --- Populate firmware directory name (Corrected Line) ---
-                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || ''; // Removed extra '';
+                 if(firmwareDirInput) firmwareDirInput.value = product.firmware_directory_name || product.name || '';
                  // --- End Populate ---
                  if(descriptionInput) descriptionInput.value = product.description || '';
                  if(featuresInput) featuresInput.value = (product.features || []).join('\n');
@@ -3005,9 +3005,10 @@
                  paymentLink: paymentLinkInput.value.trim() || null,
                  device_type: deviceTypeInput.value.trim() || null,
                  // --- ADD firmware_directory_name to payload ---
-                 firmware_directory_name: firmwareDirInput.value.trim() || null // Save null if empty
+                 firmware_directory_name: firmwareDirInput.value.trim() || null
                  // --- END ADD ---
              };
+             console.log('Sending product data:', JSON.stringify(productData, null, 2));
 
              // Basic validation
              if (!productData.name || isNaN(productData.price)) {
