@@ -1457,29 +1457,30 @@
                  console.log(`[navigateTo] Fetching products for #products view.`);
                  fetchProducts();
             // Inside navigateTo function...
-        } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
-            console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
-            displayUserRoles(currentUser.roles); // Display roles
+            } else if (baseHash === '#dashboard' && currentUser?.logged_in) {
+                console.log(`[navigateTo] Loading dashboard data. User:`, currentUser);
+                displayUserRoles(currentUser.roles); // Display roles
 
-            const myRegisteredDetails = currentUser.registered_product_details || [];
-            console.log('[navigateTo Dashboard] myRegisteredDetails:', myRegisteredDetails); // <-- ADD LOG
+                const myRegisteredDetails = currentUser.registered_product_details || [];
+                console.log('[navigateTo Dashboard] myRegisteredDetails:', myRegisteredDetails); // <-- ADD LOG
 
-            fetchAllProducts().then(allProducts => {
-                console.log('[navigateTo Dashboard] allProducts:', allProducts); // <-- ADD LOG
-                if (allProducts) {
-                    const productsToDisplay = allProducts
-                        .map(p => {
-                            const registration = myRegisteredDetails.find(reg => reg.product_id === p._id);
-                            return registration ? { ...p, order_id: registration.order_id, product_name: registration.product_name || p.name } : null;
-                        })
-                        .filter(p => p !== null);
+                fetchAllProducts().then(allProducts => {
+                    console.log('[navigateTo Dashboard] allProducts:', allProducts); // <-- ADD LOG
+                    if (allProducts) {
+                        const productsToDisplay = allProducts
+                            .map(p => {
+                                const registration = myRegisteredDetails.find(reg => reg.product_id === p._id);
+                                return registration ? { ...p, order_id: registration.order_id, product_name: registration.product_name || p.name } : null;
+                            })
+                            .filter(p => p !== null);
 
-                    console.log('[navigateTo Dashboard] productsToDisplay:', productsToDisplay); // <-- ADD LOG
-                    displayRegisteredProducts(productsToDisplay); // Pass filtered data
-                } else {
-                    displayRegisteredProducts(null);
-                }
-            });
+                        console.log('[navigateTo Dashboard] productsToDisplay:', productsToDisplay); // <-- ADD LOG
+                        displayRegisteredProducts(productsToDisplay); // Pass filtered data
+                    } else {
+                        displayRegisteredProducts(null);
+                    }
+                });
+            }
             updateHeaderUI(currentUser);
         }
 
