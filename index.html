@@ -1070,9 +1070,9 @@
          * Fetches details for registered product IDs and displays them as banners.
          * @param {string[]} productIds - An array of registered product ObjectIDs (as strings).
          */
-         async function displayRegisteredProducts(productsToDisplay) {
-            console.log('[displayRegisteredProducts] Called with:', productsToDisplay); // <-- ADD LOG
-            const container = document.getElementById('dashboard-my-products-list');
+         async function displayRegisteredProducts(productIds) {
+            const container = document.getElementById('dashboard-registered-products');
+            const loadingIndicator = document.getElementById('loading-registered-products');
             if (!container || !loadingIndicator) {
                  console.error("Registered products container or loading indicator not found.");
                  return;
@@ -1480,6 +1480,7 @@
                     displayRegisteredProducts(null);
                 }
             });
+            updateHeaderUI(currentUser);
         }
 
         /**
