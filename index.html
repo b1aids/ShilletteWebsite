@@ -451,7 +451,7 @@
                 </button>
             </div>
             
-            <div id="admin-product-context-menu" class="absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden lg:col-span-3">
+            <div id="admin-product-context-menu" class="absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden">
                 <button class="context-menu-item edit" id="context-edit-product">Edit Product</button>
                 <button class="context-menu-item delete" id="context-delete-admin-product">Delete Product</button>
             </div>
@@ -1755,13 +1755,13 @@
 
         // --- Sort Options Configuration ---
         const sortOptions = [
-            { key: 'default', label: 'Sort: Default', compareFn: (a, b) => 0 }, // No sorting, relies on original API order or maybe add one later
-            { key: 'name_asc', label: 'Sort: Name (A-Z)', compareFn: (a, b) => (a.name || '').localeCompare(b.name || '') },
-            { key: 'name_desc', label: 'Sort: Name (Z-A)', compareFn: (a, b) => (b.name || '').localeCompare(a.name || '') },
-            { key: 'price_asc', label: 'Sort: Price (Low-High)', compareFn: (a, b) => (a.price || 0) - (b.price || 0) },
-            { key: 'price_desc', label: 'Sort: Price (High-Low)', compareFn: (a, b) => (b.price || 0) - (a.price || 0) }
+            { key: 'default', label: 'Sort: Default', compareFn: (a, b) => 0 }, // Index 0
+            { key: 'name_asc', label: 'Sort: Name (A-Z)', compareFn: (a, b) => (a.name || '').localeCompare(b.name || '') }, // Index 1
+            { key: 'name_desc', label: 'Sort: Name (Z-A)', compareFn: (a, b) => (b.name || '').localeCompare(a.name || '') }, // Index 2
+            { key: 'price_asc', label: 'Sort: Price (Low-High)', compareFn: (a, b) => (a.price || 0) - (b.price || 0) }, // Index 3
+            { key: 'price_desc', label: 'Sort: Price (High-Low)', compareFn: (a, b) => (b.price || 0) - (a.price || 0) }  // Index 4
         ];
-        let currentSortIndex = 0; // Start with 'default'
+        let currentSortIndex = 3; // Default sort is Price (Low-High)
 
         // --- Function to Display Filtered and Sorted Products ---
         function displayFilteredProducts(productsToDisplay) {
