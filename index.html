@@ -361,6 +361,26 @@
              </a>
         </div>
         <h2>Our Products</h2>
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div class="relative w-full md:w-1/2 lg:w-1/3">
+                 <input type="text" id="product-search-input" placeholder="Search products..." class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 pl-10 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
+                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                      </svg>
+                 </div>
+            </div>
+            <div class="w-full md:w-auto">
+                <select id="product-sort-select" class="w-full md:w-auto bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <option value="default">Sort by Default</option>
+                    <option value="name_asc">Sort by Name (A-Z)</option>
+                    <option value="name_desc">Sort by Name (Z-A)</option>
+                    <option value="price_asc">Sort by Price (Low to High)</option>
+                    <option value="price_desc">Sort by Price (High to Low)</option>
+                    </select>
+            </div>
+        </div>
+
         <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             <p id="product-loading-status" class="text-center text-gray-400 md:col-span-2 lg:col-span-3">Loading products...</p>
             </div>
