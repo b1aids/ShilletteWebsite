@@ -227,17 +227,19 @@
     </div>
 
 
-    <div id="product-edit-modal" class="modal w-11/12 max-w-6xl p-8">
-        <div class="modal-content max-w-4xl p-8"> <button id="product-modal-close-button" class="modal-close-button">
+    <div id="product-edit-modal" class="modal"> <div class="modal-content w-full max-w-screen-xl p-8 mx-auto"> <button id="product-modal-close-button" class="modal-close-button">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
             </button>
-            <h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3> <form id="product-edit-form" class="admin-form space-y-6">
+            <h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3>
+            <form id="product-edit-form" class="admin-form space-y-6">
                 <input type="hidden" id="product-edit-id">
-    
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5"> <div class="space-y-5">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+                    <div class="space-y-5">
                         <div>
                             <label for="product-edit-name" class="block text-sm font-medium text-gray-300 mb-1">Product Name</label>
-                            <input type="text" id="product-edit-name" required class="admin-input-field"> </div>
+                            <input type="text" id="product-edit-name" required class="admin-input-field">
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-edit-price" class="block text-sm font-medium text-gray-300 mb-1">Price ($)</label>
@@ -249,7 +251,7 @@
                             </div>
                         </div>
                         <div>
-                            <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag (e.g., SOFTWARE)</label>
+                            <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
                             <input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -278,10 +280,22 @@
                             <input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)" class="admin-input-field">
                             <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
                         </div>
-                         <div>
-                             <label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
-                             <input type="text" id="product-edit-paymentLink" placeholder="e.g., PayPal Button ID, Stripe Link ID" class="admin-input-field">
-                         </div>
+                        <div>
+                            <label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
+                            <input type="text" id="product-edit-paymentLink" placeholder="e.g., SellSN SID::PID, PayPal ID" class="admin-input-field">
+                            <p class="text-xs text-gray-400 mt-1">Use format SID::PID for SellSN embed buttons.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="product-edit-sellsn-sid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Store ID (SID)</label>
+                                <input type="text" id="product-edit-sellsn-sid" placeholder="If using SellSN embed" class="admin-input-field">
+                            </div>
+                            <div>
+                                <label for="product-edit-sellsn-pid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Product ID (PID)</label>
+                                <input type="text" id="product-edit-sellsn-pid" placeholder="If using SellSN embed" class="admin-input-field">
+                            </div>
+                        </div>
+
                     </div> <div class="space-y-5">
                         <div>
                             <label for="product-edit-thumbnail" class="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
@@ -313,20 +327,29 @@
                         </div>
                         <div>
                             <label for="product-edit-seller-established" class="block text-sm font-medium text-gray-300 mb-1">Seller Established Date</label>
-                            <input type="date" id="product-edit-seller-established" class="admin-input-field"> <p class="text-xs text-gray-400 mt-1">Used for 'Established X months ago'.</p>
+                            <input type="date" id="product-edit-seller-established" class="admin-input-field">
+                            <p class="text-xs text-gray-400 mt-1">Used for 'Established X months ago'.</p>
                         </div>
-                        <div class="flex items-center self-end mb-1"> <input type="checkbox" id="product-edit-reviews-enabled" class="h-4 w-4 rounded border-gray-400 text-orange-600 focus:ring-orange-500 bg-slate-700 border-slate-600">
+                        <div class="flex items-center self-end mb-1">
+                            <input type="checkbox" id="product-edit-reviews-enabled" class="h-4 w-4 rounded border-gray-400 text-orange-600 focus:ring-orange-500 bg-slate-700 border-slate-600">
                             <label for="product-edit-reviews-enabled" class="ml-2 block text-sm text-gray-300">Enable Reviews Section</label>
                         </div>
                     </div>
                 </fieldset>
-    
-                <div class="pt-6">
-                    <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
-                    <div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div> </div>
+
+                <div class="pt-6 space-y-3"> <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
+                    <button type="button" id="product-cancel-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300">Cancel</button>
+                    <div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div>
+                </div>
             </form>
         </div>
     </div>
+
+    <script>
+        // Ensure you add references and logic for these new fields if needed:
+        const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid');
+        const productEditSellsnPid = document.getElementById('product-edit-sellsn-pid');
+    </script>
 
     <div id="chat-context-menu">
         <button class="context-menu-item" id="context-delete-message">Delete Message</button>
@@ -763,6 +786,12 @@
         const productEditFeaturesInput = document.getElementById('product-edit-features');
         const productEditPaymentLinkInput = document.getElementById('product-edit-paymentLink');
         const productSaveButton = document.getElementById('product-save-button');
+        const productCancelButton = document.getElementById('product-cancel-button');
+        if (productCancelButton) {
+            productCancelButton.addEventListener('click', () => {
+                closeProductEditModal(); // Call the existing function to close the modal
+            });
+        }
         const productEditStatus = document.getElementById('product-edit-status');
         const footerYear = document.getElementById('footer-year');
         const productDetailPage = document.getElementById('product-detail-page-content');
@@ -805,7 +834,7 @@
         const myProductViewOrderIdButton = document.getElementById('context-view-order-id'); // Get the new button
                 // --- Firmware Generation Modal Functions ---
 
-                const firmwareModal = document.getElementById('firmware-generate-modal');
+        const firmwareModal = document.getElementById('firmware-generate-modal');
         const firmwareModalTitle = document.getElementById('firmware-modal-title');
         const firmwareModalCloseButton = document.getElementById('firmware-modal-close-button');
         const firmwareGenerateForm = document.getElementById('firmware-generate-form');
@@ -896,6 +925,7 @@
                  generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
                  return;
             }
+            
 
             // Disable button, show status
             submitFirmwareButton.disabled = true;
