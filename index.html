@@ -202,124 +202,129 @@
 				</form>
 			</div>
 		</div>
-		<div id="product-edit-modal" class="modal"> <div class="modal-content w-[95%] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8 mx-auto bg-slate-800 rounded-lg shadow-xl text-white relative"> <button id="product-modal-close-button" class="modal-close-button">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-            </button>
-            <h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3>
-            <form id="product-edit-form" class="admin-form space-y-6">
-                <input type="hidden" id="product-edit-id">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="product-edit-name" class="block text-sm font-medium text-gray-300 mb-1">Product Name</label>
-                            <input type="text" id="product-edit-name" required class="admin-input-field">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="product-edit-price" class="block text-sm font-medium text-gray-300 mb-1">Price ($)</label>
-                                <input type="number" id="product-edit-price" step="0.01" required class="admin-input-field">
-                            </div>
-                            <div>
-                                <label for="product-edit-stock" class="block text-sm font-medium text-gray-300 mb-1">Stock Quantity</label>
-                                <input type="number" id="product-edit-stock" step="1" min="0" placeholder="e.g., 100" class="admin-input-field">
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
-                            <input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-1">Tag/Border Color</label>
-                                <div class="grid grid-cols-1 @[600px]:grid-cols-2 gap-2">
-                                    <select id="product-edit-tagColor" class="admin-input-field">
-                                    <option value="gray">Gray</option>
-                                    <option value="orange">Orange</option>
-                                    <option value="blue">Blue</option>
-                                    <option value="green">Green</option>
-                                    <option value="red">Red</option>
-                                    <option value="purple">Purple</option>
-                                    <option value="yellow">Yellow</option>
-                                    <option value="pink">Pink</option>
-                                    <option value="teal">Teal</option>
-                                    <option value="custom">Custom HEX</option>
-                                </select>
-                            </div>
-                            <div id="custom-hex-input-container" class="hidden">
-                                <label for="product-edit-customHex" class="block text-sm font-medium text-gray-300 mb-1">Custom HEX Color</label>
-                                <input type="text" id="product-edit-customHex" placeholder="#RRGGBB" class="admin-input-field">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="product-edit-device-type" class="block text-sm font-medium text-gray-300 mb-1">Device Type (for Firmware)</label>
-                            <input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)" class="admin-input-field">
-                            <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
-                        </div>
-                        <div>
-                            <label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
-                            <input type="text" id="product-edit-paymentLink" placeholder="e.g., SellSN SID::PID, PayPal ID" class="admin-input-field">
-                            <p class="text-xs text-gray-400 mt-1">Use format SID::PID for SellSN embed buttons.</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="product-edit-sellsn-sid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Store ID (SID)</label>
-                                <input type="text" id="product-edit-sellsn-sid" placeholder="If using SellSN embed" class="admin-input-field">
-                            </div>
-                            <div>
-                                <label for="product-edit-sellsn-pid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Product ID (PID)</label>
-                                <input type="text" id="product-edit-sellsn-pid" placeholder="If using SellSN embed" class="admin-input-field">
-                            </div>
-                        </div>
-                    </div> <div class="space-y-5">
-                        <div>
-                            <label for="product-edit-thumbnail" class="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
-                            <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL (overrides file upload)" class="admin-input-field mb-2">
-                            <div class="flex items-center gap-x-3">
-                                <input type="file" id="product-edit-thumbnail-file" accept="image/png, image/jpeg, image/gif, image/webp" class="hidden">
-                                <button type="button" id="product-edit-thumbnail-button" class="text-sm bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition duration-200 flex-shrink-0">Or Select File</button>
-                                <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
-                            </div>
-                        </div>
-                        </div> </div> <div>
-                    <label for="product-edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
-                    <textarea id="product-edit-description" rows="8" placeholder="Detailed product description..." class="admin-input-field"></textarea> </div>
-
-                <div>
-                    <label for="product-edit-features" class="block text-sm font-medium text-gray-300 mb-1">Features (One per line)</label>
-                    <textarea id="product-edit-features" rows="10" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..." class="admin-input-field"></textarea> </div>
-
-                <fieldset class="border border-slate-600 p-5 rounded-md mt-6">
-                <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-3">
-                        <div>
-                            <label for="product-edit-seller-name" class="block text-sm font-medium text-gray-300 mb-1">Seller Name</label>
-                            <input type="text" id="product-edit-seller-name" placeholder="e.g., ShilletteFN" class="admin-input-field">
-                        </div>
-                        <div>
-                            <label for="product-edit-seller-avatar" class="block text-sm font-medium text-gray-300 mb-1">Seller Avatar URL</label>
-                            <input type="text" id="product-edit-seller-avatar" placeholder="URL for seller image" class="admin-input-field">
-                        </div>
-                        <div>
-                            <label for="product-edit-seller-established" class="block text-sm font-medium text-gray-300 mb-1">Seller Established Date</label>
-                            <input type="date" id="product-edit-seller-established" class="admin-input-field">
-                            <p class="text-xs text-gray-400 mt-1">Used for 'Established X months ago'.</p>
-                        </div>
-                        <div class="flex items-center self-end mb-1">
-                            <input type="checkbox" id="product-edit-reviews-enabled" class="h-4 w-4 rounded border-gray-400 text-orange-600 focus:ring-orange-500 bg-slate-700 border-slate-600">
-                            <label for="product-edit-reviews-enabled" class="ml-2 block text-sm text-gray-300">Enable Reviews Section</label>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <div class="pt-6 space-y-3">
-                    <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
-                    <button type="button" id="product-cancel-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300">Cancel</button>
-                    <div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div>
-                </div>
-            </form>
-        </div>
-    </div>
+		<div id="product-edit-modal" class="modal">
+			<div class="modal-content w-[95%] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8 mx-auto bg-slate-800 rounded-lg shadow-xl text-white relative">
+				<button id="product-modal-close-button" class="modal-close-button">
+					<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+					</svg>
+				</button>
+				<h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3>
+				<form id="product-edit-form" class="admin-form space-y-6">
+					<input type="hidden" id="product-edit-id">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+						<div class="space-y-5">
+							<div>
+								<label for="product-edit-name" class="block text-sm font-medium text-gray-300 mb-1">Product Name</label>
+								<input type="text" id="product-edit-name" required class="admin-input-field">
+							</div>
+							<div class="grid grid-cols-2 gap-4">
+								<div>
+									<label for="product-edit-price" class="block text-sm font-medium text-gray-300 mb-1">Price ($)</label>
+									<input type="number" id="product-edit-price" step="0.01" required class="admin-input-field">
+								</div>
+								<div>
+									<label for="product-edit-stock" class="block text-sm font-medium text-gray-300 mb-1">Stock Quantity</label>
+									<input type="number" id="product-edit-stock" step="1" min="0" placeholder="e.g., 100" class="admin-input-field">
+								</div>
+							</div>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
+								<input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
+							</div>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-300 mb-1">Tag/Border Color</label>
+									<div class="grid grid-cols-1 @[600px]:grid-cols-2 gap-2">
+										<select id="product-edit-tagColor" class="admin-input-field">
+											<option value="gray">Gray</option>
+											<option value="orange">Orange</option>
+											<option value="blue">Blue</option>
+											<option value="green">Green</option>
+											<option value="red">Red</option>
+											<option value="purple">Purple</option>
+											<option value="yellow">Yellow</option>
+											<option value="pink">Pink</option>
+											<option value="teal">Teal</option>
+											<option value="custom">Custom HEX</option>
+										</select>
+									</div>
+									<div id="custom-hex-input-container" class="hidden">
+										<label for="product-edit-customHex" class="block text-sm font-medium text-gray-300 mb-1">Custom HEX Color</label>
+										<input type="text" id="product-edit-customHex" placeholder="#RRGGBB" class="admin-input-field">
+									</div>
+								</div>
+								<div>
+									<label for="product-edit-device-type" class="block text-sm font-medium text-gray-300 mb-1">Device Type (for Firmware)</label>
+									<input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)" class="admin-input-field">
+									<p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
+								</div>
+								<div>
+									<label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
+									<input type="text" id="product-edit-paymentLink" placeholder="e.g., SellSN SID::PID, PayPal ID" class="admin-input-field">
+									<p class="text-xs text-gray-400 mt-1">Use format SID::PID for SellSN embed buttons.</p>
+								</div>
+								<div class="grid grid-cols-2 gap-4">
+									<div>
+										<label for="product-edit-sellsn-sid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Store ID (SID)</label>
+										<input type="text" id="product-edit-sellsn-sid" placeholder="If using SellSN embed" class="admin-input-field">
+									</div>
+									<div>
+										<label for="product-edit-sellsn-pid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Product ID (PID)</label>
+										<input type="text" id="product-edit-sellsn-pid" placeholder="If using SellSN embed" class="admin-input-field">
+									</div>
+								</div>
+							</div>
+							<div class="space-y-5">
+								<div>
+									<label for="product-edit-thumbnail" class="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
+									<input type="text" id="product-edit-thumbnail" placeholder="Enter image URL (overrides file upload)" class="admin-input-field mb-2">
+									<div class="flex items-center gap-x-3">
+										<input type="file" id="product-edit-thumbnail-file" accept="image/png, image/jpeg, image/gif, image/webp" class="hidden">
+										<button type="button" id="product-edit-thumbnail-button" class="text-sm bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-md transition duration-200 flex-shrink-0">Or Select File</button>
+										<span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<label for="product-edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
+							<textarea id="product-edit-description" rows="8" placeholder="Detailed product description..." class="admin-input-field"></textarea> 
+						</div>
+						<div>
+							<label for="product-edit-features" class="block text-sm font-medium text-gray-300 mb-1">Features (One per line)</label>
+							<textarea id="product-edit-features" rows="10" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..." class="admin-input-field"></textarea> 
+						</div>
+						<fieldset class="border border-slate-600 p-5 rounded-md mt-6">
+							<legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-3">
+								<div>
+									<label for="product-edit-seller-name" class="block text-sm font-medium text-gray-300 mb-1">Seller Name</label>
+									<input type="text" id="product-edit-seller-name" placeholder="e.g., ShilletteFN" class="admin-input-field">
+								</div>
+								<div>
+									<label for="product-edit-seller-avatar" class="block text-sm font-medium text-gray-300 mb-1">Seller Avatar URL</label>
+									<input type="text" id="product-edit-seller-avatar" placeholder="URL for seller image" class="admin-input-field">
+								</div>
+								<div>
+									<label for="product-edit-seller-established" class="block text-sm font-medium text-gray-300 mb-1">Seller Established Date</label>
+									<input type="date" id="product-edit-seller-established" class="admin-input-field">
+									<p class="text-xs text-gray-400 mt-1">Used for 'Established X months ago'.</p>
+								</div>
+								<div class="flex items-center self-end mb-1">
+									<input type="checkbox" id="product-edit-reviews-enabled" class="h-4 w-4 rounded border-gray-400 text-orange-600 focus:ring-orange-500 bg-slate-700 border-slate-600">
+									<label for="product-edit-reviews-enabled" class="ml-2 block text-sm text-gray-300">Enable Reviews Section</label>
+								</div>
+							</div>
+						</fieldset>
+						<div class="pt-6 space-y-3">
+							<button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
+							<button type="button" id="product-cancel-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300">Cancel</button>
+							<div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div>
+						</div>
+				</form>
+				</div>
+			</div>
 			<script>
 				// Ensure you add references and logic for these new fields if needed:
 				const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid');
