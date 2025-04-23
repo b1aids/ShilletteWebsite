@@ -338,11 +338,6 @@
         </div>
     </div>
 
-    <script>
-        // Ensure you add references and logic for these new fields if needed:
-        const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid');
-        const productEditSellsnPid = document.getElementById('product-edit-sellsn-pid');
-    </script>
 
     <div id="chat-context-menu">
         <button class="context-menu-item" id="context-delete-message">Delete Message</button>
@@ -842,6 +837,8 @@
         const productEditSellerAvatarInput = document.getElementById('product-edit-seller-avatar');
         const productEditSellerEstablishedInput = document.getElementById('product-edit-seller-established');
         const productEditReviewsEnabledInput = document.getElementById('product-edit-reviews-enabled');
+        const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid');
+        const productEditSellsnPid = document.getElementById('product-edit-sellsn-pid');
 
         /** Fetches available device types and populates the select dropdown. */
         async function populateDeviceTypes() {
