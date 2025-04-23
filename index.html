@@ -3049,166 +3049,281 @@
         }
 
         /**
-         * Opens the product edit/add modal. (MODIFIED)
+         * Opens the product edit/add modal, populating fields if editing.
+         * Assumes product object includes all necessary fields (name, price, stock, tag, tagColor,
+         * customBorderHex, deviceType, thumbnailUrl, description, features, paymentLink,
+         * sellsnSid, sellsnPid, sellerName, sellerAvatarUrl, sellerEstablishedDate, reviewsEnabled).
          * @param {object | null} [product=null] - Product data to edit, or null to add new.
          */
-         function openProductEditModal(product = null) {
-             // ... (existing checks and form reset) ...
-             if (!productEditModal || !productEditForm || !customHexInputContainer ||
-                 !productEditStockInput || !productEditDeviceTypeInput || !productEditSellerNameInput ||
-                 !productEditSellerAvatarInput || !productEditSellerEstablishedInput || !productEditReviewsEnabledInput) {
-                  console.error("One or more product modal elements not found!");
-                  return;
-             }
+        async function openProductEditModal(product = null) { // Changed to async if needed
+            // --- Get References to ALL modal elements ---
+            const productEditModal = document.getElementById('product-edit-modal');
+            const productEditForm = document.getElementById('product-edit-form');
+            const productModalTitle = document.getElementById('product-modal-title');
+            const productEditIdInput = document.getElementById('product-edit-id');
+            const productEditNameInput = document.getElementById('product-edit-name');
+            const productEditPriceInput = document.getElementById('product-edit-price');
+            const productEditStockInput = document.getElementById('product-edit-stock');
+            const productEditTagInput = document.getElementById('product-edit-tag');
+            const productEditTagColorSelect = document.getElementById('product-edit-tagColor');
+            const productEditCustomHexInput = document.getElementById('product-edit-customHex');
+            const customHexInputContainer = document.getElementById('custom-hex-input-container');
+            const productEditDeviceTypeInput = document.getElementById('product-edit-device-type');
+            const productEditPaymentLinkInput = document.getElementById('product-edit-paymentLink');
+            const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid'); // SellSN SID field
+            const productEditSellsnPid = document.getElementById('product-edit-sellsn-pid'); // SellSN PID field
+            const productEditThumbnailInput = document.getElementById('product-edit-thumbnail');
+            const productEditThumbnailFileInput = document.getElementById('product-edit-thumbnail-file');
+            const productEditThumbnailButton = document.getElementById('product-edit-thumbnail-button');
+            const productEditThumbnailFilename = document.getElementById('product-edit-thumbnail-filename');
+            const productEditDescriptionInput = document.getElementById('product-edit-description');
+            const productEditFeaturesInput = document.getElementById('product-edit-features');
+            const productEditSellerNameInput = document.getElementById('product-edit-seller-name');
+            const productEditSellerAvatarInput = document.getElementById('product-edit-seller-avatar');
+            const productEditSellerEstablishedInput = document.getElementById('product-edit-seller-established');
+            const productEditReviewsEnabledInput = document.getElementById('product-edit-reviews-enabled');
+            const productSaveButton = document.getElementById('product-save-button');
+            const productEditStatus = document.getElementById('product-edit-status');
 
-             productEditForm.reset();
-             productEditStatus.textContent = '';
-             productEditStatus.className = 'text-sm text-center h-5 mt-2';
-             productEditThumbnailFilename.textContent = 'No file selected';
-             productEditReviewsEnabledInput.checked = true; // Default reviews to enabled
+            // --- Check if all elements were found ---
+            if (!productEditModal || !productEditForm || !productModalTitle || !productEditIdInput || !productEditNameInput ||
+                !productEditPriceInput || !productEditStockInput || !productEditTagInput || !productEditTagColorSelect ||
+                !productEditCustomHexInput || !customHexInputContainer || !productEditDeviceTypeInput || !productEditPaymentLinkInput ||
+                !productEditSellsnSid || !productEditSellsnPid || // Added checks
+                !productEditThumbnailInput || !productEditThumbnailFileInput || !productEditThumbnailButton ||
+                !productEditThumbnailFilename || !productEditDescriptionInput || !productEditFeaturesInput ||
+                !productEditSellerNameInput || !productEditSellerAvatarInput || !productEditSellerEstablishedInput ||
+                !productEditReviewsEnabledInput || !productSaveButton || !productEditStatus) {
+                console.error("One or more product modal elements could not be found in the DOM!");
+                alert("Error: Could not initialize product editor."); // User feedback
+                return;
+            }
 
-             if (product) {
-                 // Editing existing product
-                 productModalTitle.textContent = 'Edit Product';
-                 productEditIdInput.value = product._id;
-                 productEditNameInput.value = product.name || '';
-                 productEditThumbnailInput.value = product.thumbnailUrl || '';
-                 productEditPriceInput.value = product.price || '';
-                 productEditTagInput.value = product.tag || '';
+            // --- Reset form state ---
+            productEditForm.reset(); // Resets most fields
+            productEditStatus.textContent = '';
+            productEditStatus.className = 'text-sm text-center h-5 mt-3';
+            productEditThumbnailFilename.textContent = 'No file selected';
+            productEditReviewsEnabledInput.checked = true; // Default reviews enabled
+            productEditTagColorSelect.value = 'gray'; // Reset dropdown
+            toggleCustomHexInput(); // Ensure hex input visibility is correct
 
-                 // Handle tag color and custom hex
-                 const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
-                 productEditTagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
-                 productEditCustomHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
+            // --- Populate form based on mode (Add vs Edit) ---
+            if (product) {
+                // === Editing existing product ===
+                productModalTitle.textContent = 'Edit Product';
+                productEditIdInput.value = product._id; // Store the ID
 
-                 productEditDescriptionInput.value = product.description || '';
-                 productEditFeaturesInput.value = (product.features || []).join('\n');
-                 productEditPaymentLinkInput.value = product.paymentLink || '';
+                // Populate core fields
+                productEditNameInput.value = product.name || '';
+                productEditPriceInput.value = product.price || '';
+                productEditStockInput.value = product.stock !== undefined ? product.stock : '';
+                productEditTagInput.value = product.tag || '';
+                productEditDeviceTypeInput.value = product.deviceType || '';
+                productEditPaymentLinkInput.value = product.paymentLink || '';
 
-                 // --- Populate NEW fields ---
-                 productEditStockInput.value = product.stock !== undefined ? product.stock : ''; // Handle 0 stock
-                 productEditDeviceTypeInput.value = product.deviceType || '';
-                 productEditSellerNameInput.value = product.sellerName || '';
-                 productEditSellerAvatarInput.value = product.sellerAvatarUrl || '';
-                 // Format date for input type="date" (YYYY-MM-DD)
-                 try {
-                     productEditSellerEstablishedInput.value = product.sellerEstablishedDate ? new Date(product.sellerEstablishedDate).toISOString().split('T')[0] : '';
-                 } catch (e) {
-                     productEditSellerEstablishedInput.value = ''; // Clear if date is invalid
-                 }
-                 productEditReviewsEnabledInput.checked = product.reviewsEnabled !== false; // Default to true if undefined
+                // Populate SellSN fields
+                productEditSellsnSid.value = product.sellsnSid || '';
+                productEditSellsnPid.value = product.sellsnPid || '';
 
-             } else {
-                 // Adding new product
-                 productModalTitle.textContent = 'Add Product';
-                 productEditIdInput.value = '';
-                 productEditTagColorSelect.value = 'gray';
-                 productEditCustomHexInput.value = '';
-                 // Initialize new fields for Add mode if needed (most are fine empty)
-                 productEditReviewsEnabledInput.checked = true; // Default reviews on for new products
-             }
-             toggleCustomHexInput();
-             productEditModal.classList.add('active');
+                // Populate color selection
+                const hasValidCustomHex = product.customBorderHex && /^#[0-9A-F]{6}$/i.test(product.customBorderHex);
+                productEditTagColorSelect.value = hasValidCustomHex ? 'custom' : (product.tagColor || 'gray');
+                productEditCustomHexInput.value = hasValidCustomHex ? product.customBorderHex : '';
+                toggleCustomHexInput(); // Update hex input visibility based on loaded value
+
+                // Populate thumbnail, description, features
+                productEditThumbnailInput.value = product.thumbnailUrl || '';
+                productEditDescriptionInput.value = product.description || '';
+                productEditFeaturesInput.value = (product.features || []).join('\n');
+
+                // Populate detail page settings
+                productEditSellerNameInput.value = product.sellerName || '';
+                productEditSellerAvatarInput.value = product.sellerAvatarUrl || '';
+                try { // Safely format date
+                    productEditSellerEstablishedInput.value = product.sellerEstablishedDate ? new Date(product.sellerEstablishedDate).toISOString().split('T')[0] : '';
+                } catch (e) {
+                    productEditSellerEstablishedInput.value = ''; // Clear if date is invalid
+                    console.warn("Error parsing seller established date:", product.sellerEstablishedDate, e);
+                }
+                productEditReviewsEnabledInput.checked = product.reviewsEnabled !== false; // Handle undefined as true
+
+            } else {
+                // === Adding new product ===
+                productModalTitle.textContent = 'Add Product';
+                productEditIdInput.value = ''; // Ensure ID field is empty
+                // Most fields are reset by form.reset(), but ensure defaults if needed
+                productEditReviewsEnabledInput.checked = true;
+                productEditTagColorSelect.value = 'gray';
+                toggleCustomHexInput();
+                // Ensure specific fields are cleared if reset doesn't catch them
+                productEditSellsnSid.value = '';
+                productEditSellsnPid.value = '';
+                productEditSellerEstablishedInput.value = '';
+            }
+
+            // --- Show the modal ---
+            productEditModal.classList.add('active');
         }
 
 
         /**
-         * Handles the submission of the product add/edit form. (MODIFIED)
+         * Handles the submission of the product add/edit form. Gathers data,
+         * sends it to the API, and handles the response.
          */
         async function handleSaveProduct(event) {
-             event.preventDefault();
-             // ... (existing checks for form/button) ...
-             if (!productEditForm || !productSaveButton ||
-                 !productEditStockInput || !productEditDeviceTypeInput || !productEditSellerNameInput ||
-                 !productEditSellerAvatarInput || !productEditSellerEstablishedInput || !productEditReviewsEnabledInput) {
-                  console.error("One or more product save elements not found!");
-                  return;
-             }
+            event.preventDefault(); // Prevent default page reload
 
-             // ... (existing button disabling, status clearing, URL/method determination) ...
-             productSaveButton.disabled = true; productSaveButton.textContent = 'Saving...';
-             productEditStatus.textContent = ''; productEditStatus.className = 'text-sm text-center h-5 mt-2';
-             const productId = productEditIdInput.value;
-             const isEditing = !!productId;
-             const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
-             const method = isEditing ? 'PUT' : 'POST';
+            // --- Get References to ALL necessary elements ---
+            // (Assume they are accessible in this scope or get them again)
+            const productEditForm = document.getElementById('product-edit-form');
+            const productSaveButton = document.getElementById('product-save-button');
+            const productEditStatus = document.getElementById('product-edit-status');
+            const productEditIdInput = document.getElementById('product-edit-id');
+            const productEditNameInput = document.getElementById('product-edit-name');
+            const productEditPriceInput = document.getElementById('product-edit-price');
+            const productEditStockInput = document.getElementById('product-edit-stock');
+            const productEditTagInput = document.getElementById('product-edit-tag');
+            const productEditTagColorSelect = document.getElementById('product-edit-tagColor');
+            const productEditCustomHexInput = document.getElementById('product-edit-customHex');
+            const productEditDeviceTypeInput = document.getElementById('product-edit-device-type');
+            const productEditPaymentLinkInput = document.getElementById('product-edit-paymentLink');
+            const productEditSellsnSid = document.getElementById('product-edit-sellsn-sid'); // SellSN SID
+            const productEditSellsnPid = document.getElementById('product-edit-sellsn-pid'); // SellSN PID
+            const productEditThumbnailInput = document.getElementById('product-edit-thumbnail');
+            // Note: File input value isn't directly sent; typically upload separately or handle URL
+            const productEditDescriptionInput = document.getElementById('product-edit-description');
+            const productEditFeaturesInput = document.getElementById('product-edit-features');
+            const productEditSellerNameInput = document.getElementById('product-edit-seller-name');
+            const productEditSellerAvatarInput = document.getElementById('product-edit-seller-avatar');
+            const productEditSellerEstablishedInput = document.getElementById('product-edit-seller-established');
+            const productEditReviewsEnabledInput = document.getElementById('product-edit-reviews-enabled');
 
-             // ... (existing tag color / custom hex validation and determination) ...
-              let tagColorValue = productEditTagColorSelect.value;
-              let customHexValue = productEditCustomHexInput.value.trim();
-              let finalTagColor = 'gray';
-              let finalCustomHex = null;
-              if (tagColorValue === 'custom') {
-                  if (customHexValue && /^#[0-9A-F]{6}$/i.test(customHexValue)) {
-                      finalTagColor = 'custom';
-                      finalCustomHex = customHexValue;
-                  } else {
-                      productEditStatus.textContent = 'Invalid Custom HEX format (#RRGGBB).';
-                      productEditStatus.classList.add('text-red-400');
-                      productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
-                  }
-              } else {
-                  finalTagColor = tagColorValue || 'gray';
-                  finalCustomHex = null;
-              }
+            // Check if essential elements exist
+            if (!productEditForm || !productSaveButton || !productEditStatus || !productEditIdInput ||
+                !productEditNameInput || !productEditPriceInput || !productEditStockInput || !productEditTagInput ||
+                !productEditTagColorSelect || !productEditCustomHexInput || !productEditDeviceTypeInput ||
+                !productEditPaymentLinkInput || !productEditSellsnSid || !productEditSellsnPid || // Added checks
+                !productEditThumbnailInput || !productEditDescriptionInput || !productEditFeaturesInput ||
+                !productEditSellerNameInput || !productEditSellerAvatarInput || !productEditSellerEstablishedInput ||
+                !productEditReviewsEnabledInput) {
+                console.error("One or more product save elements not found!");
+                alert("Error: Cannot save product due to missing form elements.");
+                return;
+            }
 
-             // --- Gather product data including NEW fields ---
-             const productData = {
-                 name: productEditNameInput.value.trim(),
-                 thumbnailUrl: productEditThumbnailInput.value.trim() || null,
-                 price: parseFloat(productEditPriceInput.value),
-                 stock: productEditStockInput.value !== '' ? parseInt(productEditStockInput.value, 10) : null, // Parse int, allow null
-                 tag: productEditTagInput.value.trim() || null,
-                 tagColor: finalTagColor,
-                 customBorderHex: finalCustomHex,
-                 deviceType: productEditDeviceTypeInput.value.trim() || null, // Add device type
-                 description: productEditDescriptionInput.value.trim() || null,
-                 features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
-                 paymentLink: productEditPaymentLinkInput.value.trim() || null,
-                 // New Product Detail Fields
-                 sellerName: productEditSellerNameInput.value.trim() || null,
-                 sellerAvatarUrl: productEditSellerAvatarInput.value.trim() || null,
-                 sellerEstablishedDate: productEditSellerEstablishedInput.value || null, // Send as YYYY-MM-DD string or null
-                 reviewsEnabled: productEditReviewsEnabledInput.checked
-             };
 
-             // Basic validation (including new fields if necessary)
-             if (!productData.name || isNaN(productData.price) ) {
-                  productEditStatus.textContent = 'Name and valid Price are required.';
-                  productEditStatus.classList.add('text-red-400');
-                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
-             }
-             if (productData.stock !== null && isNaN(productData.stock)) {
-                 productEditStatus.textContent = 'Stock must be a valid number.';
-                  productEditStatus.classList.add('text-red-400');
-                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
-             }
+            // --- Disable button and clear status ---
+            productSaveButton.disabled = true;
+            productSaveButton.textContent = 'Saving...';
+            productEditStatus.textContent = '';
+            productEditStatus.className = 'text-sm text-center h-5 mt-3';
 
-             // ... (rest of existing try/catch block for API call) ...
-              try {
-                  const response = await fetch(url, {
-                      method: method,
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(productData), // Send the extended productData
-                      credentials: 'include'
-                  });
-                  const result = await response.json();
-                  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+            // --- Determine URL and Method ---
+            const productId = productEditIdInput.value;
+            const isEditing = !!productId;
+            const url = isEditing ? `${API_BASE_URL}/api/products/${productId}` : `${API_BASE_URL}/api/products`;
+            const method = isEditing ? 'PUT' : 'POST';
 
-                  showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
-                  closeProductEditModal();
-                  await loadProductManagementTable(); // Refresh admin table
-                  if (activeSectionId === pageSections['#products']) await fetchProducts(); // Refresh public product list if visible
+            // --- Validate and determine Tag Color / Custom Hex ---
+            let tagColorValue = productEditTagColorSelect.value;
+            let customHexValue = productEditCustomHexInput.value.trim();
+            let finalTagColor = 'gray';
+            let finalCustomHex = null;
 
-              } catch (error) {
-                  console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
-                  productEditStatus.textContent = `Error: ${error.message}`;
-                  productEditStatus.classList.add('text-red-400');
-                  showPopupMessage(errorMessagePopup, `Failed to save product: ${error.message}`, true);
-              } finally {
-                  productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product';
-              }
+            if (tagColorValue === 'custom') {
+                if (customHexValue && /^#[0-9A-F]{6}$/i.test(customHexValue)) {
+                    finalTagColor = 'custom';
+                    finalCustomHex = customHexValue;
+                } else {
+                    productEditStatus.textContent = 'Invalid Custom HEX format (#RRGGBB).';
+                    productEditStatus.classList.add('text-red-400');
+                    productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+                }
+            } else {
+                finalTagColor = tagColorValue || 'gray';
+                finalCustomHex = null;
+            }
+
+            // --- Gather ALL product data ---
+            const productData = {
+                name: productEditNameInput.value.trim(),
+                thumbnailUrl: productEditThumbnailInput.value.trim() || null,
+                price: parseFloat(productEditPriceInput.value),
+                stock: productEditStockInput.value !== '' ? parseInt(productEditStockInput.value, 10) : null,
+                tag: productEditTagInput.value.trim() || null,
+                tagColor: finalTagColor,
+                customBorderHex: finalCustomHex,
+                deviceType: productEditDeviceTypeInput.value.trim() || null,
+                description: productEditDescriptionInput.value.trim() || null,
+                features: productEditFeaturesInput.value.split('\n').map(f => f.trim()).filter(f => f),
+                paymentLink: productEditPaymentLinkInput.value.trim() || null,
+                sellsnSid: productEditSellsnSid.value.trim() || null, // Include SellSN SID
+                sellsnPid: productEditSellsnPid.value.trim() || null, // Include SellSN PID
+                sellerName: productEditSellerNameInput.value.trim() || null,
+                sellerAvatarUrl: productEditSellerAvatarInput.value.trim() || null,
+                sellerEstablishedDate: productEditSellerEstablishedInput.value || null,
+                reviewsEnabled: productEditReviewsEnabledInput.checked
+            };
+
+            // --- Basic Validation ---
+            if (!productData.name || isNaN(productData.price)) {
+                productEditStatus.textContent = 'Name and valid Price are required.';
+                productEditStatus.classList.add('text-red-400');
+                productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+            }
+            if (productData.stock !== null && isNaN(productData.stock)) {
+                productEditStatus.textContent = 'Stock must be a valid number.';
+                productEditStatus.classList.add('text-red-400');
+                productSaveButton.disabled = false; productSaveButton.textContent = 'Save Product'; return;
+            }
+            // Add more validation as needed
+
+            // --- API Call ---
+            try {
+                console.log(`Sending product data (${method}) to ${url}:`, JSON.stringify(productData, null, 2)); // Log data being sent
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(productData),
+                    credentials: 'include'
+                });
+
+                const result = await response.json(); // Try to parse JSON even on error
+
+                if (!response.ok) {
+                    // Use error message from backend if available, otherwise use status
+                    const errorMsg = result.error || `Request failed with status ${response.status}`;
+                    throw new Error(errorMsg);
+                }
+
+                // Success
+                showPopupMessage(productMessagePopup, `Product ${isEditing ? 'updated' : 'added'} successfully!`);
+                closeProductEditModal(); // Assuming closeProductEditModal() exists and works
+
+                // Refresh relevant data views
+                if (typeof loadProductManagementTable === 'function') {
+                    await loadProductManagementTable(); // Refresh admin table
+                }
+                if (activeSectionId === pageSections['#products'] && typeof fetchProducts === 'function') {
+                    await fetchProducts(); // Refresh public product list if visible
+                }
+
+            } catch (error) {
+                // Error Handling
+                console.error(`Error ${isEditing ? 'updating' : 'adding'} product:`, error);
+                const displayError = error.message || "An unknown error occurred.";
+                productEditStatus.textContent = `Error: ${displayError}`;
+                productEditStatus.classList.add('text-red-400');
+                showPopupMessage(errorMessagePopup, `Failed to save product: ${displayError}`, true);
+            } finally {
+                // --- Re-enable button ---
+                productSaveButton.disabled = false;
+                productSaveButton.textContent = 'Save Product';
+            }
         }
+
 
         /** Shows or hides the custom hex color input based on the tag color dropdown selection. */
         function toggleCustomHexInput() {
