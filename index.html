@@ -11,6 +11,52 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <link id="favicon" rel="icon" type="image/png" href="/images/icon.png">
     <style type="text/tailwindcss">
+        /* Command Suggestions Popup */
+        #command-suggestions {
+            /* Positioned absolutely above the input form */
+            /* Base styles already applied inline via Tailwind */
+        }
+        .command-suggestion-item {
+            @apply px-3 py-1.5 cursor-pointer hover:bg-orange-600 block w-full text-left;
+        }
+        .command-suggestion-item.selected {
+            @apply bg-orange-700; /* Highlight selected item */
+        }
+        .command-suggestion-item .command-name {
+            @apply font-semibold mr-2;
+        }
+        .command-suggestion-item .command-desc {
+            @apply text-gray-400 text-xs;
+        }
+
+        /* File Attachment Block in Chat */
+        .chat-file-attachment {
+            @apply bg-slate-700/60 border border-slate-600 rounded-lg p-3 mt-2 flex items-center space-x-3 max-w-xs; /* Limit width */
+        }
+        .chat-file-icon {
+            @apply w-8 h-8 flex-shrink-0 text-gray-400; /* Icon styling */
+        }
+        .chat-file-details {
+            @apply overflow-hidden; /* Prevent long names from breaking layout */
+        }
+        .chat-file-name {
+            @apply text-sm font-medium text-white truncate block; /* Ellipsis for long names */
+        }
+        .chat-file-size {
+            @apply text-xs text-gray-500;
+        }
+        /* Add specific icons if needed */
+        /* .icon-file-image { @apply text-blue-400; } */
+        /* .icon-file-pdf { @apply text-red-400; } */
+        /* .icon-file-archive { @apply text-yellow-400; } */
+
+        /* File Preview Area Below Input */
+        #file-preview-container .file-preview-item {
+            @apply flex items-center justify-between bg-slate-700/50 px-2 py-1 rounded text-xs;
+        }
+        #file-preview-container .file-preview-item button {
+            @apply ml-2 text-red-400 hover:text-red-300 text-xs;
+        }
         .admin-input-field {
         @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white shadow-sm
                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 focus:border-orange-500
@@ -103,7 +149,7 @@
         #create-ticket-status.success { @apply text-green-400; } #create-ticket-status.error { @apply text-red-400; }
         #moderator-management-view h3 { @apply text-xl font-semibold text-white mb-4; }
         #moderator-management-view details summary { @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors; }
-        #moderator-management-view details[open] summary { @apply text-orange-400; }
+        #moderator-management-view details[open] summary { @apply text-orange-400; }    
         .ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2; }
 
         #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; }
@@ -111,6 +157,7 @@
         .chat-message .username { @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; }
         .chat-message .timestamp { @apply text-xs text-gray-500 ml-2 whitespace-nowrap; }
         #chat-input-form { @apply flex space-x-2; }
+        
         #chat-input { @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; }
         #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; }
 
@@ -562,21 +609,29 @@
      </div>
 
      <div id="ticket-detail-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-         <div class="flex justify-start mb-8">
-             <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                 <span>Back to Tickets</span>
-             </a>
-         </div>
-         <h2 id="ticket-detail-subject">Ticket Subject</h2>
-         <div class="ticket-card">
-             <div id="chat-messages"><p class="text-gray-500 text-center py-4">Loading chat...</p></div>
-             <form id="chat-input-form" class="mt-4" novalidate>
-                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
-                 <button type="submit" id="send-chat-button">Send</button>
-             </form>
-         </div>
-     </div>
+        <div class="flex justify-start mb-8">
+            <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span>Back to Tickets</span>
+            </a>
+        </div>
+        <h2 id="ticket-detail-subject">Ticket Subject</h2>
+        <div class="ticket-card">
+            <div id="chat-messages"><p class="text-gray-500 text-center py-4">Loading chat...</p></div>
+   
+            <div id="command-suggestions" class="absolute bottom-full left-0 mb-1 w-full bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-20 hidden max-h-40 overflow-y-auto">
+                </div>
+   
+            <form id="chat-input-form" class="mt-4 flex items-center space-x-2 relative" novalidate>
+                <button type="button" id="file-upload-button" class="p-2 text-gray-400 hover:text-white transition duration-200 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a3 3 0 006 0V7a1 1 0 112 0v4a5 5 0 01-10 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path></svg>
+                </button>
+                <input type="file" id="chat-file-input" class="hidden" multiple>
+   
+                <input type="text" id="chat-input" placeholder="Type '/' for commands or your message..." required class="admin-input-field flex-grow"> <button type="submit" id="send-chat-button">Send</button> </form>
+            <div id="file-preview-container" class="mt-2 text-xs text-gray-400 space-y-1"></div>
+        </div>
+    </div>
 
      <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
          <div class="flex justify-start mb-8">
@@ -699,6 +754,10 @@
         };
 
         // DOM Element References
+        const commandSuggestionsContainer = document.getElementById('command-suggestions');
+        const fileUploadButton = document.getElementById('file-upload-button');
+        const chatFileInput = document.getElementById('chat-file-input');
+        const filePreviewContainer = document.getElementById('file-preview-container');
         const siteTitleDisplay = document.getElementById('site-title-display');
         const headerSiteIcon = document.getElementById('header-site-icon');
         const faviconElement = document.getElementById('favicon');
@@ -736,6 +795,29 @@
         const chatMessagesDiv = document.getElementById('chat-messages');
         const chatInputForm = document.getElementById('chat-input-form');
         const chatInput = document.getElementById('chat-input');
+        // Inside setupEventListeners() function:
+
+        // Chat Input Listeners for Slash Commands
+        chatInput?.addEventListener('input', handleChatInput);
+        chatInput?.addEventListener('keydown', handleChatInputKeydown);
+        // Hide popup if input loses focus (and not clicking a suggestion)
+        chatInput?.addEventListener('blur', () => {
+            // Delay hiding slightly to allow clicks on suggestions to register
+            setTimeout(() => {
+                if (!commandSuggestionsContainer?.matches(':hover')) { // Don't hide if mouse is over suggestions
+                    hideCommandSuggestions();
+                }
+            }, 150);
+        });
+
+
+        // File Upload Button Listener
+        fileUploadButton?.addEventListener('click', () => {
+            chatFileInput?.click(); // Trigger hidden file input
+        });
+
+        // File Input Change Listener
+        chatFileInput?.addEventListener('change', handleFileSelect);
         const sendChatButton = document.getElementById('send-chat-button');
         const backToTicketsButton = document.getElementById('back-to-tickets-button');
         const userInfoModal = document.getElementById('user-info-modal');
@@ -846,6 +928,185 @@
         const productEditSellerAvatarInput = document.getElementById('product-edit-seller-avatar');
         const productEditSellerEstablishedInput = document.getElementById('product-edit-seller-established');
         const productEditReviewsEnabledInput = document.getElementById('product-edit-reviews-enabled');
+
+        // --- Slash Command Definitions ---
+        const slashCommands = [
+            { command: '/upload', description: 'Attach a file to your message.', action: 'triggerFileUpload' },
+            { command: '/help', description: 'Show available commands.', action: 'displayHelp' },
+            // Add more commands as needed (e.g., canned responses)
+            // { command: '/status', description: 'Request status update.', action: 'sendMessage', text: 'Could I please get an update on this ticket?' },
+        ];
+        let commandPopupOpen = false;
+        let selectedSuggestionIndex = -1;
+        let selectedFiles = []; // Array to hold selected File objects
+
+        /** Shows the command suggestions popup */
+        function showCommandSuggestions(filteredCommands) {
+            if (!commandSuggestionsContainer) return;
+            commandSuggestionsContainer.innerHTML = ''; // Clear previous
+            if (filteredCommands.length === 0) {
+                commandSuggestionsContainer.classList.add('hidden');
+                commandPopupOpen = false;
+                return;
+            }
+
+            filteredCommands.forEach((cmd, index) => {
+                const item = document.createElement('div');
+                item.className = 'command-suggestion-item';
+                item.innerHTML = `<span class="command-name"><span class="math-inline">\{cmd\.command\}</span\> <span class\="command\-desc"\></span>{cmd.description}</span>`;
+                item.addEventListener('click', () => selectCommand(cmd));
+                item.addEventListener('mouseenter', () => highlightSuggestion(index)); // Highlight on hover
+                commandSuggestionsContainer.appendChild(item);
+            });
+
+            selectedSuggestionIndex = -1; // Reset selection
+            highlightSuggestion(0); // Highlight the first item by default
+            commandSuggestionsContainer.classList.remove('hidden');
+            commandPopupOpen = true;
+        }
+
+        /** Hides the command suggestions popup */
+        function hideCommandSuggestions() {
+            if (!commandSuggestionsContainer) return;
+            commandSuggestionsContainer.classList.add('hidden');
+            commandPopupOpen = false;
+            selectedSuggestionIndex = -1;
+        }
+
+        /** Highlights a suggestion item in the popup */
+        function highlightSuggestion(index) {
+            if (!commandSuggestionsContainer) return;
+            const items = commandSuggestionsContainer.querySelectorAll('.command-suggestion-item');
+            if (index < 0 || index >= items.length) return;
+
+            // Remove previous selection highlight
+            items.forEach(item => item.classList.remove('selected'));
+
+            // Add highlight to the new selected item
+            items[index].classList.add('selected');
+            selectedSuggestionIndex = index;
+            items[index].scrollIntoView({ block: 'nearest' }); // Ensure visible
+        }
+
+        /** Handles selecting a command from the popup or via Enter key */
+        function selectCommand(command) {
+            console.log("Command selected:", command);
+            hideCommandSuggestions();
+            chatInput.focus(); // Return focus to input
+
+            switch (command.action) {
+                case 'triggerFileUpload':
+                    chatFileInput.click(); // Open file dialog
+                    // Clear the input after triggering upload
+                    chatInput.value = '';
+                    break;
+                case 'displayHelp':
+                    // You could display help in the chat or a modal
+                    // For simplicity, just pre-fill the input
+                    chatInput.value = `Available commands: ${slashCommands.map(c => c.command).join(', ')}`;
+                    break;
+                case 'sendMessage':
+                    if (command.text && socket?.connected && currentTicketId) {
+                        socket.emit('send_message', { ticket_id: currentTicketId, text: command.text });
+                        chatInput.value = ''; // Clear input
+                    }
+                    break;
+                default:
+                    // Default: Fill input with the command name (useful for commands with arguments later)
+                    chatInput.value = command.command + ' ';
+                    break;
+            }
+        }
+
+        /** Handles keydown events on the chat input for command suggestions */
+        function handleChatInputKeydown(event) {
+            if (!commandPopupOpen) return;
+
+            const items = commandSuggestionsContainer.querySelectorAll('.command-suggestion-item');
+            if (items.length === 0) return;
+
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    highlightSuggestion((selectedSuggestionIndex + 1) % items.length);
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    highlightSuggestion((selectedSuggestionIndex - 1 + items.length) % items.length);
+                    break;
+                case 'Enter':
+                case 'Tab': // Allow Tab to select as well
+                    event.preventDefault();
+                    if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
+                        const selectedCommand = slashCommands.find(cmd => cmd.command === items[selectedSuggestionIndex].querySelector('.command-name').textContent);
+                        if (selectedCommand) {
+                            selectCommand(selectedCommand);
+                        }
+                    }
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    hideCommandSuggestions();
+                    break;
+            }
+        }
+
+        /** Handles input events on the chat input to show/filter commands */
+        function handleChatInput() {
+            const value = chatInput.value;
+            if (value.startsWith('/')) {
+                const query = value.substring(1).toLowerCase();
+                const filtered = slashCommands.filter(cmd => cmd.command.toLowerCase().includes(query) || cmd.description.toLowerCase().includes(query));
+                showCommandSuggestions(filtered);
+            } else {
+                hideCommandSuggestions();
+            }
+        }
+
+        /** Formats file size into KB, MB, etc. */
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        /** Renders the file preview area below the input */
+        function renderFilePreview() {
+            if (!filePreviewContainer) return;
+            filePreviewContainer.innerHTML = ''; // Clear existing previews
+            selectedFiles.forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'file-preview-item';
+                item.innerHTML = `
+                    <span><span class="math-inline">\{file\.name\} \(</span>{formatFileSize(file.size)})</span>
+                    <button type="button" data-index="${index}" title="Remove file">&times;</button>
+                `;
+                item.querySelector('button').addEventListener('click', (e) => {
+                    const idxToRemove = parseInt(e.target.dataset.index, 10);
+                    selectedFiles.splice(idxToRemove, 1); // Remove file from array
+                    renderFilePreview(); // Re-render preview
+                });
+                filePreviewContainer.appendChild(item);
+            });
+        }
+
+        /** Handles file selection from the hidden input */
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            console.log("Files selected:", files);
+            // Add newly selected files to the list (prevent duplicates by name)
+            files.forEach(file => {
+                if (!selectedFiles.some(existingFile => existingFile.name === file.name)) {
+                    selectedFiles.push(file);
+                }
+            });
+            renderFilePreview(); // Update the preview area
+
+            // Clear the input value so the change event fires again if the same file is selected
+            event.target.value = null;
+        }
 
         /** Fetches available device types and populates the select dropdown. */
         async function populateDeviceTypes() {
@@ -2438,51 +2699,73 @@
             }
         }
 
-        /**
-         * Appends a chat message element to the chat messages container.
-         * @param {object} data - The message data object.
-         */
-        function appendChatMessage(data) {
-            if (!chatMessagesDiv) return; // Ensure container exists
-            // Remove placeholder message if present
-            const placeholderMsg = chatMessagesDiv.querySelector('p.text-gray-500, p.text-red-400');
-            if (placeholderMsg) placeholderMsg.remove();
+        /** Appends a chat message or file attachment to the chat container. */
+function appendChatMessage(data) {
+    if (!chatMessagesDiv) return;
+    const placeholderMsg = chatMessagesDiv.querySelector('p.text-gray-500, p.text-red-400');
+    if (placeholderMsg) placeholderMsg.remove();
 
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message');
-            // Store data attributes for context menu actions
-            messageElement.dataset.timestamp = data.timestamp;
-            messageElement.dataset.senderId = data.sender_id;
+    const messageWrapper = document.createElement('div'); // Wrapper for message + files
 
-            // Format timestamp and sanitize user/text input
-            const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-            const username = data.sender_username || data.username || 'System'; // Use sender_username if available
-            const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Basic sanitization
-            const safeText = (data.text || '').replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Basic sanitization
+    // --- Render Text Message (if exists) ---
+    if (data.text && data.text.trim() !== '') {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message');
+        messageElement.dataset.timestamp = data.timestamp; // Use main timestamp for context menu
+        messageElement.dataset.senderId = data.sender_id;
 
-            // Create username span (clickable for user info)
-            const usernameSpan = document.createElement('span');
-            usernameSpan.classList.add('username');
-            usernameSpan.textContent = `${safeUsername}:`;
-            usernameSpan.addEventListener('click', () => showUserInfoModal(data.sender_id, safeUsername));
+        const timestamp = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const username = data.sender_username || data.username || 'System';
+        const safeUsername = username.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const safeText = data.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-            messageElement.appendChild(usernameSpan); // Add username
-            messageElement.append(` ${safeText} `); // Add message text
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username'; usernameSpan.textContent = `${safeUsername}:`;
+        usernameSpan.onclick = () => showUserInfoModal(data.sender_id, safeUsername);
 
-            // Create timestamp span
-            const timestampSpan = document.createElement('span');
-            timestampSpan.classList.add('timestamp');
-            timestampSpan.textContent = timestamp;
-            messageElement.appendChild(timestampSpan); // Add timestamp
+        messageElement.appendChild(usernameSpan); messageElement.append(` ${safeText} `);
 
-            // Add context menu listener for moderators
-            if (currentUser && currentUser.is_moderator) {
-               messageElement.addEventListener('contextmenu', showChatContextMenu);
-            }
+        const timestampSpan = document.createElement('span');
+        timestampSpan.className = 'timestamp'; timestampSpan.textContent = timestamp;
+        messageElement.appendChild(timestampSpan);
 
-            chatMessagesDiv.appendChild(messageElement); // Add message to container
-            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight; // Scroll to bottom
+        if (currentUser?.is_moderator) {
+            messageElement.addEventListener('contextmenu', showChatContextMenu);
         }
+        messageWrapper.appendChild(messageElement);
+    }
+
+    // --- Render File Attachments (if exists) ---
+    if (data.files && Array.isArray(data.files) && data.files.length > 0) {
+        data.files.forEach(file => {
+            const fileElement = document.createElement('div');
+            fileElement.className = 'chat-file-attachment';
+
+            // Basic File Icon (Replace with more specific icons later if needed)
+            let iconSvg = `
+                <svg class="chat-file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>`;
+            // TODO: Add logic here to change iconSvg based on file.type (e.g., 'image/', 'application/pdf')
+
+            fileElement.innerHTML = `
+                <span class="math-inline">\{iconSvg\}
+                    <div class="chat-file-details">
+                        <span class="chat-file-name">{file.name.replace(/</g, "&lt;")}</span>
+                        <span class="chat-file-size">${formatFileSize(file.size || 0)}</span>
+                    </div>
+                `;
+                messageWrapper.appendChild(fileElement);
+                });
+                // Add context menu to the wrapper if there was no text message but there are files
+                if ((!data.text || data.text.trim() === '') && currentUser?.is_moderator) {
+                messageWrapper.dataset.timestamp = data.timestamp; // Need timestamp on wrapper for deletion
+                messageWrapper.dataset.senderId = data.sender_id;
+                messageWrapper.addEventListener('contextmenu', showChatContextMenu);
+                // Add some minimal padding/margin if it's only files
+                messageWrapper.classList.add('pt-1');
+                }
+                }
 
         // --- WebSocket (Socket.IO) Functions ---
 
@@ -3409,18 +3692,41 @@
             }
         });
 
-        // Chat Input Form
-        if(chatInputForm) chatInputForm.addEventListener('submit', (event) => {
-            event.preventDefault(); // Prevent default submission
+        // Modify the existing 'submit' listener for chatInputForm
+        if (chatInputForm) chatInputForm.addEventListener('submit', (event) => {
+            event.preventDefault();
             const messageText = chatInput.value.trim();
-            // Send message if text exists, socket connected, and a ticket is active
-            if (messageText && socket && socket.connected && currentTicketId) {
-                socket.emit('send_message', { ticket_id: currentTicketId, text: messageText });
-                chatInput.value = ''; // Clear input field
+
+            // Check if there's text OR files to send
+            if ((!messageText && selectedFiles.length === 0) || !socket?.connected || !currentTicketId) {
+                if (!socket?.connected) showPopupMessage(errorMessagePopup, 'Not connected.', true);
+                else if (!currentTicketId) showPopupMessage(errorMessagePopup, 'No ticket selected.', true);
+                else showPopupMessage(errorMessagePopup, 'Cannot send empty message.', true); // Only show if truly empty
+                return;
             }
-            // Show errors if conditions not met
-            else if (!socket || !socket.connected) { showPopupMessage(errorMessagePopup, 'Not connected to chat.', true); }
-            else if (!currentTicketId) { showPopupMessage(errorMessagePopup, 'No active ticket selected.', true); }
+
+            // Prepare file data (simulation - just name, size, type)
+            const fileDataToSend = selectedFiles.map(file => ({
+                name: file.name,
+                size: file.size,
+                type: file.type || 'application/octet-stream' // Provide a default MIME type
+                // In a real app, you'd likely upload first and send an ID or URL
+            }));
+
+            console.log("Sending message:", { ticket_id: currentTicketId, text: messageText, files: fileDataToSend });
+
+            // Emit message with text and file info
+            socket.emit('send_message', {
+                ticket_id: currentTicketId,
+                text: messageText,
+                files: fileDataToSend // Send the array of file info
+            });
+
+            // Clear input and file preview
+            chatInput.value = '';
+            selectedFiles = []; // Clear the selected files array
+            renderFilePreview(); // Clear the preview display
+            hideCommandSuggestions(); // Ensure popup is hidden
         });
 
         // Modals
