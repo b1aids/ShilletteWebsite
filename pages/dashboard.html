@@ -1,0 +1,42 @@
+<!-- Dashboard page component -->
+<div class="dashboard-content">
+    <h2>Dashboard</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="dashboard-card md:col-span-2">
+            <h3 class="text-lg font-semibold text-white mb-4">Profile</h3>
+            <div class="flex items-center space-x-4 mb-4">
+                <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
+                <div>
+                    <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
+                    <div id="dashboard-user-roles" class="mt-2 space-y-1 flex flex-wrap gap-1">
+                        <p class="text-gray-400 text-xs w-full">Loading roles...</p>
+                    </div>
+                </div>
+            </div>
+            <button id="dashboard-logout-button" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300">
+                Logout
+            </button>
+        </div>
+        
+        <!-- Admin Sections (shown only to moderators) -->
+        <div id="admin-dashboard-sections" class="hidden md:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="admin-section lg:col-span-1">
+                <h3>Site Configuration</h3>
+                <form id="site-config-form" class="admin-form">
+                    <!-- Form fields populated dynamically -->
+                </form>
+            </div>
+
+            <div class="admin-section lg:col-span-1">
+                <h3>Product Management</h3>
+                <button id="add-product-button" class="mb-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300">Add New Product</button>
+                <div class="overflow-x-auto">
+                    <table id="product-list-table">
+                        <!-- Table content populated dynamically -->
+                    </table>
+                </div>
+                <p id="product-list-status">Loading products...</p>
+            </div>
+        </div>
+    </div>
+</div>
