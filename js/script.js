@@ -88,7 +88,7 @@ async function handleLogout() {
         currentUser = { logged_in: false };
         localStorage.removeItem('authToken');
         sessionStorage.removeItem('authToken');
-        window.location.href = '/#home';
+        window.location.href = '/';
         updateUI();
     } catch (error) {
         console.error('Error during logout:', error);
@@ -182,26 +182,6 @@ function applySiteConfig(config) {
     if (footerYear) footerYear.textContent = new Date().getFullYear();
 }
 
-// Navigation function
-function runNavigation() {
-    const hash = window.location.hash.substring(1) || 'home';
-    const sections = document.querySelectorAll('.page-section');
-    
-    sections.forEach(section => section.classList.remove('active'));
-    
-    const targetSection = document.getElementById(hash + '-page-content');
-    if (targetSection) {
-        targetSection.classList.add('active');
-        activeSectionId = hash + '-page-content';
-    } else {
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) {
-            mainContent.classList.add('active');
-            activeSectionId = 'main-content';
-        }
-    }
-}
-
 /**
  * Loads site configuration and applies fallback if API is not available
  */
@@ -227,9 +207,9 @@ async function loadSiteConfigAndNavigate() {
             siteTitle: "Shillette",
             siteIconUrl: "/assets/images/icon.png",
             headerLinks: [
-                {name: "Home", href: "/#home"},
-                {name: "Products", href: "/#products"},
-                {name: "Tickets", href: "/#tickets"},
+                {name: "Home", href: "/"},
+                {name: "Products", href: "/products"},
+                {name: "Tickets", href: "/tickets"},
                 {name: "Discord", href: "https://discord.gg/shillette", target: "_blank"}
             ]
         };
@@ -237,7 +217,6 @@ async function loadSiteConfigAndNavigate() {
         applySiteConfig(siteConfig);
         isInitialConfigLoadComplete = true;
         console.log("[loadSiteConfig] Initial config load complete.");
-        runNavigation();
     }
 }
 
@@ -283,9 +262,6 @@ function setupEventListeners() {
     if (dashboardLogoutButton) {
         dashboardLogoutButton.addEventListener('click', handleLogout);
     }
-
-    // Navigation listener
-    window.addEventListener('hashchange', runNavigation);
 
     // Modal event listeners
     if (modalCloseButton) {
