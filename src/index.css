@@ -1,3 +1,58 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
+  background-size: 200% 200%;
+  animation: animateGradient 25s ease infinite;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/assets/images/background.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+@keyframes animateGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 40;
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  pointer-events: none;
+  animation-name: fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes fall {
+  0% { transform: translateY(-10vh) translateX(0); opacity: 1; }
+  100% { transform: translateY(110vh) translateX(5vw); opacity: 0; }
+}
