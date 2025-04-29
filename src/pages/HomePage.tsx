@@ -1,0 +1,52 @@
+import { Link } from 'react-router-dom';
+
+export default function HomePage() {
+  return (
+    <section className="relative text-center py-24 md:py-32 lg:py-40 overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4">Shillette</h1>
+        <p className="text-xl md:text-2xl text-orange-400 mb-6 font-medium">Advanced DMA Firmware</p>
+        <p className="max-w-2xl mx-auto text-gray-400 mb-10">
+          Fully undetected DMA firmware, battle-tested for reliable performance. Join thousands of satisfied users.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16">
+          <Link 
+            to="/products" 
+            className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto"
+          >
+            Purchase Product
+          </Link>
+          <a 
+            href="https://discord.gg/shillette" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg transition duration-300 shadow-lg w-full sm:w-auto flex items-center justify-center space-x-2"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44 4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path>
+            </svg>
+            <span>Join Discord</span>
+          </a>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-gray-400">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white mb-1">1000+</div>
+            <div>Happy Users</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white mb-1">1000+</div>
+            <div>Products Sold</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white mb-1">5.0</div>
+            <div>Star Rating</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white mb-1">3+</div>
+            <div>Years Experience</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
