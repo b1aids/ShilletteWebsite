@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,65 +11,166 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <link id="favicon" rel="icon" type="image/png" href="/images/icon.png">
     <style type="text/tailwindcss">
-        .admin-input-field { @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 focus:border-orange-500 placeholder-gray-400
-        disabled:opacity-50; } /* Style for the date input icon */ input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6) brightness(1.5); /* Adjust color to be more visible on dark bg */ cursor: pointer; } @keyframes animateGradient
-        { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } } @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position:
-        0% 50%; } } @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } } @keyframes scaleUpDown { 0%, 100% { transform: scaleY(0.4); } 20% { transform: scaleY(1.0);
-        } } body { font-family: 'Inter', sans-serif; @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300; background-size: 200% 200%; animation: animateGradient 25s ease infinite; overflow-x: hidden; position: relative; z-index:
-        0; } body::before { content: ''; position: fixed; inset: 0; background-image: url('images/background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; opacity: 0.2; z-index:
-        -1; } #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; overflow: hidden; } .snowflake { position: absolute; background-color: white; border-radius: 50%; pointer-events: none; animation-name:
-        fall; animation-timing-function: linear; animation-iteration-count: infinite; } .card-gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: 0.5rem; padding: 2px; background-size: 300% 300%; animation: spinBorder 5s
-        linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1; } .card-gradient-border.orange-border::before { background-image:
-        linear-gradient(145deg, #f97316, #9a3412, #000000); } .card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; } .card-gradient-border.blue-border::before { background-image:
-        linear-gradient(145deg, #3b82f6, #1e40af, #000000); animation-duration: 5.5s; } .card-gradient-border.green-border::before { background-image: linear-gradient(145deg, #22c55e, #15803d, #000000); animation-duration: 6.5s; } .card-gradient-border.red-border::before
-        { background-image: linear-gradient(145deg, #ef4444, #991b1b, #000000); animation-duration: 4.5s; } .card-gradient-border.purple-border::before { background-image: linear-gradient(145deg, #a855f7, #6b21a8, #000000); animation-duration: 5.8s; }
-        .card-gradient-border.yellow-border::before { background-image: linear-gradient(145deg, #eab308, #a16207, #000000); animation-duration: 5.2s; } .card-gradient-border.pink-border::before { background-image: linear-gradient(145deg, #ec4899, #be185d,
-        #000000); animation-duration: 5.6s; } .card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; } .card-gradient-border.custom-border { border-width: 2px; border-style:
-        solid; } .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; cursor: pointer; } .product-card:not(.custom-border)
-        { @apply p-0; } .product-card.custom-border { @apply p-0; } .product-card-inner { @apply p-6 flex flex-col flex-grow; } .product-card:hover { transform: scale(1.03); } .product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px
-        1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); } .product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175,
-        0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); } .product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); } .product-card.card-gradient-border.green-border:hover
-        { box-shadow: 0 0 8px 1px rgba(34, 197, 94, 0.6), 0 0 16px 4px rgba(34, 197, 94, 0.4), 0 0 32px 8px rgba(34, 197, 94, 0.2); } .product-card.card-gradient-border.red-border:hover { box-shadow: 0 0 8px 1px rgba(239, 68, 68, 0.6), 0 0 16px 4px rgba(239,
-        68, 68, 0.4), 0 0 32px 8px rgba(239, 68, 68, 0.2); } .product-card.card-gradient-border.purple-border:hover { box-shadow: 0 0 8px 1px rgba(168, 85, 247, 0.6), 0 0 16px 4px rgba(168, 85, 247, 0.4), 0 0 32px 8px rgba(168, 85, 247, 0.2); } .product-card.card-gradient-border.yellow-border:hover
-        { box-shadow: 0 0 8px 1px rgba(234, 179, 8, 0.6), 0 0 16px 4px rgba(234, 179, 8, 0.4), 0 0 32px 8px rgba(234, 179, 8, 0.2); } .product-card.card-gradient-border.pink-border:hover { box-shadow: 0 0 8px 1px rgba(236, 72, 153, 0.6), 0 0 16px 4px
-        rgba(236, 72, 153, 0.4), 0 0 32px 8px rgba(236, 72, 153, 0.2); } .product-card.card-gradient-border.teal-border:hover { box-shadow: 0 0 8px 1px rgba(20, 184, 166, 0.6), 0 0 16px 4px rgba(20, 184, 166, 0.4), 0 0 32px 8px rgba(20, 184, 166, 0.2);
-        } .product-card.custom-border:hover { box-shadow: var(--custom-hover-shadow, 0 0 8px 1px rgba(255, 255, 255, 0.6), 0 0 16px 4px rgba(255, 255, 255, 0.4), 0 0 32px 8px rgba(255, 255, 255, 0.2)); } .product-thumbnail { @apply w-full h-40 object-cover
-        rounded-t-lg; } .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; } #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content
-        h2, #product-detail-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; } #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section, .product-detail-card
-        { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; } .paypal-button, .purchase-button { @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center
-        space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed; } .buy-now-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; } .add-basket-button { @apply bg-gray-600
-        hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; } #payment-message, #ticket-message, #error-message, #config-message, #product-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-        @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none; } #payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show
-        { opacity: 1; } #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; } #error-message { @apply bg-red-600; } #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center
-        justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; } #loading-overlay.active { @apply opacity-100 pointer-events-auto; } .loader { display: flex; align-items: center; justify-content: space-between;
-        width: 50px; height: 25px; } .loader-bar { display: block; width: 8px; height: 100%; background-color: #f97316; border-radius: 4px; animation: scaleUpDown 1.2s infinite ease-in-out; } .loader-bar:nth-child(2) { animation-delay: 0.2s; } .loader-bar:nth-child(3)
-        { animation-delay: 0.4s; } .page-section { display: none; } .page-section.active { display: block; } .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors;
-        } .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; } .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; } #create-ticket-status { @apply text-sm mt-4 mb-4 text-center
-        h-6; } #create-ticket-status.success { @apply text-green-400; } #create-ticket-status.error { @apply text-red-400; } #moderator-management-view h3 { @apply text-xl font-semibold text-white mb-4; } #moderator-management-view details summary { @apply
-        cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors; } #moderator-management-view details[open] summary { @apply text-orange-400; } .ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2;
-        } #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; } .chat-message { @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors; } .chat-message .username
-        { @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; } .chat-message .timestamp { @apply text-xs text-gray-500 ml-2 whitespace-nowrap; } #chat-input-form { @apply flex space-x-2; } #chat-input { @apply flex-grow bg-slate-700
-        border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; } #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium
-        py-2 px-4 rounded-lg transition duration-300; } .modal { @apply fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; } .modal.active { @apply opacity-100 pointer-events-auto;
-        } .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; } #product-edit-modal .modal-content { @apply max-w-lg; } .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors;
-        } #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; } #chat-context-menu, #ticket-context-menu { @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; } .context-menu-item { @apply px-3
-        py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left; } .context-menu-item.hidden { display: none; } .context-menu-item.delete { @apply hover:bg-red-600 text-red-400 hover:text-white; } #mobile-menu { @apply absolute top-full left-0
-        right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; } .mobile-menu-link { @apply block text-gray-300 hover:text-white transition duration-200 py-1; } .admin-section h3 { @apply text-xl font-semibold
-        text-white mb-4 border-b border-slate-700 pb-2; } .admin-form label { @apply block text-sm font-medium text-gray-300 mb-1; } .admin-form > div > input[type="text"], .admin-form > div > input[type="number"], .admin-form > div > input[type="color"],
-        .admin-form > div > textarea, .admin-form > div > select, .admin-form > .grid > div > input[type="text"], .admin-form > .grid > div > select, /* Added style for registration modal inputs */ #register-product-form input[type="text"], #register-product-form
-        input[type="email"] { @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4; } .admin-form .link-group { @apply
-        flex items-center space-x-2 mb-2; } .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0; } .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700
-        text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; } .admin-form button[type="button"] { @apply bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300;
-        } #product-list-table { @apply w-full text-sm text-left text-gray-400 mt-4; } #product-list-table thead { @apply text-xs text-gray-300 uppercase bg-slate-700/50; } #product-list-table th, #product-list-table td { @apply px-4 py-3; } #product-list-table
-        tbody tr { @apply border-b border-slate-700 hover:bg-slate-700/50; } #product-list-table .actions button { @apply text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200; } #product-list-table .actions .edit-btn { @apply bg-blue-600
-        hover:bg-blue-700 text-white; } #product-list-table .actions .delete-btn { @apply bg-red-600 hover:bg-red-700 text-white; } #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; } .role-span { @apply px-2 py-0.5 rounded-md text-xs
-        font-medium mr-1 mb-1 inline-block; } /* Product Detail Page Specific Styles */ #product-detail-page-content .detail-card { @apply bg-slate-800/70 backdrop-blur-sm p-5 rounded-lg shadow-lg; } #product-detail-image { @apply w-full aspect-video
-        object-cover rounded-lg mb-6 shadow-lg; } .star-rating span { @apply text-yellow-400 text-lg; } .quantity-selector button { @apply bg-slate-600 hover:bg-slate-500 text-white font-bold w-8 h-8 rounded-md transition duration-200; } .quantity-selector
-        input { @apply w-12 text-center bg-slate-700 border border-slate-600 rounded-md py-1 mx-2 text-white; } .review-card { @apply bg-slate-700/50 p-4 rounded-md; }
+        .admin-input-field {
+        @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white shadow-sm
+               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-orange-500 focus:border-orange-500
+               placeholder-gray-400 disabled:opacity-50;
+        }
+        /* Style for the date input icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.6) brightness(1.5); /* Adjust color to be more visible on dark bg */
+            cursor: pointer;
+        }
+        @keyframes animateGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes spinBorder { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes fall { 0% { transform: translateY(-10vh) translateX(0); opacity: 1; } 100% { transform: translateY(110vh) translateX(5vw); opacity: 0; } }
+        @keyframes scaleUpDown { 0%, 100% { transform: scaleY(0.4); } 20% { transform: scaleY(1.0); } }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gradient-to-br from-orange-700 via-black to-black text-gray-300;
+            background-size: 200% 200%;
+            animation: animateGradient 25s ease infinite;
+            overflow-x: hidden; position: relative; z-index: 0;
+        }
+        body::before { content: ''; position: fixed; inset: 0; background-image: url('images/background.png'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; opacity: 0.2; z-index: -1; }
+
+        #snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; overflow: hidden; }
+        .snowflake { position: absolute; background-color: white; border-radius: 50%; pointer-events: none; animation-name: fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+
+        .card-gradient-border::before { content: ''; position: absolute; inset: 0; border-radius: 0.5rem; padding: 2px; background-size: 300% 300%; animation: spinBorder 5s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; z-index: -1; }
+        .card-gradient-border.orange-border::before { background-image: linear-gradient(145deg, #f97316, #9a3412, #000000); }
+        .card-gradient-border.gray-border::before { background-image: linear-gradient(145deg, #9ca3af, #374151, #000000); animation-duration: 6s; }
+        .card-gradient-border.blue-border::before { background-image: linear-gradient(145deg, #3b82f6, #1e40af, #000000); animation-duration: 5.5s; }
+        .card-gradient-border.green-border::before { background-image: linear-gradient(145deg, #22c55e, #15803d, #000000); animation-duration: 6.5s; }
+        .card-gradient-border.red-border::before { background-image: linear-gradient(145deg, #ef4444, #991b1b, #000000); animation-duration: 4.5s; }
+        .card-gradient-border.purple-border::before { background-image: linear-gradient(145deg, #a855f7, #6b21a8, #000000); animation-duration: 5.8s; }
+        .card-gradient-border.yellow-border::before { background-image: linear-gradient(145deg, #eab308, #a16207, #000000); animation-duration: 5.2s; }
+        .card-gradient-border.pink-border::before { background-image: linear-gradient(145deg, #ec4899, #be185d, #000000); animation-duration: 5.6s; }
+        .card-gradient-border.teal-border::before { background-image: linear-gradient(145deg, #14b8a6, #0f766e, #000000); animation-duration: 6.1s; }
+        .card-gradient-border.custom-border { border-width: 2px; border-style: solid; }
+
+        .product-card { @apply relative bg-slate-800/80 backdrop-blur-sm rounded-lg shadow-xl flex flex-col z-0; overflow: hidden; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; cursor: pointer; }
+        .product-card:not(.custom-border) { @apply p-0; }
+        .product-card.custom-border { @apply p-0; }
+        .product-card-inner { @apply p-6 flex flex-col flex-grow; }
+        .product-card:hover { transform: scale(1.03); }
+
+        .product-card.card-gradient-border.orange-border:hover { box-shadow: 0 0 8px 1px rgba(249, 115, 22, 0.6), 0 0 16px 4px rgba(249, 115, 22, 0.4), 0 0 32px 8px rgba(249, 115, 22, 0.2); }
+        .product-card.card-gradient-border.gray-border:hover { box-shadow: 0 0 8px 1px rgba(156, 163, 175, 0.5), 0 0 16px 4px rgba(156, 163, 175, 0.3), 0 0 32px 8px rgba(156, 163, 175, 0.15); }
+        .product-card.card-gradient-border.blue-border:hover { box-shadow: 0 0 8px 1px rgba(59, 130, 246, 0.6), 0 0 16px 4px rgba(59, 130, 246, 0.4), 0 0 32px 8px rgba(59, 130, 246, 0.2); }
+        .product-card.card-gradient-border.green-border:hover { box-shadow: 0 0 8px 1px rgba(34, 197, 94, 0.6), 0 0 16px 4px rgba(34, 197, 94, 0.4), 0 0 32px 8px rgba(34, 197, 94, 0.2); }
+        .product-card.card-gradient-border.red-border:hover { box-shadow: 0 0 8px 1px rgba(239, 68, 68, 0.6), 0 0 16px 4px rgba(239, 68, 68, 0.4), 0 0 32px 8px rgba(239, 68, 68, 0.2); }
+        .product-card.card-gradient-border.purple-border:hover { box-shadow: 0 0 8px 1px rgba(168, 85, 247, 0.6), 0 0 16px 4px rgba(168, 85, 247, 0.4), 0 0 32px 8px rgba(168, 85, 247, 0.2); }
+        .product-card.card-gradient-border.yellow-border:hover { box-shadow: 0 0 8px 1px rgba(234, 179, 8, 0.6), 0 0 16px 4px rgba(234, 179, 8, 0.4), 0 0 32px 8px rgba(234, 179, 8, 0.2); }
+        .product-card.card-gradient-border.pink-border:hover { box-shadow: 0 0 8px 1px rgba(236, 72, 153, 0.6), 0 0 16px 4px rgba(236, 72, 153, 0.4), 0 0 32px 8px rgba(236, 72, 153, 0.2); }
+        .product-card.card-gradient-border.teal-border:hover { box-shadow: 0 0 8px 1px rgba(20, 184, 166, 0.6), 0 0 16px 4px rgba(20, 184, 166, 0.4), 0 0 32px 8px rgba(20, 184, 166, 0.2); }
+        .product-card.custom-border:hover { box-shadow: var(--custom-hover-shadow, 0 0 8px 1px rgba(255, 255, 255, 0.6), 0 0 16px 4px rgba(255, 255, 255, 0.4), 0 0 32px 8px rgba(255, 255, 255, 0.2)); }
+
+        .product-thumbnail { @apply w-full h-40 object-cover rounded-t-lg; }
+        .product-thumbnail-placeholder { @apply w-full h-40 bg-slate-700 rounded-t-lg flex items-center justify-center text-gray-500; }
+
+        #dashboard-content h2, #products-page-content h2, #tickets-page-content h2, #ticket-detail-content h2, #product-detail-page-content h2 { @apply text-3xl md:text-4xl font-bold text-white text-center mb-12; }
+        #dashboard-content .dashboard-card, #tickets-page-content .ticket-card, #ticket-detail-content .ticket-card, .admin-section, .product-detail-card { @apply bg-slate-800/80 backdrop-blur-sm p-6 rounded-lg shadow-lg mb-6; }
+
+        .paypal-button, .purchase-button {
+            @apply bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300 flex items-center justify-center space-x-2 w-full disabled:opacity-50 disabled:cursor-not-allowed;
+        }
+        .buy-now-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
+        .add-basket-button { @apply bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition duration-300 shadow-md; }
+
+        #payment-message, #ticket-message, #error-message, #config-message, #product-message {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            @apply text-white text-sm font-medium py-2 px-5 rounded-lg shadow-lg opacity-0 transition-opacity duration-500 ease-in-out z-50 pointer-events-none;
+        }
+        #payment-message.show, #ticket-message.show, #error-message.show, #config-message.show, #product-message.show { opacity: 1; }
+        #payment-message, #ticket-message, #config-message, #product-message { @apply bg-green-600; }
+        #error-message { @apply bg-red-600; }
+
+        #loading-overlay { position: fixed; inset: 0; @apply bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ease-in-out opacity-0 pointer-events-none; }
+        #loading-overlay.active { @apply opacity-100 pointer-events-auto; }
+        .loader { display: flex; align-items: center; justify-content: space-between; width: 50px; height: 25px; }
+        .loader-bar { display: block; width: 8px; height: 100%; background-color: #f97316; border-radius: 4px; animation: scaleUpDown 1.2s infinite ease-in-out; }
+        .loader-bar:nth-child(2) { animation-delay: 0.2s; } .loader-bar:nth-child(3) { animation-delay: 0.4s; }
+
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+
+        .ticket-list-item { @apply bg-slate-700/50 p-4 rounded-md mb-3 flex justify-between items-center cursor-pointer hover:bg-slate-600/50 transition-colors; }
+        .status-open { @apply bg-green-500 text-green-900 text-xs font-bold px-2 py-0.5 rounded-full; }
+        .status-closed { @apply bg-red-500 text-red-900 text-xs font-bold px-2 py-0.5 rounded-full; }
+        #create-ticket-status { @apply text-sm mt-4 mb-4 text-center h-6; }
+        #create-ticket-status.success { @apply text-green-400; } #create-ticket-status.error { @apply text-red-400; }
+        #moderator-management-view h3 { @apply text-xl font-semibold text-white mb-4; }
+        #moderator-management-view details summary { @apply cursor-pointer text-lg font-semibold text-white mb-3 hover:text-orange-400 transition-colors; }
+        #moderator-management-view details[open] summary { @apply text-orange-400; }
+        .ticket-list-container { @apply space-y-3 max-h-96 overflow-y-auto pr-2; }
+
+        #chat-messages { @apply h-64 md:h-80 overflow-y-auto mb-4 p-3 bg-slate-900/50 rounded-md border border-slate-700 space-y-2; }
+        .chat-message { @apply text-sm break-words p-1 rounded hover:bg-slate-800/50 transition-colors; }
+        .chat-message .username { @apply font-semibold text-orange-400 mr-2 cursor-pointer hover:underline; }
+        .chat-message .timestamp { @apply text-xs text-gray-500 ml-2 whitespace-nowrap; }
+        #chat-input-form { @apply flex space-x-2; }
+        #chat-input { @apply flex-grow bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500; }
+        #send-chat-button { @apply bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300; }
+
+        .modal { @apply fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300; }
+        .modal.active { @apply opacity-100 pointer-events-auto; }
+        .modal-content { @apply bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full text-white relative; }
+        #product-edit-modal .modal-content { @apply max-w-lg; }
+        .modal-close-button { @apply absolute top-3 right-3 text-gray-400 hover:text-white transition-colors; }
+        #modal-user-roles { @apply flex flex-wrap gap-1 mt-3; }
+
+        #chat-context-menu, #ticket-context-menu { @apply absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden; }
+        .context-menu-item { @apply px-3 py-1.5 hover:bg-orange-600 cursor-pointer block w-full text-left; }
+        .context-menu-item.hidden { display: none; }
+        .context-menu-item.delete { @apply hover:bg-red-600 text-red-400 hover:text-white; }
+
+        #mobile-menu { @apply absolute top-full left-0 right-0 bg-gray-800/95 backdrop-blur-sm p-4 space-y-2 border-t border-gray-700/50 md:hidden z-30 hidden; }
+        .mobile-menu-link { @apply block text-gray-300 hover:text-white transition duration-200 py-1; }
+
+        .admin-section h3 { @apply text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2; }
+        .admin-form label { @apply block text-sm font-medium text-gray-300 mb-1; }
+        .admin-form > div > input[type="text"],
+        .admin-form > div > input[type="number"],
+        .admin-form > div > input[type="color"],
+        .admin-form > div > textarea,
+        .admin-form > div > select,
+        .admin-form > .grid > div > input[type="text"],
+        .admin-form > .grid > div > select,
+        /* Added style for registration modal inputs */
+        #register-product-form input[type="text"],
+        #register-product-form input[type="email"] {
+             @apply w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400 mb-4;
+        }
+        .admin-form .link-group { @apply flex items-center space-x-2 mb-2; }
+        .admin-form .link-group button { @apply bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2 rounded flex-shrink-0; }
+
+        .admin-form button[type="submit"] { @apply w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50; }
+        .admin-form button[type="button"] { @apply bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition duration-300; }
+
+
+        #product-list-table { @apply w-full text-sm text-left text-gray-400 mt-4; }
+        #product-list-table thead { @apply text-xs text-gray-300 uppercase bg-slate-700/50; }
+        #product-list-table th, #product-list-table td { @apply px-4 py-3; }
+        #product-list-table tbody tr { @apply border-b border-slate-700 hover:bg-slate-700/50; }
+        #product-list-table .actions button { @apply text-xs font-medium px-2 py-1 rounded mr-1 transition duration-200; }
+        #product-list-table .actions .edit-btn { @apply bg-blue-600 hover:bg-blue-700 text-white; }
+        #product-list-table .actions .delete-btn { @apply bg-red-600 hover:bg-red-700 text-white; }
+        #product-list-status { @apply text-sm text-gray-500 mt-4 text-center; }
+
+        .role-span { @apply px-2 py-0.5 rounded-md text-xs font-medium mr-1 mb-1 inline-block; }
+
+        /* Product Detail Page Specific Styles */
+        #product-detail-page-content .detail-card { @apply bg-slate-800/70 backdrop-blur-sm p-5 rounded-lg shadow-lg; }
+        #product-detail-image { @apply w-full aspect-video object-cover rounded-lg mb-6 shadow-lg; }
+        .star-rating span { @apply text-yellow-400 text-lg; }
+        .quantity-selector button { @apply bg-slate-600 hover:bg-slate-500 text-white font-bold w-8 h-8 rounded-md transition duration-200; }
+        .quantity-selector input { @apply w-12 text-center bg-slate-700 border border-slate-600 rounded-md py-1 mx-2 text-white; }
+        .review-card { @apply bg-slate-700/50 p-4 rounded-md; }
 
     </style>
 </head>
-
 <body class="min-h-screen flex flex-col">
 
     <div id="snow-container"></div>
@@ -84,7 +184,7 @@
     <div id="loading-overlay">
         <div class="loader"><span class="loader-bar"></span><span class="loader-bar"></span><span class="loader-bar"></span></div>
     </div>
-
+    
 
     <div id="user-info-modal" class="modal">
         <div class="modal-content">
@@ -94,9 +194,7 @@
             <h3 class="text-lg font-semibold mb-3" id="modal-username">Username</h3>
             <p class="text-sm text-gray-400 mb-1">User ID: <span id="modal-user-id">N/A</span></p>
             <p class="text-sm font-medium mb-2">Roles:</p>
-            <div id="modal-user-roles">
-                <p class="text-gray-500 text-xs">Roles not available.</p>
-            </div>
+            <div id="modal-user-roles"><p class="text-gray-500 text-xs">Roles not available.</p></div>
         </div>
     </div>
 
@@ -112,7 +210,7 @@
                     <label for="generate-dna-id">DNA ID (16 Hex Characters)</label>
                     <input type="text" id="generate-dna-id" required minlength="16" maxlength="16" pattern="[0-9A-Fa-f]{16}" title="Must be 16 hexadecimal characters (0-9, A-F)">
                 </div>
-                <div>
+                 <div>
                     <label for="generate-device-type">Device Type</label>
                     <select id="generate-device-type" required>
                         <option value="" disabled selected>Loading device types...</option>
@@ -129,20 +227,17 @@
     </div>
 
 
-    <div id="product-edit-modal" class="modal">
-        <div class="modal-content w-[95%] max-w-screen-xl max-h-[90vh] overflow-y-auto p-8 mx-auto bg-slate-800 rounded-lg shadow-xl text-white relative"> <button id="product-modal-close-button" class="modal-close-button">
+    <div id="product-edit-modal" class="modal"> <div class="modal-content w-[95%] max-w-screen-xl max-h-[90vh] overflow-y-auto p-8 mx-auto bg-slate-800 rounded-lg shadow-xl text-white relative"> <button id="product-modal-close-button" class="modal-close-button">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
             </button>
             <h3 class="text-2xl font-semibold mb-6 text-white" id="product-modal-title">Add Product</h3>
             <form id="product-edit-form" class="admin-form space-y-6"> <input type="hidden" id="product-edit-id">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-                    <div class="space-y-5">
-                        <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5"> <div class="space-y-5"> <div>
                             <label for="product-edit-name" class="block text-sm font-medium text-gray-300 mb-1">Product Name</label>
                             <input type="text" id="product-edit-name" required class="admin-input-field">
                         </div>
-
+    
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-edit-price" class="block text-sm font-medium text-gray-300 mb-1">Price ($)</label>
@@ -153,13 +248,12 @@
                                 <input type="number" id="product-edit-stock" step="1" min="0" placeholder="e.g., 100" class="admin-input-field">
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
+    
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4"> <div>
                                 <label for="product-edit-tag" class="block text-sm font-medium text-gray-300 mb-1">Product Tag</label>
                                 <input type="text" id="product-edit-tag" placeholder="Single concise tag" class="admin-input-field">
-                            </div>
-                            <div>
+                           </div>
+                           <div>
                                 <label for="product-edit-tagColor" class="block text-sm font-medium text-gray-300 mb-1">Tag/Border Color</label>
                                 <div class="flex items-center gap-2">
                                     <select id="product-edit-tagColor" class="admin-input-field flex-grow">
@@ -178,21 +272,21 @@
                                         <input type="text" id="product-edit-customHex" placeholder="#RRGGBB" class="admin-input-field">
                                     </div>
                                 </div>
-                            </div>
+                           </div>
                         </div>
-
+    
                         <div>
                             <label for="product-edit-device-type" class="block text-sm font-medium text-gray-300 mb-1">Device Type (for Firmware)</label>
                             <input type="text" id="product-edit-device-type" placeholder="e.g., KDMA, LURF (Optional)" class="admin-input-field">
-                            <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
+                             <p class="text-xs text-gray-400 mt-1">Usually required if product tag is 'FIRMWARE'.</p>
                         </div>
-
-                        <div>
+    
+                         <div>
                             <label for="product-edit-paymentLink" class="block text-sm font-medium text-gray-300 mb-1">Payment Provider Link/ID</label>
                             <input type="text" id="product-edit-paymentLink" placeholder="e.g., SellSN SID::PID, PayPal ID" class="admin-input-field">
                             <p class="text-xs text-gray-400 mt-1">Use format SID::PID for SellSN embed buttons.</p>
                         </div>
-
+    
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label for="product-edit-sellsn-sid" class="block text-sm font-medium text-gray-300 mb-1">SellSN Store ID (SID)</label>
@@ -203,9 +297,7 @@
                                 <input type="text" id="product-edit-sellsn-pid" placeholder="If using SellSN embed" class="admin-input-field">
                             </div>
                         </div>
-                    </div>
-                    <div class="space-y-5">
-                        <div>
+                    </div> <div class="space-y-5"> <div>
                             <label for="product-edit-thumbnail" class="block text-sm font-medium text-gray-300 mb-1">Thumbnail Image</label>
                             <input type="text" id="product-edit-thumbnail" placeholder="Enter image URL (overrides file upload)" class="admin-input-field mb-2">
                             <div class="flex items-center gap-x-3">
@@ -214,20 +306,16 @@
                                 <span id="product-edit-thumbnail-filename" class="text-sm text-gray-400 truncate">No file selected</span>
                             </div>
                         </div>
-
+    
                         <div>
                             <label for="product-edit-description" class="block text-sm font-medium text-gray-300 mb-1">Description</label>
                             <textarea id="product-edit-description" rows="8" placeholder="Detailed product description..." class="admin-input-field"></textarea> </div>
-
+    
                         <div>
                             <label for="product-edit-features" class="block text-sm font-medium text-gray-300 mb-1">Features (One per line)</label>
                             <textarea id="product-edit-features" rows="10" placeholder="Feature 1&#10;Feature 2&#10;Feature 3..." class="admin-input-field"></textarea> </div>
-                    </div>
-                </div>
-                <fieldset class="border border-slate-600 p-5 rounded-md mt-6">
-                    <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-3">
-                        <div>
+                    </div> </div> <fieldset class="border border-slate-600 p-5 rounded-md mt-6"> <legend class="text-lg font-semibold px-2 text-orange-400">Product Detail Page Settings</legend>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-3"> <div>
                             <label for="product-edit-seller-name" class="block text-sm font-medium text-gray-300 mb-1">Seller Name</label>
                             <input type="text" id="product-edit-seller-name" placeholder="e.g., ShilletteFN" class="admin-input-field">
                         </div>
@@ -245,7 +333,7 @@
                         </div>
                     </div>
                 </fieldset>
-
+    
                 <div class="pt-6 space-y-3"> <button type="submit" id="product-save-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300 disabled:opacity-50">Save Product</button>
                     <button type="button" id="product-cancel-button" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-300">Cancel</button>
                     <div id="product-edit-status" class="text-sm text-center h-5 mt-3"></div>
@@ -278,7 +366,7 @@
             </div>
             <div class="flex items-center space-x-6">
                 <nav id="main-navigation" class="hidden md:flex space-x-6">
-                </nav>
+                    </nav>
                 <div id="user-area" class="flex items-center">
                     <a id="login-button" href="https://api.shillette.com/login" class="bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19.54 6.04a13.27 13.27 0 00-2.66-1.89 12.4 12.4 0 00-1.6-1.3c-.4-.3-.82-.53-1.28-.71-.18-.07-.37-.13-.56-.19a.82.82 0 00-.5-.06 11.85 11.85 0 00-5.88 0 .82.82 0 00-.5.06c-.19.06-.38.12-.56.19-.46.18-.88.4-1.28.7a12.34 12.34 0 00-1.6 1.3A13.23 13.23 0 004.46 6.04 14.31 14.31 0 003 11.7c0 .1 0 .19.02.28a13.8 13.8 0 001.44 4.61c.56 1.1 1.24 2.1 2.04 3 .5.56 1.04 1.07 1.63 1.53.17.13.34.25.52.37a.8.8 0 00.57.19.78.78 0 00.57-.19 11.07 11.07 0 005.56 0 .78.78 0 00.57.19.8.8 0 00.57-.19c.18-.12.35-.24.52-.37a12.06 12.06 0 003.67-4.53 13.85 13.85 0 001.44 4.61c0-.1 0-.19.02-.28a14.31 14.31 0 00-1.46-5.66zm-4.61 7.03a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0zm-5.72 0a1.93 1.93 0 01-3.86 0 1.93 1.93 0 013.86 0z"></path></svg>
@@ -298,7 +386,7 @@
             </div>
         </div>
         <div id="mobile-menu" class="hidden">
-        </div>
+            </div>
     </header>
 
     <main id="main-content" class="flex-grow page-section">
@@ -319,22 +407,10 @@
                     </a>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 max-w-3xl mx-auto text-gray-400">
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">1000+</div>
-                        <div>Happy Users</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">1000+</div>
-                        <div>Products Sold</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">5.0</div>
-                        <div>Star Rating</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-1">3+</div>
-                        <div>Years Experience</div>
-                    </div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">1000+</div><div>Happy Users</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">1000+</div><div>Products Sold</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">5.0</div><div>Star Rating</div></div>
+                    <div class="text-center"><div class="text-3xl font-bold text-white mb-1">3+</div><div>Years Experience</div></div>
                 </div>
             </div>
         </section>
@@ -342,20 +418,19 @@
 
     <div id="products-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
         <div class="flex justify-start mb-8">
-            <a href="/#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>Back to Home</span>
-            </a>
+             <a href="/#home" id="back-to-home-button-products" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Home</span>
+             </a>
         </div>
         <h2>Our Products</h2>
 
-        <div class="mb-8 space-y-4">
-            <div class="relative w-full"> <input type="text" id="product-search-input" placeholder="Search products..." class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 pl-10 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+        <div class="mb-8 space-y-4"> <div class="relative w-full"> <input type="text" id="product-search-input" placeholder="Search products..." class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 pl-10 pr-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-400">
+                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
                       </svg>
-                </div>
+                 </div>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-4"> <button id="product-sort-button" type="button" class="w-full sm:w-auto bg-slate-700 border border-slate-600 rounded-md py-2 px-4 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 hover:bg-slate-600 transition duration-150 whitespace-nowrap">
@@ -371,11 +446,9 @@
                         <svg class="w-4 h-4 fill-current text-gray-400" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            </div> </div> <div id="product-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
             <p id="product-loading-status" class="text-center text-gray-400 md:col-span-2 lg:col-span-3">Loading products...</p>
-        </div>
+            </div>
     </div>
 
     <div id="dashboard-content" class="flex-grow container mx-auto px-6 py-10 page-section">
@@ -385,19 +458,19 @@
             <div class="dashboard-card md:col-span-2">
                 <h3 class="text-lg font-semibold text-white mb-4">Profile</h3>
                 <div class="flex items-center space-x-4 mb-4">
-                    <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
-                    <div>
-                        <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
-                        <div id="dashboard-user-roles" class="mt-2 space-y-1 flex flex-wrap gap-1">
-                            <p class="text-gray-400 text-xs w-full">Loading roles...</p>
-                        </div>
-                    </div>
+                     <img id="dashboard-user-avatar" src="https://placehold.co/64x64/7f8c8d/ecf0f1?text=?" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-orange-500" onerror="this.src='https://placehold.co/64x64/7f8c8d/ecf0f1?text=?'">
+                     <div>
+                         <p id="dashboard-user-name" class="text-xl font-semibold text-white">Username</p>
+                         <div id="dashboard-user-roles" class="mt-2 space-y-1 flex flex-wrap gap-1">
+                             <p class="text-gray-400 text-xs w-full">Loading roles...</p>
+                         </div>
+                     </div>
                 </div>
                 <button id="dashboard-logout-button" class="w-full mt-4 bg-red-600 hover:bg-red-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition duration-300">
                     Logout
                 </button>
             </div>
-
+            
             <div id="admin-product-context-menu" class="absolute bg-slate-700 border border-slate-600 rounded-md shadow-lg py-1 text-sm text-white z-50 hidden">
                 <button class="context-menu-item edit" id="context-edit-product">Edit Product</button>
                 <button class="context-menu-item delete" id="context-delete-admin-product">Delete Product</button>
@@ -413,13 +486,13 @@
                             <input type="text" id="config-site-title" required>
                         </div>
                         <div>
-                            <label for="config-site-icon-url">Site Icon URL</label>
-                            <input type="text" id="config-site-icon-url" placeholder="e.g., /images/icon.png or https://...">
+                             <label for="config-site-icon-url">Site Icon URL</label>
+                             <input type="text" id="config-site-icon-url" placeholder="e.g., /images/icon.png or https://...">
                         </div>
                         <div>
                             <label>Header Links</label>
                             <div id="config-header-links-container" class="space-y-2 mb-2">
-                            </div>
+                                </div>
                             <button type="button" id="add-header-link-button" class="text-sm">Add Link</button>
                         </div>
                         <button type="submit" id="save-config-button">Save Configuration</button>
@@ -433,145 +506,131 @@
                     <div class="overflow-x-auto">
                         <table id="product-list-table">
                             <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Price</th>
-                                    <th>Tag</th>
-                                    <th>Actions</th>
-                                </tr>
+                                <tr><th>Name</th><th>Price</th><th>Tag</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="product-list-tbody">
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                     <p id="product-list-status">Loading products...</p>
                 </div>
 
-            </div>
-        </div>
-    </div>
+            </div> </div> </div>
 
-    </div>
-    </div>
-    </div>
-    <div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-        <div class="flex justify-start mb-8">
-            <a href="/#products" id="back-to-products-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>Back to Products</span>
-            </a>
-        </div>
-        <h2>Support Tickets</h2>
+            </div> </div> </div> <div id="tickets-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+         <div class="flex justify-start mb-8">
+             <a href="/#products" id="back-to-products-button-tickets" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Products</span>
+             </a>
+         </div>
+         <h2>Support Tickets</h2>
 
-        <div id="moderator-management-view" class="hidden mb-8 ticket-card">
-            <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
-            <details class="mb-6" open>
-                <summary>Active Tickets</summary>
-                <div id="moderator-active-ticket-list" class="ticket-list-container mt-3"></div>
-                <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
-            </details>
-            <details>
-                <summary>Archived Tickets</summary>
-                <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3"></div>
-                <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
-            </details>
-        </div>
+         <div id="moderator-management-view" class="hidden mb-8 ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4 border-b border-slate-700 pb-2">Ticket Management</h3>
+             <details class="mb-6" open> <summary>Active Tickets</summary>
+                 <div id="moderator-active-ticket-list" class="ticket-list-container mt-3"></div>
+                 <p id="moderator-active-list-status" class="text-sm text-gray-500 mt-4">Loading active tickets...</p>
+             </details>
+             <details> <summary>Archived Tickets</summary>
+                 <div id="moderator-archived-ticket-list" class="ticket-list-container mt-3"></div>
+                 <p id="moderator-archived-list-status" class="text-sm text-gray-500 mt-4">Loading archived tickets...</p>
+             </details>
+         </div>
 
-        <div id="user-ticket-view" class="mb-8 ticket-card">
-            <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
-            <div id="ticket-list" class="ticket-list-container"></div>
-            <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
-        </div>
+         <div id="user-ticket-view" class="mb-8 ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4">My Tickets</h3>
+             <div id="ticket-list" class="ticket-list-container"></div>
+             <p id="ticket-list-status" class="text-sm text-gray-500 mt-4">Loading tickets...</p>
+         </div>
 
-        <div class="ticket-card">
-            <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
-            <form id="create-ticket-form" novalidate>
-                <div class="mb-4">
-                    <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
-                    <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
-                </div>
-                <div class="mb-4">
-                    <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
-                    <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
-                </div>
-                <div id="create-ticket-status" class="h-6"></div>
-                <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">Submit Ticket</button>
-            </form>
-        </div>
-    </div>
+         <div class="ticket-card">
+             <h3 class="text-xl font-semibold text-white mb-4">Create New Ticket</h3>
+             <form id="create-ticket-form" novalidate>
+                 <div class="mb-4">
+                     <label for="ticket-subject" class="block text-sm font-medium text-gray-300 mb-1">Subject</label>
+                     <input type="text" id="ticket-subject" name="ticket-subject" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500">
+                 </div>
+                 <div class="mb-4">
+                     <label for="ticket-message-input" class="block text-sm font-medium text-gray-300 mb-1">Message</label>
+                     <textarea id="ticket-message-input" name="ticket-message-input" rows="6" required class="w-full bg-slate-700 border border-slate-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent placeholder-gray-500"></textarea>
+                 </div>
+                 <div id="create-ticket-status" class="h-6"></div>
+                 <button type="submit" id="create-ticket-button" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-2.5 px-6 rounded-lg transition duration-300">Submit Ticket</button>
+             </form>
+         </div>
+     </div>
 
-    <div id="ticket-detail-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-        <div class="flex justify-start mb-8">
-            <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>Back to Tickets</span>
-            </a>
-        </div>
-        <h2 id="ticket-detail-subject">Ticket Subject</h2>
-        <div class="ticket-card">
-            <div id="chat-messages">
-                <p class="text-gray-500 text-center py-4">Loading chat...</p>
-            </div>
-            <form id="chat-input-form" class="mt-4" novalidate>
-                <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
-                <button type="submit" id="send-chat-button">Send</button>
-            </form>
-        </div>
-    </div>
+     <div id="ticket-detail-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+         <div class="flex justify-start mb-8">
+             <a href="/#tickets" id="back-to-tickets-button" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Tickets</span>
+             </a>
+         </div>
+         <h2 id="ticket-detail-subject">Ticket Subject</h2>
+         <div class="ticket-card">
+             <div id="chat-messages"><p class="text-gray-500 text-center py-4">Loading chat...</p></div>
+             <form id="chat-input-form" class="mt-4" novalidate>
+                 <input type="text" id="chat-input" placeholder="Type your message..." required class="w-full">
+                 <button type="submit" id="send-chat-button">Send</button>
+             </form>
+         </div>
+     </div>
 
-    <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
-        <div class="flex justify-start mb-8">
-            <a href="/#products" id="back-to-products-button-detail" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                <span>Back to Products</span>
-            </a>
-        </div>
+     <div id="product-detail-page-content" class="flex-grow container mx-auto px-6 py-10 page-section">
+         <div class="flex justify-start mb-8">
+             <a href="/#products" id="back-to-products-button-detail" class="text-orange-400 hover:text-orange-300 flex items-center space-x-2 transition duration-200">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                 <span>Back to Products</span>
+             </a>
+         </div>
 
-        <div id="product-detail-loading" class="text-center text-gray-400">Loading product details...</div>
+         <div id="product-detail-loading" class="text-center text-gray-400">Loading product details...</div>
 
-        <div id="product-detail-container" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 space-y-6">
-                <img id="product-detail-image" src="https://placehold.co/600x400/374151/9ca3af?text=Loading..." alt="Product Image" class="w-full aspect-video object-cover rounded-lg shadow-lg bg-slate-700">
-                <h1 id="product-detail-name" class="text-3xl md:text-4xl font-bold text-white">Product Name</h1>
-                <p id="product-detail-price" class="text-4xl font-extrabold text-white">$0.00</p>
-                <div class="flex items-center space-x-4 text-sm text-gray-400">
-                    <span id="product-detail-rating" class="star-rating"></span>
-                    <span id="product-detail-stock">X in stock</span>
-                </div>
-                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
-                    <button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto">Buy Now</button>
-                    <button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>
-                    <div class="flex items-center quantity-selector ml-auto">
-                        <button id="quantity-decrease">-</button>
-                        <input type="text" id="quantity-input" value="1" readonly>
-                        <button id="quantity-increase">+</button>
-                    </div>
-                </div>
-                <div id="product-detail-description-container" class="pt-4 border-t border-slate-700/50">
+         <div id="product-detail-container" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+             <div class="lg:col-span-2 space-y-6">
+                 <img id="product-detail-image" src="https://placehold.co/600x400/374151/9ca3af?text=Loading..." alt="Product Image" class="w-full aspect-video object-cover rounded-lg shadow-lg bg-slate-700">
+                 <h1 id="product-detail-name" class="text-3xl md:text-4xl font-bold text-white">Product Name</h1>
+                 <p id="product-detail-price" class="text-4xl font-extrabold text-white">$0.00</p>
+                 <div class="flex items-center space-x-4 text-sm text-gray-400">
+                     <span id="product-detail-rating" class="star-rating"></span>
+                     <span id="product-detail-stock">X in stock</span>
+                 </div>
+                 <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 pt-4 border-t border-slate-700/50">
+                     <button id="product-detail-buy-now" class="buy-now-button w-full sm:w-auto">Buy Now</button>
+                     <button id="product-detail-add-basket" class="add-basket-button w-full sm:w-auto">Add to Basket</button>
+                     <div class="flex items-center quantity-selector ml-auto">
+                         <button id="quantity-decrease">-</button>
+                         <input type="text" id="quantity-input" value="1" readonly>
+                         <button id="quantity-increase">+</button>
+                     </div>
+                 </div>
+                 <div id="product-detail-description-container" class="pt-4 border-t border-slate-700/50">
                     <h3 class="text-lg font-semibold text-white mb-2">Description</h3>
                     <p id="product-detail-description" class="text-gray-400 text-sm">Loading description...</p>
-                </div>
-            </div>
+                 </div>
+             </div>
 
-            <div class="lg:col-span-1 space-y-6">
-                <div class="product-detail-card">
-                    <h3 class="text-lg font-semibold text-white mb-4">Seller Information</h3>
-                    <div class="flex items-center space-x-3 mb-3">
-                        <img id="seller-avatar" src="https://placehold.co/40x40/7f8c8d/ecf0f1?text=S" alt="Seller Avatar" class="w-10 h-10 rounded-full bg-slate-600">
-                        <div>
-                            <p id="seller-name" class="font-medium text-white">Seller Name</p>
-                            <p id="seller-established" class="text-xs text-gray-400">Established X months ago</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-detail-card">
+             <div class="lg:col-span-1 space-y-6">
+                 <div class="product-detail-card">
+                     <h3 class="text-lg font-semibold text-white mb-4">Seller Information</h3>
+                     <div class="flex items-center space-x-3 mb-3">
+                         <img id="seller-avatar" src="https://placehold.co/40x40/7f8c8d/ecf0f1?text=S" alt="Seller Avatar" class="w-10 h-10 rounded-full bg-slate-600">
+                         <div>
+                             <p id="seller-name" class="font-medium text-white">Seller Name</p>
+                             <p id="seller-established" class="text-xs text-gray-400">Established X months ago</p>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="product-detail-card">
                     <h3 class="text-lg font-semibold text-white mb-3">Need help?</h3>
                     <a href="/#tickets" id="product-detail-open-ticket" class="text-orange-400 hover:text-orange-300 text-sm flex items-center space-x-1.5">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                         <span>Open a ticket</span>
                     </a>
-                </div>
-                <div class="product-detail-card space-y-4">
+                 </div>
+                 <div class="product-detail-card space-y-4">
                     <h3 class="text-lg font-semibold text-white mb-3">Not quite sure?</h3>
                     <div class="flex items-start space-x-3">
                         <svg class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"></path></svg>
@@ -580,32 +639,30 @@
                             <p class="text-xs text-gray-400">Your product will be delivered within minutes</p>
                         </div>
                     </div>
-                    <div class="flex items-start space-x-3">
+                     <div class="flex items-start space-x-3">
                         <svg class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg>
                         <div>
                             <p class="text-sm font-medium text-white">Integrated tickets with sellers</p>
                             <p class="text-xs text-gray-400">You can contact the seller directly if you have any issues</p>
                         </div>
                     </div>
-                    <div class="flex items-start space-x-3">
+                     <div class="flex items-start space-x-3">
                         <svg class="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                         <div>
                             <p class="text-sm font-medium text-white">Good average review score</p>
                             <p id="seller-review-score" class="text-xs text-gray-400">The seller has an average review score of X stars out of 5</p>
                         </div>
                     </div>
-                </div>
-            </div>
+                 </div>
+             </div>
 
-            <div class="lg:col-span-3 mt-8">
-                <h2 class="text-2xl font-bold text-white mb-6 text-left">Reviews</h2>
-                <div id="product-reviews-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <p class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <footer class="bg-black mt-auto py-6 border-t border-gray-800">
+             <div class="lg:col-span-3 mt-8">
+                 <h2 class="text-2xl font-bold text-white mb-6 text-left">Reviews</h2>
+                 <div id="product-reviews-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                     <p class="text-gray-400 md:col-span-2 lg:col-span-3">Loading reviews...</p>
+                     </div>
+             </div>
+         </div> </div> <footer class="bg-black mt-auto py-6 border-t border-gray-800">
         <div class="container mx-auto px-6 text-center text-gray-500 text-sm">
             <p>&copy; <span id="footer-year">2025</span> Shillette. All rights reserved.</p>
         </div>
@@ -772,7 +829,7 @@
         // --- Context Menu Button Listeners ---
         // (Keep existing listeners for adminDeleteProductButton, adminEditProductButton, etc.)
         const myProductViewOrderIdButton = document.getElementById('context-view-order-id'); // Get the new button
-        // --- Firmware Generation Modal Functions ---
+                // --- Firmware Generation Modal Functions ---
 
         const firmwareModal = document.getElementById('firmware-generate-modal');
         const firmwareModalTitle = document.getElementById('firmware-modal-title');
@@ -808,7 +865,7 @@
                         generateDeviceTypeSelect.appendChild(option);
                     });
                 } else {
-                    generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>No types available</option>';
+                     generateDeviceTypeSelect.innerHTML = '<option value="" disabled selected>No types available</option>';
                 }
             } catch (error) {
                 console.error("Error populating device types:", error);
@@ -856,16 +913,16 @@
 
             // Basic validation
             if (!productId || !dnaId || !deviceType) {
-                generateStatus.textContent = 'Please fill out all fields.';
-                generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
-                return;
+                 generateStatus.textContent = 'Please fill out all fields.';
+                 generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                 return;
             }
-            if (!/^[0-9A-F]{16}$/.test(dnaId)) {
-                generateStatus.textContent = 'Invalid DNA ID format (16 hex chars).';
-                generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
-                return;
+             if (!/^[0-9A-F]{16}$/.test(dnaId)) {
+                 generateStatus.textContent = 'Invalid DNA ID format (16 hex chars).';
+                 generateStatus.className = 'text-sm text-center h-5 mt-2 text-red-400';
+                 return;
             }
-
+            
 
             // Disable button, show status
             submitFirmwareButton.disabled = true;
@@ -876,9 +933,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/generate_firmware`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         product_id: productId,
                         dna_id: dnaId,
@@ -933,20 +988,20 @@
         }
         // Optional: Wire up Edit button
         if (adminEditProductButton) {
-            adminEditProductButton.addEventListener('click', () => {
-                if (contextMenuData.productId) {
-                    // Need to fetch full product details before opening modal
-                    showPopupMessage(productMessagePopup, 'Fetching product details to edit...');
-                    fetch(`${API_BASE_URL}/api/products/${contextMenuData.productId}`)
-                        .then(res => {
-                            if (!res.ok) throw new Error('Product not found or error fetching.');
-                            return res.json();
-                        })
-                        .then(productData => openProductEditModal(productData))
-                        .catch(err => showPopupMessage(errorMessagePopup, `Error fetching product to edit: ${err.message}`, true));
-                }
-                hideContextMenu();
-            });
+             adminEditProductButton.addEventListener('click', () => {
+                 if(contextMenuData.productId) {
+                      // Need to fetch full product details before opening modal
+                      showPopupMessage(productMessagePopup, 'Fetching product details to edit...');
+                      fetch(`${API_BASE_URL}/api/products/${contextMenuData.productId}`)
+                         .then(res => {
+                             if(!res.ok) throw new Error('Product not found or error fetching.');
+                             return res.json();
+                         })
+                         .then(productData => openProductEditModal(productData))
+                         .catch(err => showPopupMessage(errorMessagePopup, `Error fetching product to edit: ${err.message}`, true));
+                 }
+                 hideContextMenu();
+             });
         }
 
         if (myProductUnregisterButton) {
@@ -955,10 +1010,10 @@
         }
         if (myProductGotoButton) {
             myProductGotoButton.addEventListener('click', () => {
-                if (contextMenuData.productId) {
+                 if(contextMenuData.productId) {
                     window.location.hash = `productDetail?id=${contextMenuData.productId}`;
-                }
-                hideContextMenu();
+                 }
+                 hideContextMenu();
             });
         }
 
@@ -973,13 +1028,8 @@
         let currentContextMenu = null;
         // Add orderId field
         let contextMenuData = {
-            ticketId: null,
-            messageTimestamp: null,
-            senderId: null,
-            ticketStatus: null,
-            productId: null,
-            productName: null,
-            orderId: null // Add orderId
+            ticketId: null, messageTimestamp: null, senderId: null, ticketStatus: null,
+            productId: null, productName: null, orderId: null // Add orderId
         };
         let isInitialLoginCheckComplete = false;
         let isInitialConfigLoadComplete = false;
@@ -994,12 +1044,12 @@
          * @param {number} [duration=3500] - How long the message stays visible (in milliseconds).
          */
         function showPopupMessage(element, message, isError = false, duration = 3500) {
-            if (!element) return;
-            element.textContent = message;
-            element.classList.toggle('bg-red-600', isError);
-            element.classList.toggle('bg-green-600', !isError);
-            element.classList.add('show');
-            setTimeout(() => element.classList.remove('show'), duration);
+             if (!element) return;
+             element.textContent = message;
+             element.classList.toggle('bg-red-600', isError);
+             element.classList.toggle('bg-green-600', !isError);
+             element.classList.add('show');
+             setTimeout(() => element.classList.remove('show'), duration);
         }
 
         /**
@@ -1007,33 +1057,33 @@
          * @param {object | null} user - The current user object or null if logged out.
          */
         function updateHeaderUI(user) {
-            const isLoggedIn = user && user.logged_in;
-            loginButton.classList.toggle('hidden', isLoggedIn);
-            userInfo.classList.toggle('hidden', !isLoggedIn);
-            userInfo.classList.toggle('flex', isLoggedIn);
+             const isLoggedIn = user && user.logged_in;
+             loginButton.classList.toggle('hidden', isLoggedIn);
+             userInfo.classList.toggle('hidden', !isLoggedIn);
+             userInfo.classList.toggle('flex', isLoggedIn);
 
-            if (isLoggedIn) {
-                userNameDisplay.textContent = user.username || 'User';
-                userAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32` : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
-                dashboardUserNameDisplay.textContent = user.username || 'User';
-                dashboardUserAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64` : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+             if (isLoggedIn) {
+                 userNameDisplay.textContent = user.username || 'User';
+                 userAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=32` : 'https://placehold.co/32x32/7f8c8d/ecf0f1?text=?';
+                 dashboardUserNameDisplay.textContent = user.username || 'User';
+                 dashboardUserAvatarDisplay.src = user.user_id && user.avatar ? `https://cdn.discordapp.com/avatars/${user.user_id}/${user.avatar}.png?size=64` : 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
 
-                const isMod = user.is_moderator === true;
-                console.log(`[updateHeaderUI] Toggling admin sections. Moderator status: ${isMod} (Raw value: ${user.is_moderator})`);
-                adminDashboardSections ? .classList.toggle('hidden', !isMod);
+                 const isMod = user.is_moderator === true;
+                 console.log(`[updateHeaderUI] Toggling admin sections. Moderator status: ${isMod} (Raw value: ${user.is_moderator})`);
+                 adminDashboardSections?.classList.toggle('hidden', !isMod);
 
-            } else {
-                dashboardUserNameDisplay.textContent = 'User';
-                dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
-                adminDashboardSections ? .classList.add('hidden');
-            }
+             } else {
+                 dashboardUserNameDisplay.textContent = 'User';
+                 dashboardUserAvatarDisplay.src = 'https://placehold.co/64x64/7f8c8d/ecf0f1?text=?';
+                 adminDashboardSections?.classList.add('hidden');
+             }
         }
 
         /**
          * Fetches all products from the API. Used for filtering registered products.
          * @returns {Promise<Array|null>} A promise that resolves to the array of products or null on error.
          */
-        async function fetchAllProducts() {
+         async function fetchAllProducts() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/products`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1049,26 +1099,22 @@
         /** Prompts for DNA ID and triggers the backend generation API call. */
         async function promptAndStartFirmwareGeneration(productId, productName, deviceType) {
             if (!productId || !productName) {
-                showPopupMessage(errorMessagePopup, "Missing product information.", true);
-                return;
+                 showPopupMessage(errorMessagePopup, "Missing product information.", true); return;
             }
             // --- Check if deviceType is known ---
             if (!deviceType) {
-                showPopupMessage(errorMessagePopup, `Device type for '${productName}' is unknown. Cannot generate firmware.`, true);
-                return;
+                 showPopupMessage(errorMessagePopup, `Device type for '${productName}' is unknown. Cannot generate firmware.`, true); return;
             }
 
             const dnaId = prompt(`Enter the 16-character hexadecimal DNA ID for firmware generation for "${productName}":`);
 
             if (!dnaId) { // User cancelled
-                showPopupMessage(productMessagePopup, "Firmware generation cancelled.");
-                return;
+                showPopupMessage(productMessagePopup, "Firmware generation cancelled."); return;
             }
 
             const validatedDna = dnaId.trim().toUpperCase();
             if (!/^[0-9A-F]{16}$/.test(validatedDna)) {
-                showPopupMessage(errorMessagePopup, "Invalid DNA ID format. Must be 16 hex characters (0-9, A-F).", true);
-                return;
+                showPopupMessage(errorMessagePopup, "Invalid DNA ID format. Must be 16 hex characters (0-9, A-F).", true); return;
             }
 
             // Show immediate feedback
@@ -1079,9 +1125,7 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/api/generate_firmware`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         product_id: productId,
                         dna_id: validatedDna,
@@ -1094,9 +1138,9 @@
 
                 // Backend confirms queuing
                 showPopupMessage(productMessagePopup, result.message || "Generation queued. Check status area or DMs for updates.");
-                // You'll need to listen to SocketIO events for actual progress/completion
-                console.log("Build queued, Build ID:", result.build_id);
-                // Store build_id if you want to track specific builds client-side
+                 // You'll need to listen to SocketIO events for actual progress/completion
+                 console.log("Build queued, Build ID:", result.build_id);
+                 // Store build_id if you want to track specific builds client-side
             } catch (error) {
                 console.error("Error starting firmware generation:", error);
                 showPopupMessage(errorMessagePopup, `Error: ${error.message}`, true);
@@ -1104,16 +1148,16 @@
         }
 
 
-        /**
+                /**
          * Fetches details for registered product IDs and displays them as banners.
          * @param {string[]} productIds - An array of registered product ObjectIDs (as strings).
          */
-        async function displayRegisteredProducts(productIds) {
+         async function displayRegisteredProducts(productIds) {
             const container = document.getElementById('dashboard-registered-products');
             const loadingIndicator = document.getElementById('loading-registered-products');
             if (!container || !loadingIndicator) {
-                console.error("Registered products container or loading indicator not found.");
-                return;
+                 console.error("Registered products container or loading indicator not found.");
+                 return;
             }
 
             container.innerHTML = ''; // Clear previous content
@@ -1129,17 +1173,17 @@
             // Create an array of promises to fetch details for each product
             const fetchPromises = productIds.map(id =>
                 fetch(`${API_BASE_URL}/api/products/${id}`)
-                .then(response => {
-                    if (!response.ok) {
-                        console.warn(`Failed to fetch details for product ${id}: ${response.status}`);
-                        return null; // Return null for failed fetches
-                    }
-                    return response.json();
-                })
-                .catch(error => {
-                    console.error(`Error fetching details for product ${id}:`, error);
-                    return null; // Return null on error
-                })
+                    .then(response => {
+                        if (!response.ok) {
+                             console.warn(`Failed to fetch details for product ${id}: ${response.status}`);
+                             return null; // Return null for failed fetches
+                        }
+                        return response.json();
+                    })
+                    .catch(error => {
+                         console.error(`Error fetching details for product ${id}:`, error);
+                         return null; // Return null on error
+                    })
             );
 
             // Wait for all fetch requests to complete
@@ -1151,24 +1195,24 @@
             loadingIndicator.classList.add('hidden'); // Hide loading indicator
 
             if (validProducts.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-sm">Could not load product details.</p>';
-                return;
+                 container.innerHTML = '<p class="text-gray-400 text-sm">Could not load product details.</p>';
+                 return;
             }
 
             // Render banners for valid products
             validProducts.forEach(product => {
-                        const banner = document.createElement('div');
-                        banner.className = 'bg-slate-700/50 p-3 rounded-md flex items-center space-x-3 hover:bg-slate-600/50 transition-colors cursor-pointer';
-                        // Add click listener to navigate to product detail page
-                        banner.addEventListener('click', () => {
-                            window.location.hash = `/#productDetail?id=${product._id}`;
-                        });
+                const banner = document.createElement('div');
+                banner.className = 'bg-slate-700/50 p-3 rounded-md flex items-center space-x-3 hover:bg-slate-600/50 transition-colors cursor-pointer';
+                // Add click listener to navigate to product detail page
+                banner.addEventListener('click', () => {
+                     window.location.hash = `/#productDetail?id=${product._id}`;
+                });
 
-                        // Basic thumbnail or placeholder
-                        const thumbSrc = product.thumbnailUrl || `https://placehold.co/40x40/7f8c8d/ecf0f1?text=${product.name?.charAt(0) || 'P'}`;
-                        const thumbAlt = `${product.name || 'Product'} thumbnail`;
+                // Basic thumbnail or placeholder
+                const thumbSrc = product.thumbnailUrl || `https://placehold.co/40x40/7f8c8d/ecf0f1?text=${product.name?.charAt(0) || 'P'}`;
+                const thumbAlt = `${product.name || 'Product'} thumbnail`;
 
-                        banner.innerHTML = `
+                banner.innerHTML = `
                     <img src="${thumbSrc}" alt="${thumbAlt}" class="w-10 h-10 rounded object-cover flex-shrink-0" onerror="this.src='https://placehold.co/40x40/7f8c8d/ecf0f1?text=?'; this.onerror=null;">
                     <div>
                         <p class="text-white font-medium">${product.name || 'Unnamed Product'}</p>
@@ -3556,8 +3600,8 @@
             checkLoginStatus(); // Start the process: Check login -> Load Config -> Navigate
             // Note: runNavigation() is called inside loadSiteConfigAndNavigate after both checks are complete
         });
+
     </script>
 
 </body>
-
 </html>
